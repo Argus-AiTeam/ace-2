@@ -380,7 +380,7 @@ passed the focused gate, but still missed both final model-quality thresholds.
 - passed independent architecture review;
 - completed hash-only environment review without repeating the 27 raw probes.
 
-**Current state**
+**RTL outcome**
 
 Environment review is complete and the Manager has advanced to RTL. Two
 synthesizable standalone candidate modules now implement tagged native-record
@@ -388,11 +388,42 @@ RoPE handling and bounded 64-lane tagged Q20.44 score accumulation. Generated
 JSON/SystemVerilog vectors, independent Python tests, Icarus simulation,
 candidate-top Verilator lint, and elaboration pass.
 
-The standalone focused RTL candidate is undergoing independent RTL checklist
-review. The two-dataset quality discriminator, paired smoke, shell admission,
-candidate PPA, and full-shell regression have not run.
+Fresh independent review accepted all three standalone RTL checklist items:
+contract traceability, hardware discipline, and IP provenance. The decision was
+bound to candidate hash `f41c789a380f9615...` and the live RTL source hash.
+This certified implementation fidelity only; it did not accept model quality,
+shell integration, or PPA.
 
-## Step 19 — Prepare the experimental Alpha package
+## Step 19 — Run the native-accumulator focused discriminator
+
+**Work performed**
+
+- extended the mechanism across all 24 transformer layers in the fixed-point
+  model;
+- bound the run to the reviewed candidate and source hashes;
+- ran the frozen WikiText-2 and C4 focused comparison against tile-BFP;
+- checked score, attention-value, and final `lm_head` relative L2;
+- sealed the result as a bounded no-go before paired smoke.
+
+**Measured result**
+
+| Dataset | Checkpoint | Tile-BFP baseline | Candidate | Delta | Result |
+|---|---|---:|---:|---:|---|
+| WikiText-2 | score | 0.061939207 | 0.061936793 | -0.000002414 | improved |
+| WikiText-2 | attention value | 0.336848345 | 0.336840459 | -0.000007886 | improved |
+| WikiText-2 | final `lm_head` | 0.910570580 | 0.909939332 | -0.000631247 | improved |
+| C4-en-512 | score | 0.066248319 | 0.066248125 | -0.000000194 | improved |
+| C4-en-512 | attention value | 0.346582911 | 0.346571562 | -0.000011349 | improved |
+| C4-en-512 | final `lm_head` | 1.184978079 | 1.203094008 | +0.018115928 | regressed |
+
+**Decision**
+
+Bounded no-go. Local score and attention-value error improved on both datasets,
+and WikiText-2 improved through the final output, but C4 final-output error
+regressed. This violated the frozen both-dataset rule. Paired smoke, shell
+admission, candidate PPA, and full-shell regression were therefore not run.
+
+## Step 20 — Prepare the experimental Alpha package
 
 **Work performed**
 
@@ -409,7 +440,7 @@ candidate PPA, and full-shell regression have not run.
 The package became suitable for private release review without exposing
 restricted project material.
 
-## Step 20 — Build the reproducible Alpha demo
+## Step 21 — Build the reproducible Alpha demo
 
 **Work performed**
 
@@ -426,7 +457,7 @@ The Alpha no longer ends with an unexplained PASS marker. A reviewer can see
 what ran, how much data was exercised, which artifacts prove it, and where the
 support boundary stops.
 
-## Step 21 — Create the private release repository
+## Step 22 — Create the private release repository
 
 **Work performed**
 
@@ -444,9 +475,9 @@ support boundary stops.
 | Structural model-flow representation | 434 items |
 | Accepted numerical frontier | Through `layer_0.v_proj` |
 | First unsupported operator | `layer_0.rope_q` |
-| Rejected bounded Beta candidates | Projection-shadow, tile-max Q6.17, tile-BFP |
-| Active candidate | Shared native-accumulator tagged attention |
-| Active candidate stage | Standalone focused RTL passes; independent RTL review in progress |
+| Rejected bounded Beta candidates | Projection-shadow, tile-max Q6.17, tile-BFP, native accumulator |
+| Active candidate | None; architecture successor required |
+| Latest candidate result | Native accumulator failed the C4 final-output focused gate |
 | Alpha repository | Private |
 | Public release | Not authorized |
 

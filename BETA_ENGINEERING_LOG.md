@@ -214,8 +214,7 @@ instead of retuning tile-BFP parameters.
 ## 4. Shared native-accumulator tagged attention
 
 **Contract:** `shared_native_accumulator_tagged_attention_v1`  
-**Status at log update:** standalone focused RTL passes; independent RTL
-checklist review in progress
+**Status:** bounded no-go after the two-dataset focused discriminator
 
 **Proposal identity:** `b654898590d6d213...`
 
@@ -245,21 +244,33 @@ The frozen architecture defines:
 - two synthesizable standalone candidate modules for tagged native-record RoPE
   handling and bounded 64-lane tagged Q20.44 score accumulation;
 - generated JSON/SystemVerilog vectors and independent Python checks;
-- standalone Icarus simulation, Verilator candidate lint, and elaboration.
+- standalone Icarus simulation, Verilator candidate lint, and elaboration;
+- fresh independent acceptance of contract traceability, hardware discipline,
+  and IP provenance, bound to candidate hash `f41c789a380f9615...`;
+- all-24-layer focused comparison on WikiText-2 and C4.
 
-### Work not yet completed
+### Focused discriminator
 
-- independent RTL checklist decision;
-- focused two-dataset discriminator;
-- paired smoke;
-- candidate PPA or full-shell regression.
+| Dataset | Checkpoint | Tile-BFP baseline | Candidate | Delta | Result |
+|---|---|---:|---:|---:|---|
+| WikiText-2 | score relative L2 | 0.061939207 | 0.061936793 | -0.000002414 | improved |
+| WikiText-2 | attention-value relative L2 | 0.336848345 | 0.336840459 | -0.000007886 | improved |
+| WikiText-2 | final `lm_head` relative L2 | 0.910570580 | 0.909939332 | -0.000631247 | improved |
+| C4-en-512 | score relative L2 | 0.066248319 | 0.066248125 | -0.000000194 | improved |
+| C4-en-512 | attention-value relative L2 | 0.346582911 | 0.346571562 | -0.000011349 | improved |
+| C4-en-512 | final `lm_head` relative L2 | 1.184978079 | 1.203094008 | +0.018115928 | regressed |
 
-### Current decision
+The mechanism improved the local score and attention-value checkpoints on both
+datasets. It also improved WikiText-2 at the final output, but the C4
+`lm_head` relative L2 regressed by 0.018115928. The frozen rule required strict
+final-output improvement on both datasets.
 
-**In progress, not accepted capability.** The focused standalone RTL checks
-pass, but independent RTL review and model-quality gates remain. The historical
-frontier and all Alpha claims remain unchanged until the bounded implementation
-passes its numerical gates.
+### Decision
+
+**Bounded no-go.** The authorization was consumed and the direction was sealed.
+Because the focused gate failed, paired smoke, shell admission, candidate PPA,
+full-shell regression, official validation, prototype, and signoff were not
+run. The accepted frontier and all Alpha claims remain unchanged.
 
 ## Decision policy used by every candidate
 
