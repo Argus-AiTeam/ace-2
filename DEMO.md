@@ -3,7 +3,7 @@
 ## Goal
 
 The Alpha demo shows a real, reproducible RTL engineering workflow designed by
-[Argus](https://github.com/lbx154/argus-skill). It demonstrates the structural
+[Argus](https://argusbot.cn/). It demonstrates the structural
 accelerator shell and the numerically accepted projection prefix without
 claiming complete Qwen inference.
 

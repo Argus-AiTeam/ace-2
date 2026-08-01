@@ -7,7 +7,7 @@ Understanding System** under a human-owned mission and explicit approval gates.
 
 Public Argus resources:
 
-- Repository: <https://github.com/lbx154/argus-skill>
+- Official website: <https://argusbot.cn/>
 - Results: <https://argusbot.cn/results.html>
 - Research: <https://argusbot.cn/research.html>
 

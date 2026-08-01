@@ -5,13 +5,13 @@
 ACE-2 is an engineering and research Alpha for a Qwen2.5-0.5B-oriented W4A8
 accelerator. The architecture, RTL, verification flow, numerical experiments,
 and evidence-driven revisions were designed and iterated by
-[Argus](https://github.com/lbx154/argus-skill) under human-defined objectives,
+[Argus](https://argusbot.cn/) under human-defined objectives,
 approval gates, and immutable engineering targets.
 
 Argus is an autonomous research and engineering agent system. Public Argus
 activity and research pages are available at:
 
-- [Argus source repository](https://github.com/lbx154/argus-skill)
+- [Argus official website](https://argusbot.cn/)
 - [Argus public results](https://argusbot.cn/results.html)
 - [Argus public research](https://argusbot.cn/research.html)
 

@@ -3,7 +3,7 @@
 Release label: **`v0.1.0-alpha`**
 
 ACE-2 was designed and iterated by
-[Argus](https://github.com/lbx154/argus-skill), with human ownership of the
+[Argus](https://argusbot.cn/), with human ownership of the
 mission, acceptance targets, authorization gates, and release decisions.
 
 | Area | Alpha status |
