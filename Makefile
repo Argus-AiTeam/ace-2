@@ -24,7 +24,8 @@ RTL_SOURCES := \
 demo: env-check lint oracle-check sim demo-report
 	@echo "ACE2_ALPHA_DEMO_PASS"
 	@echo "Scope: structural shell plus accepted projection-prefix demonstration only."
-	@echo "Readable report: build/DEMO_REPORT.md"
+	@echo "Visual evidence: build/DEMO_REPORT.html"
+	@echo "Text report: build/DEMO_REPORT.md"
 
 env-check:
 	@echo

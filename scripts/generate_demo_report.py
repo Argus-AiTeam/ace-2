@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+from html import escape
 from pathlib import Path
 
 
@@ -13,6 +14,7 @@ VECTORS = ROOT / "verification" / "generated" / "projection_vectors.json"
 SIM_LOG = BUILD / "projection-sim.log"
 LINT_LOG = BUILD / "verilator-lint.log"
 REPORT = BUILD / "DEMO_REPORT.md"
+HTML_REPORT = BUILD / "DEMO_REPORT.html"
 
 
 def require_marker(text: str, marker: str, source: Path) -> None:
@@ -98,6 +100,114 @@ the first unresolved operator is `layer_0.rope_q`.
 """
     REPORT.write_text(report, encoding="utf-8")
 
+    max_outputs = max(case["output_count"] for case in cases)
+    workload_bars = "\n".join(
+        f"""<div class="bar-row">
+          <div class="bar-label"><code>{escape(case["name"])}</code></div>
+          <div class="bar-track"><div class="bar" style="width:
+            {max(2, case["output_count"] * 100 / max_outputs):.2f}%"></div></div>
+          <div class="bar-value">{case["output_count"]:,} outputs</div>
+        </div>"""
+        for case in cases
+    )
+    digest_rows = "\n".join(
+        f"""<tr><td><code>{escape(case["name"])}</code></td>
+        <td><code>{case["input_sha256"][:16]}...</code></td>
+        <td><code>{case["weight_sha256"][:16]}...</code></td>
+        <td><code>{case["output_sha256"][:16]}...</code></td></tr>"""
+        for case in cases
+    )
+    html_report = f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ACE-2 Alpha Demo Evidence</title>
+<style>
+:root {{ color-scheme: dark; --bg:#0b1020; --panel:#121a2d; --line:#283552;
+  --text:#eef3ff; --muted:#9eabc5; --accent:#55d6be; --blue:#6ca9ff; }}
+* {{ box-sizing:border-box; }}
+body {{ margin:0; background:var(--bg); color:var(--text);
+  font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif; }}
+main {{ max-width:1120px; margin:auto; padding:42px 28px 64px; }}
+h1 {{ font-size:34px; margin:0 0 4px; }} h2 {{ margin-top:34px; }}
+.subtitle,.note {{ color:var(--muted); }}
+.flow {{ display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin:28px 0; }}
+.stage,.card {{ background:var(--panel); border:1px solid var(--line); border-radius:12px; }}
+.stage {{ padding:16px; min-height:112px; }}
+.stage b {{ display:block; color:var(--accent); font-size:12px; letter-spacing:.08em; }}
+.stage span {{ display:block; margin-top:8px; }}
+.cards {{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }}
+.card {{ padding:18px; }} .metric {{ font-size:28px; font-weight:700; color:var(--accent); }}
+.label {{ color:var(--muted); font-size:13px; }}
+.bar-row {{ display:grid; grid-template-columns:260px 1fr 110px; gap:14px;
+  align-items:center; margin:12px 0; }}
+.bar-track {{ height:13px; background:#202c46; border-radius:99px; overflow:hidden; }}
+.bar {{ height:100%; background:linear-gradient(90deg,var(--blue),var(--accent)); }}
+.bar-value {{ text-align:right; color:var(--muted); }}
+table {{ width:100%; border-collapse:collapse; background:var(--panel);
+  border:1px solid var(--line); border-radius:12px; overflow:hidden; }}
+th,td {{ padding:11px 14px; text-align:left; border-bottom:1px solid var(--line); }}
+th {{ color:var(--muted); font-size:12px; text-transform:uppercase; }}
+.pass {{ color:var(--accent); font-weight:700; }}
+.boundary {{ border-left:4px solid #ffbd66; padding:14px 18px; background:#211a18; }}
+code {{ font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:12px; }}
+@media(max-width:800px) {{ .flow,.cards {{ grid-template-columns:1fr; }}
+  .bar-row {{ grid-template-columns:1fr; }} .bar-value {{ text-align:left; }} }}
+</style>
+</head>
+<body><main>
+<h1>Argus Compute Engine 2</h1>
+<div class="subtitle">Experimental Alpha — reproducible demo evidence</div>
+
+<div class="flow">
+  <div class="stage"><b>01 TOOLCHAIN</b><span>Verify the required open-source tools.</span></div>
+  <div class="stage"><b>02 STRUCTURE</b><span>Lint the complete accelerator shell.</span></div>
+  <div class="stage"><b>03 ORACLE</b><span>Regenerate deterministic W4A8 vectors.</span></div>
+  <div class="stage"><b>04 RTL</b><span>Simulate selected outputs and semantic bins.</span></div>
+  <div class="stage"><b>05 EVIDENCE</b><span>Bind results to logs, counts, and hashes.</span></div>
+</div>
+
+<div class="cards">
+  <div class="card"><div class="metric">PASS</div><div class="label">Structural shell lint</div></div>
+  <div class="card"><div class="metric">{len(cases)}</div><div class="label">Oracle workloads</div></div>
+  <div class="card"><div class="metric">{tested_outputs} + 6</div><div class="label">RTL outputs + semantic cases</div></div>
+  <div class="card"><div class="metric">{total_declared_outputs:,}</div><div class="label">Declared row/output positions</div></div>
+</div>
+
+<h2>Workload scale</h2>
+<p class="note">Bars show output width from the generated oracle metadata, not estimated performance.</p>
+{workload_bars}
+
+<h2>Evidence chain</h2>
+<table>
+<tr><th>Claim</th><th>Result</th><th>Machine-produced evidence</th></tr>
+<tr><td>Complete shell parses and lints</td><td class="pass">PASS</td>
+  <td><code>build/verilator-lint.log</code> ({len(lint_log.splitlines())} lines)</td></tr>
+<tr><td>Oracle vectors reproduce byte-for-byte</td><td class="pass">PASS</td>
+  <td><code>verification/generated/projection_vectors.json</code></td></tr>
+<tr><td>Selected RTL outputs match the oracle</td><td class="pass">PASS</td>
+  <td><code>build/projection-sim.log</code></td></tr>
+<tr><td>Rounding and extreme shifts behave as specified</td><td class="pass">PASS</td>
+  <td>6 directed arithmetic semantics in the RTL testbench</td></tr>
+</table>
+
+<h2>Reproducibility identities</h2>
+<p class="note">SHA-256 prefixes identify the exact deterministic inputs, weights, and outputs.</p>
+<table><tr><th>Workload</th><th>Input SHA-256</th><th>Weight SHA-256</th><th>Output SHA-256</th></tr>
+{digest_rows}
+</table>
+
+<h2>Honest support boundary</h2>
+<div class="boundary"><strong>Accepted contiguous frontier:</strong>
+<code>layer_0.v_proj</code><br><strong>First unresolved operator:</strong>
+<code>layer_0.rope_q</code><br><br>
+This demo proves reproducibility and bounded projection-prefix agreement.
+It does not claim complete Qwen inference.</div>
+</main></body></html>
+"""
+    HTML_REPORT.write_text(html_report, encoding="utf-8")
+
     print(f"  Structural shell lint: PASS ({len(lint_log.splitlines())} log lines)")
     print(
         f"  Oracle package: PASS ({len(cases)} cases, "
@@ -109,6 +219,7 @@ the first unresolved operator is `layer_0.rope_q`.
     )
     print("  Honest boundary: accepted through layer_0.v_proj; layer_0.rope_q unresolved")
     print(f"ACE2_DEMO_REPORT_WRITTEN {REPORT.relative_to(ROOT)}")
+    print(f"ACE2_VISUAL_EVIDENCE_WRITTEN {HTML_REPORT.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":
