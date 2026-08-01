@@ -214,8 +214,9 @@ instead of retuning tile-BFP parameters.
 ## 4. Shared native-accumulator tagged attention
 
 **Contract:** `shared_native_accumulator_tagged_attention_v1`  
-**Status at log update:** environment independently certified; Manager RTL
-advance pending  
+**Status at log update:** standalone focused RTL passes; independent RTL
+checklist review in progress
+
 **Proposal identity:** `b654898590d6d213...`
 
 ### Mechanism
@@ -240,20 +241,23 @@ The frozen architecture defines:
 - independent architecture stage-closing review;
 - hash-only environment compatibility review using the existing 27 raw
   environment artifacts without rerunning probes.
+- Manager transition from environment to RTL;
+- two synthesizable standalone candidate modules for tagged native-record RoPE
+  handling and bounded 64-lane tagged Q20.44 score accumulation;
+- generated JSON/SystemVerilog vectors and independent Python checks;
+- standalone Icarus simulation, Verilator candidate lint, and elaboration.
 
 ### Work not yet completed
 
-- candidate RTL;
-- independent reference and generated vectors;
-- standalone RTL simulation and lint;
+- independent RTL checklist decision;
 - focused two-dataset discriminator;
 - paired smoke;
 - candidate PPA or full-shell regression.
 
 ### Current decision
 
-**In progress, not accepted capability.** The independent environment review is
-complete. Only the Manager may advance the stage to RTL. The historical
+**In progress, not accepted capability.** The focused standalone RTL checks
+pass, but independent RTL review and model-quality gates remain. The historical
 frontier and all Alpha claims remain unchanged until the bounded implementation
 passes its numerical gates.
 

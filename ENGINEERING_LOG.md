@@ -382,8 +382,15 @@ passed the focused gate, but still missed both final model-quality thresholds.
 
 **Current state**
 
-Environment review is complete. Manager stage transition to RTL is pending.
-No candidate RTL, focused result, paired smoke, or candidate PPA exists yet.
+Environment review is complete and the Manager has advanced to RTL. Two
+synthesizable standalone candidate modules now implement tagged native-record
+RoPE handling and bounded 64-lane tagged Q20.44 score accumulation. Generated
+JSON/SystemVerilog vectors, independent Python tests, Icarus simulation,
+candidate-top Verilator lint, and elaboration pass.
+
+The standalone focused RTL candidate is undergoing independent RTL checklist
+review. The two-dataset quality discriminator, paired smoke, shell admission,
+candidate PPA, and full-shell regression have not run.
 
 ## Step 19 — Prepare the experimental Alpha package
 
@@ -439,7 +446,7 @@ support boundary stops.
 | First unsupported operator | `layer_0.rope_q` |
 | Rejected bounded Beta candidates | Projection-shadow, tile-max Q6.17, tile-BFP |
 | Active candidate | Shared native-accumulator tagged attention |
-| Active candidate stage | Environment complete; Manager RTL transition pending |
+| Active candidate stage | Standalone focused RTL passes; independent RTL review in progress |
 | Alpha repository | Private |
 | Public release | Not authorized |
 
