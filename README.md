@@ -18,8 +18,13 @@ activity and research pages are available at:
 
 See [ARGUS_PROVENANCE.md](ARGUS_PROVENANCE.md) for how Argus planned, built,
 tested, rejected, and revised ACE-2.
+See [ENGINEERING_LOG.md](ENGINEERING_LOG.md) for the complete step-by-step log
+from mission definition through the current repair candidate.
 See [DEVELOPMENT_HISTORY.md](DEVELOPMENT_HISTORY.md) for the curated engineering
 history from mission definition through the Alpha package cut.
+See [BETA_ENGINEERING_LOG.md](BETA_ENGINEERING_LOG.md) for the detailed,
+candidate-by-candidate numerical repair ledger with measured two-dataset
+results and gate decisions.
 
 ## What this Alpha is
 
@@ -129,7 +134,9 @@ Makefile                Demo, lint, simulation, synthesis, and manifest targets
 STATUS.md               Current accepted engineering state
 KNOWN_LIMITATIONS.md     Explicit non-claims and unresolved numerical boundary
 ARGUS_PROVENANCE.md      Argus design and evidence-driven iteration process
+ENGINEERING_LOG.md       Complete step-by-step project engineering log
 DEVELOPMENT_HISTORY.md   Public-safe development history through the Alpha cut
+BETA_ENGINEERING_LOG.md  Detailed candidate metrics, gates, and no-go decisions
 VERIFICATION_REPORT.md  Release-local checks and scan results
 RELEASE_INVENTORY.md    Included/excluded content rationale
 ```
