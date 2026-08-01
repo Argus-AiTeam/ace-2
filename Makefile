@@ -19,13 +19,16 @@ RTL_SOURCES := \
 	rtl/ace2_silu_gate_core.sv \
 	rtl/ace2_shell.sv
 
-.PHONY: demo env-check oracle-check lint sim synth manifest clean
+.PHONY: demo env-check oracle-check lint sim demo-report synth manifest clean
 
-demo: env-check lint oracle-check sim
+demo: env-check lint oracle-check sim demo-report
 	@echo "ACE2_ALPHA_DEMO_PASS"
 	@echo "Scope: structural shell plus accepted projection-prefix demonstration only."
+	@echo "Readable report: build/DEMO_REPORT.md"
 
 env-check:
+	@echo
+	@echo "== [1/5] Checking required open-source tools =="
 	@command -v $(PYTHON) >/dev/null || { echo "Missing Python 3."; exit 2; }
 	@command -v $(VERILATOR) >/dev/null || { echo "Missing Verilator. Install it using your platform package manager."; exit 2; }
 	@command -v $(IVERILOG) >/dev/null || { echo "Missing Icarus Verilog (iverilog). Install it using your platform package manager."; exit 2; }
@@ -33,6 +36,8 @@ env-check:
 	@echo "ACE2_ENV_CHECK_PASS"
 
 oracle-check:
+	@echo
+	@echo "== [3/5] Regenerating independent W4A8 oracle vectors =="
 	@mkdir -p build
 	@cp verification/generated/projection_vectors.json build/projection_vectors.json.expected
 	@cp verification/generated/projection_vectors.svh build/projection_vectors.svh.expected
@@ -42,12 +47,16 @@ oracle-check:
 	@echo "ACE2_ACCEPTED_PREFIX_ORACLE_PASS"
 
 lint:
+	@echo
+	@echo "== [2/5] Linting the complete structural accelerator shell =="
 	@mkdir -p build
 	$(VERILATOR) --lint-only --language 1800-2017 -Wall -Wno-fatal -Irtl \
 		--top-module ace2_shell $(RTL_SOURCES) 2>&1 | tee build/verilator-lint.log
 	@echo "ACE2_RTL_LINT_PASS"
 
 sim:
+	@echo
+	@echo "== [4/5] Simulating projection RTL against oracle outputs =="
 	@mkdir -p build
 	$(IVERILOG) -g2012 -Irtl -Iverification/tb \
 		-o build/ace2_w4a8_proj_tb.vvp $(RTL_SOURCES) \
@@ -55,6 +64,11 @@ sim:
 	$(VVP) build/ace2_w4a8_proj_tb.vvp | tee build/projection-sim.log
 	@grep -q "ACE2_W4A8_PROJ_TB_PASS" build/projection-sim.log
 	@echo "ACE2_ACCEPTED_PREFIX_RTL_SIM_PASS"
+
+demo-report:
+	@echo
+	@echo "== [5/5] Explaining the evidence =="
+	@$(PYTHON) scripts/generate_demo_report.py
 
 synth:
 	@command -v $(YOSYS) >/dev/null || { echo "Missing Yosys. Install it to run generic synthesis."; exit 2; }

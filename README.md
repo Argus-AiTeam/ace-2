@@ -83,6 +83,8 @@ The demo:
 4. compares generated vectors byte-for-byte;
 5. compiles and simulates the projection RTL;
 6. checks RTL results against oracle-generated expected values.
+7. writes `build/DEMO_REPORT.md`, explaining the exercised workloads, evidence
+   counts, raw artifacts, and honest support boundary.
 
 Expected final marker:
 

@@ -22,6 +22,8 @@ The command performs:
 4. byte-for-byte comparison against packaged vectors;
 5. Icarus compilation and simulation of the projection RTL;
 6. RTL output checks against oracle-generated expected values.
+7. generation of a human-readable evidence summary at
+   `build/DEMO_REPORT.md`.
 
 Expected terminal markers:
 
@@ -31,11 +33,17 @@ ACE2_RTL_LINT_PASS
 ACE2_ACCEPTED_PREFIX_ORACLE_PASS
 ACE2_W4A8_PROJ_TB_PASS
 ACE2_ACCEPTED_PREFIX_RTL_SIM_PASS
+ACE2_DEMO_REPORT_WRITTEN build/DEMO_REPORT.md
 ACE2_ALPHA_DEMO_PASS
 ```
 
 Failures are not suppressed. Missing tools produce installation guidance.
 Generated logs and binaries are written only under `build/`.
+
+The final terminal summary explains how many oracle workloads and selected RTL
+outputs were exercised, what each check proves, and where the accepted
+end-to-end boundary stops. `build/DEMO_REPORT.md` preserves the same explanation
+with a workload table and direct links to each raw evidence artifact.
 
 ## Suggested five-minute presentation
 
