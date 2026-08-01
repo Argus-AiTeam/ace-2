@@ -2,8 +2,9 @@
 
 ## Attribution
 
-ACE-2 was designed and iterated by **Argus — Autonomous Research Generation &
-Understanding System** under a human-owned mission and explicit approval gates.
+**ACE** means **Argus Compute Engine**. ACE-2 was designed and iterated by
+**Argus — Autonomous Research Generation & Understanding System** under a
+human-owned mission and explicit approval gates.
 
 Public Argus resources:
 

@@ -1,5 +1,8 @@
 # ACE-2 Alpha Status
 
+ACE is short for **Argus Compute Engine**; ACE-2 is its second-generation
+experimental design.
+
 Release label: **`v0.1.0-alpha`**
 
 ACE-2 was designed and iterated by

@@ -1,8 +1,9 @@
-# ACE-2 Experimental Alpha
+# Argus Compute Engine 2 (ACE-2) Experimental Alpha
 
 **Version: `v0.1.0-alpha`**
 
-ACE-2 is an engineering and research Alpha for a Qwen2.5-0.5B-oriented W4A8
+ACE stands for **Argus Compute Engine**. ACE-2 is an engineering and research
+Alpha for a Qwen2.5-0.5B-oriented W4A8
 accelerator. The architecture, RTL, verification flow, numerical experiments,
 and evidence-driven revisions were designed and iterated by
 [Argus](https://argusbot.cn/) under human-defined objectives,

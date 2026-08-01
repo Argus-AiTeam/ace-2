@@ -1,6 +1,7 @@
 # Public Architecture Summary
 
-ACE-2 is a W4A8 accelerator research RTL with a descriptor-driven shell,
+Argus Compute Engine 2 (ACE-2) is a W4A8 accelerator research RTL with a
+descriptor-driven shell,
 control/status handling, DMA-style memory interfaces, fixed-point operator
 cores, and a framework representing the complete 434-item Qwen2.5-0.5B flow.
 
