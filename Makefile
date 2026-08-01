@@ -19,13 +19,19 @@ RTL_SOURCES := \
 	rtl/ace2_silu_gate_core.sv \
 	rtl/ace2_shell.sv
 
-.PHONY: demo env-check oracle-check lint sim demo-report synth manifest clean
+.PHONY: demo visuals schematic env-check oracle-check lint sim demo-report synth manifest clean
 
 demo: env-check lint oracle-check sim demo-report
 	@echo "ACE2_ALPHA_DEMO_PASS"
 	@echo "Scope: structural shell plus accepted projection-prefix demonstration only."
 	@echo "Visual evidence: build/DEMO_REPORT.html"
 	@echo "Text report: build/DEMO_REPORT.md"
+
+visuals: demo schematic
+	@echo
+	@echo "ACE2_VISUAL_ARTIFACTS_PASS"
+	@echo "Netlist schematic: build/ace2_w4a8_proj_schematic.svg"
+	@echo "Simulation waveform: build/projection-waveform.vcd"
 
 env-check:
 	@echo
@@ -65,6 +71,16 @@ sim:
 	$(VVP) build/ace2_w4a8_proj_tb.vvp | tee build/projection-sim.log
 	@grep -q "ACE2_W4A8_PROJ_TB_PASS" build/projection-sim.log
 	@echo "ACE2_ACCEPTED_PREFIX_RTL_SIM_PASS"
+
+schematic:
+	@command -v $(YOSYS) >/dev/null || { echo "Missing Yosys. Install it to render the netlist schematic."; exit 2; }
+	@command -v dot >/dev/null || { echo "Missing Graphviz dot. Install Graphviz to render the netlist schematic."; exit 2; }
+	@echo
+	@echo "== Rendering the synthesized projection-core netlist =="
+	@mkdir -p build
+	@$(YOSYS) -q -p \
+		'read_verilog -sv rtl/ace2_w4a8_proj_core.sv; hierarchy -check -top ace2_w4a8_proj_core; proc; opt; show -format svg -prefix build/ace2_w4a8_proj_schematic'
+	@echo "ACE2_NETLIST_SCHEMATIC_WRITTEN build/ace2_w4a8_proj_schematic.svg"
 
 demo-report:
 	@echo

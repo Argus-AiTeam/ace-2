@@ -68,6 +68,13 @@ module ace2_w4a8_proj_tb;
         forever #5 clk = ~clk;
     end
 
+    initial begin
+        $dumpfile("build/projection-waveform.vcd");
+        $dumpvars(0, clk, rst_n, start_valid, start_ready, pair_valid, pair_ready,
+                  meta_valid, meta_ready, out_valid, out_ready, out_data, acc,
+                  saturation_seen);
+    end
+
     task apply_reset;
         begin
             rst_n = 1'b0;

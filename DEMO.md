@@ -47,6 +47,26 @@ generated directly from this run's logs and vector metadata. The page is
 self-contained, uses no external assets, and is entirely in English.
 `build/DEMO_REPORT.md` provides a plain-text companion.
 
+## Vivado-style visual artifacts
+
+The release does not require proprietary Vivado or XSim. To generate equivalent
+open-source engineering views, install Yosys and Graphviz, then run:
+
+```sh
+make visuals
+```
+
+This performs the complete demo and adds:
+
+- `build/ace2_w4a8_proj_schematic.svg` — an actual Yosys-derived synthesized
+  netlist schematic that opens directly in a browser;
+- `build/projection-waveform.vcd` — real simulation signal activity for clock,
+  reset, handshakes, output data, accumulator, and saturation status.
+
+The VCD can be opened with GTKWave, Vivado, or another standard waveform
+viewer. These artifacts are generated from the packaged RTL and the current
+simulation run; they are not manually drawn illustrations.
+
 ## Suggested five-minute presentation
 
 1. **Problem:** explain that modern LLM accelerators need both structural RTL

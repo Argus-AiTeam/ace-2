@@ -100,6 +100,18 @@ Optional technology-independent synthesis:
 make synth
 ```
 
+For browser-viewable synthesized netlist graphics and a standard simulation
+waveform:
+
+```sh
+make visuals
+```
+
+This creates `build/ace2_w4a8_proj_schematic.svg` and
+`build/projection-waveform.vcd`. The VCD is compatible with GTKWave, Vivado,
+and other standard waveform viewers; no proprietary tool is required to
+generate it.
+
 See [DEMO.md](DEMO.md) for expected output, presentation guidance, and honest
 claim boundaries.
 
