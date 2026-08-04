@@ -1,60 +1,139 @@
 # Argus Compute Engine 2 (ACE-2)
 
-**Latest snapshot: `v0.2.0-alpha.1` (ACE-2 Alpha 2)**
+[![Release](https://img.shields.io/github/v/release/aHappend/ace-2?include_prereleases&label=release)](https://github.com/aHappend/ace-2/releases)
+[![License](https://img.shields.io/github/license/aHappend/ace-2)](LICENSE)
+[![RTL](https://img.shields.io/badge/RTL-SystemVerilog-5C4EE5)](rtl/)
+[![Target](https://img.shields.io/badge/SKY130-100%20MHz-18A999)](docs/PPA_SUMMARY.md)
 
-ACE-2 is an experimental Qwen2.5-0.5B W4A8 accelerator designed and
-iterated by [Argus](https://argusbot.cn/) under human-defined objectives and
-review gates.
+**An evidence-driven Qwen2.5-0.5B W4A8 accelerator designed and iterated by
+[Argus](https://argusbot.cn/).**
 
-Alpha 2 advances the accepted scope from an early Layer-0 prefix to:
+![ACE-2 Alpha 2 overview](docs/ace2-alpha2-overview.svg)
 
-- all 18 Layer-0 operators passing their exact fixed-point checks;
-- a complete 24-layer, two-token Qwen command schedule;
-- 13,914/13,914 RTL runtime commands passing;
-- generated token IDs `[0, 0]` with `first_failure = null`;
-- a certified 23-file RTL tree;
-- mapped SKY130 synthesis/OpenSTA at 100 MHz with 62,283 cells,
-  0.614082704 mm2 non-SRAM area, and +0.6966 ns detailed setup slack.
+> **Alpha 2 scope:** complete 24-layer, two-token RTL command integration for
+> one frozen pre-tokenized input, plus mapped SKY130 synthesis/OpenSTA.
+> General chat, FPGA execution, routed signoff, and silicon are roadmap items,
+> not current claims.
 
-The exact certification boundary is documented in
-[CERTIFICATION.md](CERTIFICATION.md). This is not yet a general chat product:
-arbitrary-text prefill, unrestricted generation, host deployment, FPGA board
-execution, routed timing, power signoff, DRC/LVS, tapeout, and silicon are not
-claimed.
+## Alpha 2 at a glance
 
-## Reproduce the release-local checks
+| Result | Certified value |
+|---|---:|
+| Layer-0 fixed-point operators | **18 / 18 exact PASS** |
+| Full runtime commands | **13,914 / 13,914 PASS** |
+| Model path | **24 layers, two generated tokens** |
+| Certified RTL tree | **23 SystemVerilog files** |
+| SKY130 mapped cells | **62,283** |
+| Non-SRAM area | **0.614082704 mm2** |
+| Setup slack at 100 MHz | **+0.6966 ns** |
+| OpenSTA WNS / TNS | **0.00 ns / 0.00 ns** |
 
-Required for the basic public-safe checks:
+The machine-readable identities, model revision, image hash, schedule hash,
+and exact claim boundary are summarized in
+[CERTIFICATION.md](CERTIFICATION.md).
 
-- Python 3
-- GNU Make
-- Verilator
-- Icarus Verilog
+## What ACE-2 contains
 
-Verify the certified RTL snapshot:
-
-```sh
-sha256sum -c CERTIFIED_RTL.sha256
+```mermaid
+flowchart LR
+    H[Host command stream] --> D[Descriptor + DMA shell]
+    D --> N[RMSNorm]
+    N --> Q[W4A8 Q / K / V / O projections]
+    Q --> R[RoPE + attention score]
+    R --> S[Softmax + value composition]
+    S --> M[MLP gate / up / SiLU / down]
+    M --> A[Residual + KV state]
+    A --> L[Final RMSNorm + LM head]
+    L --> T[Token IDs]
 ```
 
-Run the deterministic projection demonstration:
+The release includes the certified RTL, deterministic fixed-point references,
+generated test vectors, Verilator/Icarus harnesses, image/runtime utilities,
+and release-local SKY130 flow scripts. Model weights, proprietary PDK data,
+private benchmarks, build products, and sealed internal run packets are not
+distributed.
+
+## Run the visual demo
+
+Install Python 3, GNU Make, Verilator, and Icarus Verilog, then run:
 
 ```sh
 make demo
 ```
 
-Expected marker:
+The demo does not replay the billion-cycle full-model certification. It runs a
+fast, public-safe evidence chain:
+
+1. verifies every certified RTL file hash;
+2. checks the open-source toolchain;
+3. lints the complete accelerator shell;
+4. regenerates deterministic RMSNorm vectors with the independent oracle;
+5. simulates 15 RTL cases x 56 beats against expected results;
+6. produces a standalone visual evidence dashboard.
+
+Expected final marker:
 
 ```text
 ACE2_ALPHA2_DEMO_PASS
 ```
 
-The full two-token run additionally requires the pinned Qwen model revision,
-the accepted packed-W4 image, and the runtime package described in
-[CERTIFICATION.md](CERTIFICATION.md). Model weights, private benchmark inputs,
-raw PDK data, build outputs, and local Argus state are intentionally excluded.
+Open the generated dashboard:
 
-## Repository layout
+```text
+build/DEMO_REPORT.html
+```
+
+**[View a sample Alpha 2 evidence report](docs/DEMO_REPORT.md)** without
+installing the simulation toolchain.
+
+See [DEMO.md](DEMO.md) for the complete walkthrough and raw artifact map.
+
+## Engineering progression
+
+ACE-2 reached timing closure through measured, tree-specific iterations rather
+than by hiding failed candidates:
+
+| RTL frontier | Setup slack | Result |
+|---|---:|---|
+| Initial complete runtime tree | -0.1484 ns | NO-GO |
+| Low-fanout shell control repair | -0.5275 ns | NO-GO |
+| RMSNorm capture-enable repair | -0.1741 ns | NO-GO |
+| RMSNorm final-sum preload split | **+0.6966 ns** | **100 MHz PASS** |
+
+The final split introduces `ST_MEAN_PRELOAD`, separating the 48-bit final
+sum-of-squares carry from dividend loading. The exact final tree is bound by
+[CERTIFIED_RTL.sha256](CERTIFIED_RTL.sha256).
+
+## What is proven, and what is not
+
+**Proven for Alpha 2**
+
+- all 18 Layer-0 operator boundaries;
+- 13,914-command, 24-layer, two-token RTL execution;
+- exact model/image/schedule identities;
+- mapped SKY130 100 MHz and 2.0 mm2 area-cap compliance;
+- independent Fresh Reviewer certification.
+
+**Not yet claimed**
+
+- arbitrary natural-language conversation or unrestricted generation;
+- stable tokenizer, host, or deployment API;
+- FPGA emulation, bitstream, or board execution;
+- routed timing, power signoff, DRC/LVS, GDS, tapeout, or silicon.
+
+See [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md) for the full list.
+
+## Roadmap
+
+- **In progress:** arbitrary-text prefill, KV reuse, multi-token decoding, and
+  a one-command local chat demo.
+- **Next:** AMD/Xilinx Alveo U280 PCIe/XRT + HBM2 integration and emulation.
+- **Later:** board validation and physical-design signoff.
+
+Roadmap progress is not included in the Alpha 2 certification until it receives
+its own reproducible evidence and Fresh Reviewer verdict.
+
+## Repository map
 
 ```text
 rtl/                  Certified synthesizable RTL
@@ -62,23 +141,20 @@ constraints/          Release-local timing constraints
 flow/                 SKY130 synthesis/STA scripts
 verification/         Deterministic vectors, tests, and runtime harnesses
 tools/                Fixed-point references and image/runtime utilities
-docs/                 Architecture and traceability documentation
-CERTIFIED_RTL.sha256  Exact certified RTL file manifest
-CERTIFICATION.md      Alpha 2 evidence and claim boundary
+docs/                 Architecture, PPA, and traceability summaries
+CERTIFIED_RTL.sha256  Exact certified RTL manifest
+CERTIFICATION.md      Evidence identities and claim boundary
 CHANGELOG.md          Version history
-STATUS.md             Current support summary
-KNOWN_LIMITATIONS.md  Explicit non-claims
 ```
 
-## Version history
+## Versions
 
-- [`v0.2.0-alpha.1`](../../releases/tag/v0.2.0-alpha.1): Alpha 2 certified
-  two-token RTL snapshot.
-- [`v0.1.0-alpha.1`](../../releases/tag/v0.1.0-alpha.1): Alpha 1 accepted
-  prefix through `layer_0.v_proj`.
+- [`v0.2.0-alpha.1`](../../releases/tag/v0.2.0-alpha.1) — **ACE-2 Alpha 2**,
+  certified two-token RTL snapshot.
+- [`v0.1.0-alpha.1`](../../releases/tag/v0.1.0-alpha.1) — **ACE-2 Alpha 1**,
+  accepted prefix through `layer_0.v_proj`.
 
-Git tags preserve previous source snapshots. `main` documents the latest
-snapshot; old source trees are not duplicated in directories.
+Tags preserve previous snapshots; `main` describes the latest version.
 
 ## License
 

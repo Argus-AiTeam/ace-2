@@ -1,13 +1,12 @@
-# ACE-2 Alpha Demonstration
+# ACE-2 Alpha 2 Visual Demo
 
-## Goal
+## Purpose
 
-The Alpha demo shows a real, reproducible RTL engineering workflow designed by
-[Argus](https://argusbot.cn/). It demonstrates the structural
-accelerator shell and the numerically accepted projection prefix without
-claiming complete Qwen inference.
+`make demo` gives reviewers a fast, reproducible path from certified source
+identity to real RTL output. It intentionally avoids replaying the sealed
+1,240,410,384-cycle full-model run.
 
-## Run the demo
+## Run
 
 ```sh
 make demo
@@ -15,98 +14,66 @@ make demo
 
 The command performs:
 
-1. tool availability checks;
-2. Verilator lint of the structural `ace2_shell`;
-3. deterministic regeneration of W4A8 projection vectors with the independent
-   Python fixed-point oracle;
-4. byte-for-byte comparison against packaged vectors;
-5. Icarus compilation and simulation of the projection RTL;
-6. RTL output checks against oracle-generated expected values.
-7. generation of a standalone visual evidence dashboard at
-   `build/DEMO_REPORT.html` and a text companion at `build/DEMO_REPORT.md`.
+1. `sha256sum -c CERTIFIED_RTL.sha256`;
+2. Python, Verilator, Icarus, and VVP availability checks;
+3. complete `ace2_shell` Verilator lint;
+4. deterministic regeneration of 15 RMSNorm oracle cases;
+5. byte-for-byte comparison with packaged JSON/SystemVerilog vectors;
+6. Icarus RTL simulation of 15 cases x 56 beats;
+7. generation of `build/DEMO_REPORT.md` and
+   `build/DEMO_REPORT.html`.
 
 Expected terminal markers:
 
 ```text
+ACE2_CERTIFIED_RTL_HASH_PASS
 ACE2_ENV_CHECK_PASS
 ACE2_RTL_LINT_PASS
-ACE2_ACCEPTED_PREFIX_ORACLE_PASS
-ACE2_W4A8_PROJ_TB_PASS
-ACE2_ACCEPTED_PREFIX_RTL_SIM_PASS
+ACE2_RMSNORM_ORACLE_PASS
+ACE2_RMSNORM_TB_PASS cases=15 beats_per_case=56
+ACE2_RMSNORM_RTL_SIM_PASS
 ACE2_DEMO_REPORT_WRITTEN build/DEMO_REPORT.md
 ACE2_VISUAL_EVIDENCE_WRITTEN build/DEMO_REPORT.html
-ACE2_ALPHA_DEMO_PASS
+ACE2_ALPHA2_DEMO_PASS
 ```
 
-Failures are not suppressed. Missing tools produce installation guidance.
-Generated logs and binaries are written only under `build/`.
+## Dashboard
 
-Open `build/DEMO_REPORT.html` in a browser after the run. Its workflow diagram,
-metric cards, workload bars, evidence table, and SHA-256 identities are
-generated directly from this run's logs and vector metadata. The page is
-self-contained, uses no external assets, and is entirely in English.
-`build/DEMO_REPORT.md` provides a plain-text companion.
+Open `build/DEMO_REPORT.html` in any browser. It is self-contained and
+includes:
 
-## Vivado-style visual artifacts
+- the host-to-token architecture flow;
+- certification metric cards;
+- the 15 generated RMSNorm workloads;
+- exact SHA-256 identity prefixes;
+- the four-step timing-closure progression;
+- links between claims and release-local evidence;
+- a prominent statement of what Alpha 2 does not prove.
 
-The release does not require proprietary Vivado or XSim. To generate equivalent
-open-source engineering views, install Yosys and Graphviz, then run:
+The Markdown companion is suitable for CI logs and text-only environments.
+
+## Optional schematic
+
+With Yosys and Graphviz installed:
 
 ```sh
 make visuals
 ```
 
-This performs the complete demo and adds:
+This adds a browser-viewable synthesized projection-core schematic. It is an
+open-source structural view, not a proprietary FPGA or ASIC layout.
 
-- `build/ace2_w4a8_proj_schematic.svg` — an actual Yosys-derived synthesized
-  netlist schematic that opens directly in a browser;
-- `build/projection-waveform.vcd` — real simulation signal activity for clock,
-  reset, handshakes, output data, accumulator, and saturation status.
+## Presentation sequence
 
-The VCD can be opened with GTKWave, Vivado, or another standard waveform
-viewer. These artifacts are generated from the packaged RTL and the current
-simulation run; they are not manually drawn illustrations.
+1. Start with the metric cards in the generated dashboard.
+2. Show `CERTIFIED_RTL.sha256` and rerun `make demo`.
+3. Explain why a fast RMSNorm discriminator complements, but does not replace,
+   the sealed full-model run.
+4. Walk through the timing progression from three NO-GO trees to +0.6966 ns.
+5. End with `KNOWN_LIMITATIONS.md` and the local-chat/U280 roadmap.
 
-## Suggested five-minute presentation
+## Honest interpretation
 
-1. **Problem:** explain that modern LLM accelerators need both structural RTL
-   coverage and end-to-end numerical correctness.
-2. **Argus design process:** show
-   [ARGUS_PROVENANCE.md](ARGUS_PROVENANCE.md) and explain that Argus generated,
-   tested, reviewed, and rejected candidates under human-defined gates.
-3. **Architecture:** show `docs/ARCHITECTURE.md` and the shell/control dataflow.
-4. **Reproducible execution:** run `make demo` live.
-5. **Oracle agreement:** point out that deterministic projection vectors are
-   independently regenerated before RTL simulation.
-6. **Engineering honesty:** show [STATUS.md](STATUS.md); distinguish 434-item
-   structural coverage from the accepted numerical frontier through
-   `layer_0.v_proj`.
-7. **Roadmap:** explain that Beta repairs the RoPE numerical chain while reusing
-   the Alpha RTL and verification base.
-
-## Optional synthesis
-
-```sh
-make synth
-```
-
-This runs technology-independent Yosys synthesis of the accepted W4A8
-projection core. The full shell uses SystemVerilog package constructs that are
-not portable across all stock Yosys builds, so release-local full-shell
-synthesis is not claimed. No PDK is used or distributed.
-
-## Allowed claims
-
-- “ACE-2 is an Argus-designed experimental accelerator Alpha.”
-- “The package includes synthesizable RTL and a structural 434-item flow.”
-- “The accepted contiguous numerical frontier reaches `layer_0.v_proj`.”
-- “The public demo reproduces accepted-prefix oracle and RTL agreement.”
-- “Beta numerical repair continues from the Alpha engineering base.”
-
-## Disallowed claims
-
-- complete or usable Qwen inference;
-- accepted numerical support for all 434 items;
-- production readiness;
-- silicon, tapeout, signoff, FPGA, or PDK-qualified results;
-- accepted PPA for the current rejected numerical candidate.
+`ACE2_ALPHA2_DEMO_PASS` means the packaged RTL is hash-identical to the
+certified source and the release-local RMSNorm oracle/RTL discriminator passes.
+It does not independently rerun or expand the full two-token certification.

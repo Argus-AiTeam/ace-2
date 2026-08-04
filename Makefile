@@ -13,21 +13,28 @@ RTL_SOURCES := \
 	rtl/ace2_shell.sv
 RTL_INCLUDE_FLAGS := -Irtl -Irtl/generated
 
-.PHONY: demo visuals schematic env-check oracle-check lint sim demo-report synth manifest clean
+.PHONY: demo visuals schematic certified-rtl-check env-check oracle-check lint sim demo-report synth manifest clean
 
-demo: env-check lint oracle-check sim
+demo: certified-rtl-check env-check lint oracle-check sim demo-report
 	@echo "ACE2_ALPHA2_DEMO_PASS"
 	@echo "Scope: certified RTL hash check plus deterministic RMSNorm demonstration."
+	@echo "Visual report: build/DEMO_REPORT.html"
+	@echo "Text report: build/DEMO_REPORT.md"
 
 visuals: demo schematic
 	@echo
 	@echo "ACE2_VISUAL_ARTIFACTS_PASS"
 	@echo "Netlist schematic: build/ace2_w4a8_proj_schematic.svg"
-	@echo "Simulation waveform: build/projection-waveform.vcd"
+
+certified-rtl-check:
+	@echo
+	@echo "== [1/6] Verifying the certified RTL source identity =="
+	@sha256sum -c CERTIFIED_RTL.sha256
+	@echo "ACE2_CERTIFIED_RTL_HASH_PASS"
 
 env-check:
 	@echo
-	@echo "== [1/5] Checking required open-source tools =="
+	@echo "== [2/6] Checking required open-source tools =="
 	@command -v $(PYTHON) >/dev/null || { echo "Missing Python 3."; exit 2; }
 	@command -v $(VERILATOR) >/dev/null || { echo "Missing Verilator. Install it using your platform package manager."; exit 2; }
 	@command -v $(IVERILOG) >/dev/null || { echo "Missing Icarus Verilog (iverilog). Install it using your platform package manager."; exit 2; }
@@ -36,7 +43,7 @@ env-check:
 
 oracle-check:
 	@echo
-	@echo "== [3/5] Regenerating independent W4A8 oracle vectors =="
+	@echo "== [4/6] Regenerating independent RMSNorm oracle vectors =="
 	@mkdir -p build
 	@cp verification/generated/rmsnorm_vectors.json build/rmsnorm_vectors.json.expected
 	@cp verification/generated/rmsnorm_vectors.svh build/rmsnorm_vectors.svh.expected
@@ -47,7 +54,7 @@ oracle-check:
 
 lint:
 	@echo
-	@echo "== [2/5] Linting the complete structural accelerator shell =="
+	@echo "== [3/6] Linting the complete structural accelerator shell =="
 	@mkdir -p build
 	$(VERILATOR) --lint-only --language 1800-2017 --timescale 1ns/1ps \
 		-Wall -Wno-fatal $(RTL_INCLUDE_FLAGS) \
@@ -56,7 +63,7 @@ lint:
 
 sim:
 	@echo
-	@echo "== [4/4] Simulating RMSNorm RTL against oracle outputs =="
+	@echo "== [5/6] Simulating RMSNorm RTL against oracle outputs =="
 	@mkdir -p build
 	$(IVERILOG) -g2012 $(RTL_INCLUDE_FLAGS) -Iverification/tb \
 		-o build/ace2_rmsnorm_tb.vvp $(RTL_SOURCES) \
@@ -77,7 +84,7 @@ schematic:
 
 demo-report:
 	@echo
-	@echo "== [5/5] Explaining the evidence =="
+	@echo "== [6/6] Generating the visual evidence dashboard =="
 	@$(PYTHON) scripts/generate_demo_report.py
 
 synth:

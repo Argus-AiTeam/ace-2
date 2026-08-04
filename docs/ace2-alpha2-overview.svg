@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="620" viewBox="0 0 1600 620" role="img" aria-labelledby="title desc">
+  <title id="title">ACE-2 Alpha 2 accelerator overview</title>
+  <desc id="desc">Architecture flow and certified metrics for the ACE-2 Qwen W4A8 accelerator.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#07111f"/>
+      <stop offset="1" stop-color="#102b43"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#60a5fa"/>
+      <stop offset="1" stop-color="#51e5c2"/>
+    </linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="8" stdDeviation="12" flood-opacity=".25"/></filter>
+  </defs>
+  <rect width="1600" height="620" rx="28" fill="url(#bg)"/>
+  <circle cx="1450" cy="60" r="220" fill="#51e5c2" opacity=".06"/>
+  <circle cx="120" cy="570" r="250" fill="#60a5fa" opacity=".07"/>
+
+  <text x="76" y="92" fill="#edf7ff" font-family="system-ui,sans-serif" font-size="50" font-weight="700">ACE-2</text>
+  <text x="266" y="92" fill="#51e5c2" font-family="system-ui,sans-serif" font-size="50" font-weight="700">Alpha 2</text>
+  <text x="78" y="132" fill="#9db3c9" font-family="system-ui,sans-serif" font-size="21">Argus-designed Qwen2.5-0.5B W4A8 accelerator</text>
+  <rect x="1178" y="64" width="330" height="46" rx="23" fill="#0b332f" stroke="#51e5c2"/>
+  <text x="1343" y="94" text-anchor="middle" fill="#51e5c2" font-family="system-ui,sans-serif" font-size="16" font-weight="700">TWO-TOKEN SCOPE CERTIFIED</text>
+
+  <g filter="url(#shadow)" font-family="system-ui,sans-serif">
+    <rect x="76" y="180" width="210" height="110" rx="16" fill="#10233a" stroke="#294868"/>
+    <rect x="320" y="180" width="210" height="110" rx="16" fill="#10233a" stroke="#294868"/>
+    <rect x="564" y="180" width="210" height="110" rx="16" fill="#10233a" stroke="#294868"/>
+    <rect x="808" y="180" width="210" height="110" rx="16" fill="#10233a" stroke="#294868"/>
+    <rect x="1052" y="180" width="210" height="110" rx="16" fill="#10233a" stroke="#294868"/>
+    <rect x="1296" y="180" width="210" height="110" rx="16" fill="#10233a" stroke="#294868"/>
+    <g fill="#60a5fa" font-size="14" font-weight="700">
+      <text x="96" y="208">HOST</text><text x="340" y="208">NORM</text><text x="584" y="208">ATTENTION</text>
+      <text x="828" y="208">MLP</text><text x="1072" y="208">STATE</text><text x="1316" y="208">OUTPUT</text>
+    </g>
+    <g fill="#edf7ff" font-size="17">
+      <text x="96" y="240">Commands +</text><text x="96" y="264">packed W4 image</text>
+      <text x="340" y="240">RMSNorm +</text><text x="340" y="264">residual</text>
+      <text x="584" y="240">Q/K/V, RoPE,</text><text x="584" y="264">score + softmax</text>
+      <text x="828" y="240">Gate, up,</text><text x="828" y="264">SiLU + down</text>
+      <text x="1072" y="240">Residual +</text><text x="1072" y="264">KV updates</text>
+      <text x="1316" y="240">LM head +</text><text x="1316" y="264">token IDs</text>
+    </g>
+  </g>
+  <g fill="none" stroke="url(#accent)" stroke-width="4">
+    <path d="M286 235h34"/><path d="M530 235h34"/><path d="M774 235h34"/>
+    <path d="M1018 235h34"/><path d="M1262 235h34"/>
+  </g>
+
+  <g font-family="system-ui,sans-serif" filter="url(#shadow)">
+    <rect x="76" y="344" width="270" height="150" rx="18" fill="#0d1b2d" stroke="#294868"/>
+    <rect x="370" y="344" width="270" height="150" rx="18" fill="#0d1b2d" stroke="#294868"/>
+    <rect x="664" y="344" width="270" height="150" rx="18" fill="#0d1b2d" stroke="#294868"/>
+    <rect x="958" y="344" width="270" height="150" rx="18" fill="#0d1b2d" stroke="#294868"/>
+    <rect x="1252" y="344" width="254" height="150" rx="18" fill="#0d1b2d" stroke="#51e5c2"/>
+    <g fill="#51e5c2" font-size="34" font-weight="700">
+      <text x="102" y="398">18 / 18</text><text x="396" y="398">13,914</text>
+      <text x="690" y="398">62,283</text><text x="984" y="398">0.614 mm2</text>
+      <text x="1278" y="398">+0.6966 ns</text>
+    </g>
+    <g fill="#9db3c9" font-size="16">
+      <text x="102" y="432">Layer-0 operators</text><text x="102" y="456">exact PASS</text>
+      <text x="396" y="432">runtime commands</text><text x="396" y="456">all PASS</text>
+      <text x="690" y="432">mapped SKY130</text><text x="690" y="456">standard cells</text>
+      <text x="984" y="432">non-SRAM area</text><text x="984" y="456">under 2.0 mm2 cap</text>
+      <text x="1278" y="432">setup slack</text><text x="1278" y="456">at 100 MHz</text>
+    </g>
+  </g>
+
+  <line x1="76" y1="548" x2="1506" y2="548" stroke="#294868"/>
+  <text x="76" y="584" fill="#9db3c9" font-family="system-ui,sans-serif" font-size="17">Proven: 24 layers / two tokens / mapped synthesis + OpenSTA</text>
+  <text x="1506" y="584" text-anchor="end" fill="#ffbd66" font-family="system-ui,sans-serif" font-size="17">Roadmap: arbitrary chat / U280 FPGA / physical signoff</text>
+</svg>
