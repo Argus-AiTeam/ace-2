@@ -11,5 +11,5 @@ and numerically accepted support.
   proprietary PDK/IP files, internal logs, or machine-specific paths.
 - Do not alter generated evidence merely to force a pass.
 
-External redistribution and contribution intake remain blocked until the
-project-level license is selected.
+Contributions are accepted under the Apache License 2.0. By submitting a
+contribution, you agree that it may be distributed under that license.

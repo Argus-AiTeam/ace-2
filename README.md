@@ -1,6 +1,6 @@
 # Argus Compute Engine 2 (ACE-2)
 
-**Latest private snapshot: `v0.2.0-alpha.1` (ACE-2 Alpha 2)**
+**Latest snapshot: `v0.2.0-alpha.1` (ACE-2 Alpha 2)**
 
 ACE-2 is an experimental Qwen2.5-0.5B W4A8 accelerator designed and
 iterated by [Argus](https://argusbot.cn/) under human-defined objectives and
@@ -80,8 +80,8 @@ KNOWN_LIMITATIONS.md  Explicit non-claims
 Git tags preserve previous source snapshots. `main` documents the latest
 snapshot; old source trees are not duplicated in directories.
 
-## License status
+## License
 
-The repository remains private while the owner selects a project license.
-See [LICENSE_PENDING.md](LICENSE_PENDING.md). No public redistribution rights
-are asserted.
+Licensed under the [Apache License 2.0](LICENSE). The license applies to ACE-2
+source, tools, and documentation in this repository, including preserved
+historical versions, unless a file explicitly states otherwise.
