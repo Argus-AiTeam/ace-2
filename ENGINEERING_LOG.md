@@ -1,5 +1,9 @@
 # ACE-2 Engineering Log
 
+> **Historical Alpha 1 record.** This document preserves the engineering state
+> before Alpha 2. Current support and metrics are in `STATUS.md`,
+> `CERTIFICATION.md`, and `CHANGELOG.md`.
+
 This is the end-to-end, public-safe engineering log for **Argus Compute Engine 2
 (ACE-2)**. It starts with the original mission definition, follows the
 construction of the Alpha engineering base, records the discovery of the first

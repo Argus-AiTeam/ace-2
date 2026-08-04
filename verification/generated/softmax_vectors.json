@@ -1,0 +1,55 @@
+{
+  "cases": [
+    {
+      "context_count": 1,
+      "exp_sum_q15": 32768,
+      "exp_weight_sha256": "91ca72ed8c6aa8ff1a57899318ad792a0fc24a71ce445dd886a32770ef19ef1e",
+      "max_score_q6_9": 37,
+      "name": "single_token_identity",
+      "probability_sha256": "91ca72ed8c6aa8ff1a57899318ad792a0fc24a71ce445dd886a32770ef19ef1e",
+      "score_sha256": "bbb3afa31af1adf2deb2cd3774f62df5807acf44963fc296e62de13b00380a6b"
+    },
+    {
+      "context_count": 2,
+      "exp_sum_q15": 65536,
+      "exp_weight_sha256": "a1654734507e06b221d51591d96357b1bc90b2cc3a7c2d326c1cc4579f4a0489",
+      "max_score_q6_9": 128,
+      "name": "two_token_tie",
+      "probability_sha256": "2b3a73c2f0fdd75a43f4eaa6da479d8e6f86adbbed4ff2cfd0e5f492cff648e2",
+      "score_sha256": "4f286c85a120de9771dc69b8bb19286acf3a1bc5de86ff06fd26bcd9691d8a7f"
+    },
+    {
+      "context_count": 3,
+      "exp_sum_q15": 73741,
+      "exp_weight_sha256": "6350d975c38a1899b74940b2f30e1c31a92eace7c316d7089ff23b5a8d92cb40",
+      "max_score_q6_9": 0,
+      "name": "three_token_rounding",
+      "probability_sha256": "4dbefcc3001a9819bcd06348a85be2936a71fc87c4f00de6269662fac3eef4e0",
+      "score_sha256": "292ffcc2ec01217fe69f45fe981a8b2344ac90524195ec6b23698f4f93d0d7d3"
+    },
+    {
+      "context_count": 8,
+      "exp_sum_q15": 106994,
+      "exp_weight_sha256": "b5ddcdb397cce36fd92645ca0db3e3f6114a5a0d37cec895e186da213aea15af",
+      "max_score_q6_9": 512,
+      "name": "eight_token_mixed",
+      "probability_sha256": "19614ad24cd5b4d803e36ac1168232b7f3284b6e4e7b85885c3cb67d943dc0e0",
+      "score_sha256": "bc61a9b58386c834d5237a470e3d83d3b9439faccb7529a54f70d95800eaee93"
+    },
+    {
+      "context_count": 5,
+      "exp_sum_q15": 32849,
+      "exp_weight_sha256": "6b8a799d13ba3d7eb5c2dc389324c35cc2bba7190b9918521fee3017d1f0d882",
+      "max_score_q6_9": 3072,
+      "name": "dominant_and_masked_tail",
+      "probability_sha256": "a837d553cd4893f034e3526accdbe1e044a4f0649dd6c0096ced44b364a693c7",
+      "score_sha256": "7829dc551e839d4f523594a14e7c8451280eef43fc4f07e7d2384c19584a6942"
+    }
+  ],
+  "context_max": 8,
+  "generator": "tools/gen_softmax_vectors.py",
+  "probability_format": "unsigned_int16 Q0.15",
+  "reference": "tools/ace2_softmax_reference.py",
+  "schema_version": 1,
+  "score_format": "signed_int16 Q6.9"
+}

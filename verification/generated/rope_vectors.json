@@ -1,0 +1,56 @@
+{
+  "beats": 56,
+  "cases": [
+    {
+      "input_sha256": "5663133ad434e8fe3583f2a6dd8b850f67a57ba3debc93d48817d07f9ed7d051",
+      "name": "position0_identity",
+      "output_sha256": "5663133ad434e8fe3583f2a6dd8b850f67a57ba3debc93d48817d07f9ed7d051",
+      "saturation_seen": false,
+      "scale_sha256": "ae3b509291ae1a8360d01b4296370cef99457bb4b5d17ce887782c6765b3bc87",
+      "sequence_position": 0,
+      "table_sha256": "56b9f62f64cdd304441dbc55c68457112d3ea3c674d225b5112046b9f0518542"
+    },
+    {
+      "input_sha256": "e72a5b797f490deb8bc7b09e64217f68cd5436b2da3d74d9be045b9f2e0ea68e",
+      "name": "quarter_turn_split_half",
+      "output_sha256": "b6f5dcfbc5ae74b721cbf3ebbc9126951ef5ee17111131e59ae71821fd2657ea",
+      "saturation_seen": false,
+      "scale_sha256": "ae3b509291ae1a8360d01b4296370cef99457bb4b5d17ce887782c6765b3bc87",
+      "sequence_position": 13,
+      "table_sha256": "80cd1f865d3549b8bc35415230a1a3f23f5fc26cce2bb34499bbcda27d6a75c5"
+    },
+    {
+      "input_sha256": "b19f6508796e598b4a4b4c4cfa9cbde9e50ef2654152ecfe08bd63b08bdb3f3c",
+      "name": "mixed_q9_scales",
+      "output_sha256": "743062facfed6ec8a22cf38c33f6cca616b9917547828b574c33a98475fdc05e",
+      "saturation_seen": false,
+      "scale_sha256": "6dcf5af820e993bba3b8dfca51b84d037530fb072666c73f1b59503315696bf6",
+      "sequence_position": 32767,
+      "table_sha256": "3da979590e4f4115f65f2a04694dd3aaaa8bd6625406514fa5a82894d3fc1eee"
+    },
+    {
+      "input_sha256": "4abd19c9378131e78a9edadb958e0a14bb9c8819dbb025ca80e304721eb749fe",
+      "name": "wide_q9_pre_rotation_and_output_saturation",
+      "output_sha256": "96172e7530bed04723b9b3926420e1b03ba1187453be598157a6074ecbb79d72",
+      "saturation_seen": true,
+      "scale_sha256": "245f1521d0779f63af31da4f8634e7ae2ea90c36522fba5fb835b130ab9e40b4",
+      "sequence_position": 8191,
+      "table_sha256": "efe33bcbf1314f549c16956ed10a6b23657f4cb28001fbd268fdd93f5aa92fdd"
+    },
+    {
+      "input_sha256": "ef4532b820f14d5928619d48839da0c1d4bb520912b74fdd9548523c4fb752dc",
+      "name": "range_safe_q9_359_signed_int8_extrema",
+      "output_sha256": "9d06a52a8d370aeb2f8972f3a01e1ad1dfc147e7e43b8577b79a1eb8c1584e66",
+      "saturation_seen": false,
+      "scale_sha256": "d91ea4e34542b8dba6183ca8ed6a1674bc780439f11971d6c1b8c3cb0d2293bc",
+      "sequence_position": 31,
+      "table_sha256": "957e540dc1c27424b92ca0276ebb79cab29ef9649389b435070ad8de725f1cae"
+    }
+  ],
+  "generator": "tools/gen_rope_vectors.py",
+  "head_dim": 64,
+  "hidden_size": 896,
+  "lanes": 16,
+  "reference": "tools/ace2_rope_reference.py",
+  "schema_version": 1
+}

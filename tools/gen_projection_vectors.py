@@ -14,6 +14,7 @@ from ace2_projection_reference import (
     PROJ_MAC_LANES,
     PROJ_MAX_GROUPS,
     PROJ_MAX_K,
+    PROJ_META_BIAS_LSB,
     ProjectionCase,
     pack_int8,
     pack_meta,
@@ -54,6 +55,7 @@ def _balanced_case() -> ProjectionCase:
         multipliers,
         right_shifts,
         output_zero_points,
+        [0] * HIDDEN_SIZE,
     )
 
 
@@ -76,6 +78,7 @@ def _saturation_case() -> ProjectionCase:
         multipliers,
         right_shifts,
         output_zero_points,
+        [0] * HIDDEN_SIZE,
     )
 
 
@@ -98,6 +101,7 @@ def _mlp_gate_case() -> ProjectionCase:
         multipliers,
         right_shifts,
         output_zero_points,
+        [0] * MLP_INTERMEDIATE_SIZE,
     )
 
 
@@ -120,6 +124,7 @@ def _mlp_down_case() -> ProjectionCase:
         multipliers,
         right_shifts,
         output_zero_points,
+        [0] * HIDDEN_SIZE,
     )
 
 
@@ -142,6 +147,34 @@ def _rmsnorm_consumer_case() -> ProjectionCase:
         [3 + (out_index % 3) for out_index in range(output_count)],
         [12 + (out_index & 1) for out_index in range(output_count)],
         [0] * output_count,
+        [0] * output_count,
+    )
+
+
+def _c4_v_bias_discriminator_case() -> ProjectionCase:
+    output_count = 128
+    output_channel = 30
+    activations = [[1] * HIDDEN_SIZE]
+    discriminator_weights = [7] * 154 + [0] * (HIDDEN_SIZE - 154)
+    weights = [[0] * HIDDEN_SIZE for _ in range(output_count)]
+    weights[output_channel] = discriminator_weights
+    multipliers = [1] * output_count
+    right_shifts = [0] * output_count
+    output_zero_points = [0] * output_count
+    bias_accumulators = [0] * output_count
+    multipliers[output_channel] = 1_350_522_781
+    right_shifts[output_channel] = 34
+    bias_accumulators[output_channel] = 593
+    return ProjectionCase(
+        "c4_v_bias_discriminator",
+        1,
+        HIDDEN_SIZE,
+        activations,
+        weights,
+        multipliers,
+        right_shifts,
+        output_zero_points,
+        bias_accumulators,
     )
 
 
@@ -152,6 +185,7 @@ def _cases() -> list[ProjectionCase]:
         _mlp_gate_case(),
         _mlp_down_case(),
         _rmsnorm_consumer_case(),
+        _c4_v_bias_discriminator_case(),
     ]
 
 
@@ -197,6 +231,15 @@ def main() -> None:
         "localparam integer PROJ_CASE_MLP_GATE = 2;",
         "localparam integer PROJ_CASE_MLP_DOWN = 3;",
         "localparam integer PROJ_CASE_RMSNORM_CONSUMER = 4;",
+        "localparam integer PROJ_CASE_C4_V_BIAS = 5;",
+        "localparam integer PROJ_C4_V_OUTPUT_CHANNEL = 30;",
+        "localparam signed [31:0] PROJ_C4_V_DOT_ACC = 32'sd1078;",
+        "localparam signed [31:0] PROJ_C4_V_BIAS_ACC = 32'sd593;",
+        "localparam signed [31:0] PROJ_C4_V_BIASED_ACC = 32'sd1671;",
+        "localparam signed [31:0] PROJ_C4_V_MULTIPLIER = 32'sd1350522781;",
+        "localparam [5:0] PROJ_C4_V_RIGHT_SHIFT = 6'd34;",
+        "localparam [7:0] PROJ_C4_V_DOT_ONLY_OUTPUT = 8'd85;",
+        "localparam [7:0] PROJ_C4_V_BIASED_OUTPUT = 8'd127;",
         f"localparam integer PROJ_MAX_ROWS = {max_rows};",
         f"localparam integer PROJ_MAX_K = {PROJ_MAX_K};",
         f"localparam integer PROJ_MAX_GROUPS = {PROJ_MAX_GROUPS};",
@@ -238,6 +281,7 @@ def main() -> None:
         input_digest = hashlib.sha256()
         weight_digest = hashlib.sha256()
         output_digest = hashlib.sha256()
+        bias_digest = hashlib.sha256()
         sv_lines.append(f"  // projection case {case_index}: {case.name}")
         sv_lines.append(f"  proj_case_rows[{case_index}] = 16'd{case.rows};")
         sv_lines.append(f"  proj_case_k[{case_index}] = 16'd{case.reduction_size};")
@@ -267,13 +311,16 @@ def main() -> None:
 
         for out_index in range(output_count):
             weight_digest.update(bytes(value & 0xF for value in case.weights[out_index]))
-            for group_index, chunk in enumerate(_chunks(case.weights[out_index], 16)):
+            for group_index, chunk in enumerate(_chunks(case.weights[out_index], 32)):
                 flat = weight_offsets[case_index] + out_index * weight_beats_per_output + group_index
                 sv_lines.append(f"  proj_weight_beats[{flat}] = {_hex(pack_w4(chunk), 128)};")
             meta_flat = meta_offsets[case_index] + out_index
+            bias_digest.update(
+                int(case.bias_accumulators[out_index]).to_bytes(4, "little", signed=True)
+            )
             sv_lines.append(
                 f"  proj_meta_beats[{meta_flat}] = "
-                f"{_hex(pack_meta(case.multipliers[out_index], case.right_shifts[out_index], case.output_zero_points[out_index]), 128)};"
+                f"{_hex(pack_meta(case.multipliers[out_index], case.right_shifts[out_index], case.output_zero_points[out_index], case.bias_accumulators[out_index]), 128)};"
             )
 
         records.append(
@@ -288,6 +335,10 @@ def main() -> None:
                 "saturation_seen": result.saturation_seen,
                 "input_sha256": input_digest.hexdigest(),
                 "weight_sha256": weight_digest.hexdigest(),
+                "bias_accumulator_sha256": bias_digest.hexdigest(),
+                "nonzero_bias_accumulators": sum(
+                    value != 0 for value in case.bias_accumulators
+                ),
                 "output_sha256": output_digest.hexdigest(),
                 "weight_beats_per_output": weight_beats_per_output,
                 "weight_bytes_per_output": projection_weight_bytes_per_output(case.reduction_size),
@@ -309,6 +360,31 @@ def main() -> None:
                 "projection_max_input_beats": max_input_beats,
                 "projection_max_output_beats": max_output_beats,
                 "projection_max_groups": PROJ_MAX_GROUPS,
+                "projection_metadata_layout": {
+                    "record_bits": 128,
+                    "multiplier_s32": [31, 0],
+                    "right_shift_u6": [37, 32],
+                    "reserved_zero_low": [39, 38],
+                    "output_zero_point_s8": [47, 40],
+                    "bias_accumulator_s32": [79, PROJ_META_BIAS_LSB],
+                    "reserved_zero_high": [127, 80],
+                },
+                "c4_v_bias_discriminator": {
+                    "coordinate": [0, 0, 13, 30],
+                    "case": "c4_v_bias_discriminator",
+                    "reduction_size": HIDDEN_SIZE,
+                    "output_channel": 30,
+                    "dot_accumulator": 1078,
+                    "bias_accumulator": 593,
+                    "biased_accumulator": 1671,
+                    "multiplier": 1_350_522_781,
+                    "right_shift": 34,
+                    "dot_only_output": 85,
+                    "dot_only_saturation": False,
+                    "biased_rounded_raw": 131,
+                    "biased_output": 127,
+                    "biased_saturation": True,
+                },
                 "groups_per_weight_beat": PROJ_GROUPS_PER_WEIGHT_BEAT,
                 "total_weight_beats": total_weight_beats,
                 "total_meta_beats": total_meta_beats,

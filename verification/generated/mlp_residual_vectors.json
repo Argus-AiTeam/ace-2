@@ -1,0 +1,46 @@
+{
+  "beats": 56,
+  "cases": [
+    {
+      "down_projection_sha256": "30044532cf076d99401aca656f9e333f9e89994ecbf77b45e5cf43cf339472da",
+      "name": "post_mlp_balanced",
+      "negative_saturation_count": 11,
+      "output_sha256": "27d627272bb3b78c7920b768b73054a3c6ca2a0fe9a91f538b22982b7cbdb37a",
+      "positive_saturation_count": 15,
+      "residual_stream_sha256": "e2ba096f16990e8be2d12546a5e3374e516cd13354958d9f50b1d3b0b42e3e19",
+      "saturation_seen": true
+    },
+    {
+      "down_projection_sha256": "355998ec767826030da7423c20c34ad715ec4050335e3d8da748ce8de028f75f",
+      "name": "post_mlp_mixed_saturation",
+      "negative_saturation_count": 448,
+      "output_sha256": "a2723fcfe7931b20cf8d28faaade7bd605861ca70ce9008c8d562608a6d2555f",
+      "positive_saturation_count": 448,
+      "residual_stream_sha256": "85413eaa7284dd02668c1c87cb1fe3a3d908a799b5608c386350ee71a672a803",
+      "saturation_seen": true
+    },
+    {
+      "down_projection_sha256": "833a11911a8b55db5b0a44b7533bdd48e17c1d003204cd742585b0c5086a036e",
+      "name": "post_mlp_cancellation",
+      "negative_saturation_count": 0,
+      "output_sha256": "d54f02b97ed5bc2a642756268b41d4b8f7a077e73224e1580d22436834a14db5",
+      "positive_saturation_count": 0,
+      "residual_stream_sha256": "a91cdd8657140c7a5bcb73702b8a231ae513dc28d54673c0215be7d039fa62df",
+      "saturation_seen": false
+    },
+    {
+      "down_projection_sha256": "63e8b97c34b1176082fb061c9fbf513618c76d55f367949e3a83bcfa745c7a3e",
+      "name": "post_mlp_seeded_full_shape",
+      "negative_saturation_count": 121,
+      "output_sha256": "f018201f652ececc71cc4f3d4840c8c7b7cd22678132ddc64dfd35faaa65c051",
+      "positive_saturation_count": 117,
+      "residual_stream_sha256": "dec46ed1b9a83c927d038bb3c1b75c0194e7d17f32169f1c7df03bd58689dd62",
+      "saturation_seen": true
+    }
+  ],
+  "generator": "tools/gen_mlp_residual_vectors.py",
+  "hidden_size": 896,
+  "operator": "layer_0.mlp_residual_add",
+  "reference": "tools/ace2_mlp_residual_reference.py",
+  "schema_version": 1
+}

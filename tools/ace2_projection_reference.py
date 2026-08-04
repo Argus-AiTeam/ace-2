@@ -12,9 +12,10 @@ MLP_INTERMEDIATE_SIZE = 4864
 PROJ_MAC_LANES = 4
 PROJ_MAX_K = MLP_INTERMEDIATE_SIZE
 PROJ_MAX_GROUPS = PROJ_MAX_K // PROJ_MAC_LANES
-PROJ_GROUPS_PER_WEIGHT_BEAT = 16 // PROJ_MAC_LANES
+PROJ_GROUPS_PER_WEIGHT_BEAT = 32 // PROJ_MAC_LANES
 ACT_WIDTH = 8
 WEIGHT_WIDTH = 4
+PROJ_META_BIAS_LSB = 48
 
 
 @dataclass(frozen=True)
@@ -27,6 +28,7 @@ class ProjectionCase:
     multipliers: list[int]
     right_shifts: list[int]
     output_zero_points: list[int]
+    bias_accumulators: list[int]
 
 
 @dataclass(frozen=True)
@@ -77,8 +79,22 @@ def pack_w4(values: Iterable[int]) -> int:
     return packed
 
 
-def pack_meta(multiplier: int, right_shift: int, output_zero_point: int) -> int:
-    return (multiplier & 0xFFFFFFFF) | ((right_shift & 0x3F) << 32) | ((output_zero_point & 0xFF) << 40)
+def pack_meta(
+    multiplier: int,
+    right_shift: int,
+    output_zero_point: int,
+    bias_accumulator: int,
+) -> int:
+    if not 0 <= right_shift <= 63:
+        raise ValueError(f"projection right shift {right_shift} is outside unsigned-6 range")
+    if not -(1 << 31) <= bias_accumulator < (1 << 31):
+        raise OverflowError("projection bias accumulator exceeds signed-32")
+    return (
+        (multiplier & 0xFFFFFFFF)
+        | ((right_shift & 0x3F) << 32)
+        | ((output_zero_point & 0xFF) << 40)
+        | ((bias_accumulator & 0xFFFFFFFF) << PROJ_META_BIAS_LSB)
+    )
 
 
 def projection_groups(reduction_size: int) -> int:
@@ -88,9 +104,9 @@ def projection_groups(reduction_size: int) -> int:
 
 
 def projection_weight_beats_per_output(reduction_size: int) -> int:
-    if reduction_size % 16:
+    if reduction_size % 32:
         raise ValueError(f"reduction size {reduction_size} is not divisible by packed W4 beat width")
-    return reduction_size // 16
+    return reduction_size // 32
 
 
 def projection_weight_bytes_per_output(reduction_size: int) -> int:
@@ -102,7 +118,11 @@ def reference_projection(case: ProjectionCase) -> ProjectionResult:
     saturation_seen = False
     output_count = len(case.weights)
     if not (
-        len(case.multipliers) == len(case.right_shifts) == len(case.output_zero_points) == output_count
+        len(case.multipliers)
+        == len(case.right_shifts)
+        == len(case.output_zero_points)
+        == len(case.bias_accumulators)
+        == output_count
     ):
         raise ValueError(f"{case.name}: metadata length does not match weight output count")
     for row in range(case.rows):
@@ -118,7 +138,12 @@ def reference_projection(case: ProjectionCase) -> ProjectionResult:
                 raise ValueError(
                     f"{case.name}: output {out_index} has {len(weights)} weights, expected {case.reduction_size}"
                 )
-            acc = sum(a * w for a, w in zip(act, weights, strict=True))
+            dot_acc = sum(a * w for a, w in zip(act, weights, strict=True))
+            acc = dot_acc + to_sint(case.bias_accumulators[out_index], 32)
+            if not -(1 << 31) <= acc < (1 << 31):
+                raise OverflowError(
+                    f"{case.name}: output {out_index} dot plus bias exceeds signed-32"
+                )
             scaled = round_shift_even(acc * to_sint(case.multipliers[out_index], 32), case.right_shifts[out_index])
             clipped, saturated = saturate_int8(scaled + to_sint(case.output_zero_points[out_index], ACT_WIDTH))
             row_outputs.append(clipped)

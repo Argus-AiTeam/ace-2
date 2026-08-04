@@ -1,0 +1,142 @@
+{
+  "cases": [
+    {
+      "boundary_hits": {
+        "lut_clip_high": 0,
+        "lut_clip_low": 0,
+        "negative_saturation": 0,
+        "positive_saturation": 0,
+        "tie_even_increment": 0,
+        "tie_even_keep": 0
+      },
+      "input_beats": 1,
+      "length": 1,
+      "multiplier": 1,
+      "name": "packed_single_negative",
+      "output_beats": 1,
+      "output_sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "output_zero_point": 0,
+      "right_shift": 12,
+      "saturation_seen": false,
+      "source_gate_sha256": "76be8b528d0075f7aae98d6fa57a6d3c83ae480a8469e668d7b0af968995ac71",
+      "source_up_sha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+    },
+    {
+      "boundary_hits": {
+        "lut_clip_high": 0,
+        "lut_clip_low": 0,
+        "negative_saturation": 0,
+        "positive_saturation": 0,
+        "tie_even_increment": 1,
+        "tie_even_keep": 1
+      },
+      "input_beats": 1,
+      "length": 2,
+      "multiplier": 1,
+      "name": "packed_tie_even_rounding",
+      "output_beats": 1,
+      "output_sha256": "3315f44da4a7aaaf8d84382c7583233f697787f5871294ed49cd41207f7375a0",
+      "output_zero_point": 0,
+      "right_shift": 5,
+      "saturation_seen": false,
+      "source_gate_sha256": "924d46482608156796c55cf9f59843a261c720c001d9859321523ca9c794151e",
+      "source_up_sha256": "285714e86c26cdee74aa4c677370e6bf19f34ff0f689425341b2c7d2b754f324"
+    },
+    {
+      "boundary_hits": {
+        "lut_clip_high": 0,
+        "lut_clip_low": 0,
+        "negative_saturation": 0,
+        "positive_saturation": 1,
+        "tie_even_increment": 0,
+        "tie_even_keep": 0
+      },
+      "input_beats": 1,
+      "length": 1,
+      "multiplier": 1,
+      "name": "packed_positive_saturation",
+      "output_beats": 1,
+      "output_sha256": "620bfdaa346b088fb49998d92f19a7eaf6bfc2fb0aee015753966da1028cb731",
+      "output_zero_point": 0,
+      "right_shift": 0,
+      "saturation_seen": true,
+      "source_gate_sha256": "76be8b528d0075f7aae98d6fa57a6d3c83ae480a8469e668d7b0af968995ac71",
+      "source_up_sha256": "76be8b528d0075f7aae98d6fa57a6d3c83ae480a8469e668d7b0af968995ac71"
+    },
+    {
+      "boundary_hits": {
+        "lut_clip_high": 0,
+        "lut_clip_low": 0,
+        "negative_saturation": 1,
+        "positive_saturation": 0,
+        "tie_even_increment": 0,
+        "tie_even_keep": 0
+      },
+      "input_beats": 1,
+      "length": 1,
+      "multiplier": 1,
+      "name": "packed_negative_saturation",
+      "output_beats": 1,
+      "output_sha256": "76be8b528d0075f7aae98d6fa57a6d3c83ae480a8469e668d7b0af968995ac71",
+      "output_zero_point": 0,
+      "right_shift": 0,
+      "saturation_seen": true,
+      "source_gate_sha256": "76be8b528d0075f7aae98d6fa57a6d3c83ae480a8469e668d7b0af968995ac71",
+      "source_up_sha256": "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+    },
+    {
+      "boundary_hits": {
+        "lut_clip_high": 0,
+        "lut_clip_low": 0,
+        "negative_saturation": 0,
+        "positive_saturation": 0,
+        "tie_even_increment": 0,
+        "tie_even_keep": 0
+      },
+      "input_beats": 2,
+      "length": 17,
+      "multiplier": 17,
+      "name": "packed_lane_order",
+      "output_beats": 2,
+      "output_sha256": "aabf6c0c582e4e0d0db817c60d30ac67e7d236ce9ed51ad899c7185082816210",
+      "output_zero_point": -3,
+      "right_shift": 12,
+      "saturation_seen": false,
+      "source_gate_sha256": "c42492b42c66e18e02c7df25be55640440c0e60a94ff3c6648dc9636a0a00537",
+      "source_up_sha256": "d8bd8a148cba1130c22ea01733deb3c16efb14d8fef157f1e2510d98471830ea"
+    },
+    {
+      "boundary_hits": {
+        "lut_clip_high": 0,
+        "lut_clip_low": 0,
+        "negative_saturation": 0,
+        "positive_saturation": 0,
+        "tie_even_increment": 19,
+        "tie_even_keep": 0
+      },
+      "input_beats": 304,
+      "length": 4864,
+      "multiplier": 1,
+      "name": "packed_full_mlp_intermediate",
+      "output_beats": 304,
+      "output_sha256": "8ed77284a7d067896d63d945dafa7fa8ea17d7f56f640008b243983c0af6be23",
+      "output_zero_point": -2,
+      "right_shift": 12,
+      "saturation_seen": false,
+      "source_gate_sha256": "aa68c0b762a0848bcc195b915d06c8407949e8b1a89aed62995994d88c4663c3",
+      "source_up_sha256": "d111034bbd932343ecfae3acbc39c8d7f24366ffc210542ea7f2c6aa9cfc6295"
+    }
+  ],
+  "core_adapter": "ordered lower eight then upper eight, sign-extended to signed int16",
+  "full_case_index": 5,
+  "generator": "tools/gen_silu_gate_vectors.py",
+  "input_format": "packed signed int8, sixteen lanes per 128-bit beat",
+  "reference": "tools/ace2_silu_gate_reference.py",
+  "required_boundary_cases": {
+    "negative_saturation": "packed_negative_saturation",
+    "positive_saturation": "packed_positive_saturation",
+    "tie_even_increment": "packed_tie_even_rounding",
+    "tie_even_keep": "packed_tie_even_rounding"
+  },
+  "schema_version": 1
+}

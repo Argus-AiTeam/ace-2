@@ -1,0 +1,65 @@
+{
+  "beats": 56,
+  "cases": [
+    {
+      "lhs_sha256": "d54f02b97ed5bc2a642756268b41d4b8f7a077e73224e1580d22436834a14db5",
+      "name": "zero_plus_ramp",
+      "output_sha256": "92b1b501d9416b33df1c56615944788545de8f719e87d5a31b7592923139d893",
+      "rhs_sha256": "92b1b501d9416b33df1c56615944788545de8f719e87d5a31b7592923139d893",
+      "saturation_seen": false
+    },
+    {
+      "lhs_sha256": "c667b2afb8f85b16f945b285baf1f7374451ec551f81f7e239598a6dc98e3d44",
+      "name": "cancel",
+      "output_sha256": "d54f02b97ed5bc2a642756268b41d4b8f7a077e73224e1580d22436834a14db5",
+      "rhs_sha256": "159c921a09371b60df3c15b05e39c0cf8fb690679ee7a92b3e27a41f91623f46",
+      "saturation_seen": false
+    },
+    {
+      "lhs_sha256": "4aa34f40c2173a1c2b903ff3c293a1790078d2bb6982ccef3572c50bc7b2ea38",
+      "name": "positive_saturation",
+      "output_sha256": "7224012f2e6cfdcd164dd86ffcda13482006ac67356d17c826a41b4953688c50",
+      "rhs_sha256": "8758bb90407d468e39e6c4a2c30230e56cef938eea73e6b6a8da814d6127a199",
+      "saturation_seen": true
+    },
+    {
+      "lhs_sha256": "2b4dd3631ee0d2c1064a0a80543ad544de53525db2fd1fc869b6aa91fb6028c9",
+      "name": "negative_saturation",
+      "output_sha256": "1ce88e0518fb12d7cffcbade11b5900c9abea76abca8756ab2d3ade363732f93",
+      "rhs_sha256": "a14ee69233bf067b332f740649574c103649c2dcff1e1134882a3f0a390d3842",
+      "saturation_seen": true
+    },
+    {
+      "lhs_sha256": "a50d2aa0a49f0f7054f005c683a507db8fca943f113a77061417168d0ecaa8bf",
+      "name": "seeded_random_0",
+      "output_sha256": "c599135b727058235cc0c7d37ea1d55d1f97e2de44c6eb646ea5c07eee127357",
+      "rhs_sha256": "656d617dcdd5e61e771eee9e3e9cef12bfe69e4ef1f302718d12fe487109292d",
+      "saturation_seen": true
+    },
+    {
+      "lhs_sha256": "fcf32a8fa61f2a8b8cd410b606f34e851c5c60ef7d64e8059c284dbb3342bc42",
+      "name": "seeded_random_1",
+      "output_sha256": "40c412ac047fe83f3a0c2d7022b28297ae46903d6c8eb8d8801a58255b9f2da7",
+      "rhs_sha256": "41749a58278bf44ba8643c9d0dd235e57cf9da96c87569dde94329987e276265",
+      "saturation_seen": true
+    },
+    {
+      "lhs_sha256": "c99e300dadcb81f81c4fae30a826abdfefec6c7f5b5afefdb158766ae92ea622",
+      "name": "seeded_random_2",
+      "output_sha256": "44e658c4967bb0e80a387c6804a2e8cf93447645975d8b139750d26e598203ca",
+      "rhs_sha256": "facdced796fb56ec26360a4088575e1aa2d9f061dbda36f6f447ac961ea59bec",
+      "saturation_seen": true
+    },
+    {
+      "lhs_sha256": "3d060ac4125f42edea68e31ee1141d4cba37dbd78c1233d601378d0aa913489e",
+      "name": "seeded_random_3",
+      "output_sha256": "6be0870066bbe9c0cc0f2bd1886723c5bc55369209b61ca36697c29caac35cae",
+      "rhs_sha256": "06ee5000bd3dd992f2c7374ef3be04d268682d7012fdc6b5157d2a9538c8dd26",
+      "saturation_seen": true
+    }
+  ],
+  "generator": "tools/gen_residual_vectors.py",
+  "hidden_size": 896,
+  "reference": "tools/ace2_residual_reference.py",
+  "schema_version": 1
+}

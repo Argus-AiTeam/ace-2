@@ -1,0 +1,111 @@
+{
+  "beats_per_vector": 4,
+  "cases": [
+    {
+      "context_count": 1,
+      "core_score_sha256": "f197692810d457e297fce9c5653b02581ff99a50852370f29d7e5fe47d9d37e6",
+      "k_sha256": "6af29ae0dad90f3ae8e4e25993a4773a92ccbe9e896a59de79d028d8d104938f",
+      "key_scale": 0.0625,
+      "metadata_hex": "00000000000000000021400000000167",
+      "multiplier": 1073741824,
+      "name": "single_token_mixed_sign",
+      "q_sha256": "d5f3ece35ffe22a26a829aafdd003b3d9808efa4ae3ede4df58ec2d324c9befa",
+      "query_head": 0,
+      "query_scale": 0.03125,
+      "right_shift": 33,
+      "saturation_seen": false,
+      "score_sha256": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7"
+    },
+    {
+      "context_count": 3,
+      "core_score_sha256": "025fc246f13759c192cbbae2a68f2b59b6478f21b31a05d77483a87e417906dd",
+      "k_sha256": "a6a1fb6ce9de7c2006d097e7532f2a1d13c82f96c1f52bbd729eb1fc1bee0302",
+      "key_scale": 0.0625,
+      "metadata_hex": "000000000000000000a1400000000167",
+      "multiplier": 1073741824,
+      "name": "round_to_even_edges",
+      "q_sha256": "5f2a2f7b0eca13f00f1941f90da5a9529204bba62924cce6b7ac814e05d6357e",
+      "query_head": 1,
+      "query_scale": 0.03125,
+      "right_shift": 33,
+      "saturation_seen": false,
+      "score_sha256": "b4e07c90bb40a057a2b1092a772022a9cd785345085a50cd438e6a75df02b72a"
+    },
+    {
+      "context_count": 8,
+      "core_score_sha256": "5478a5f5a0adcad8381ceda504f9c04eb63eff4f82555944a2b172db5250dad8",
+      "k_sha256": "f842a62716a530beed19c101632bbd13cf047e37c01327f1066104844a2bf835",
+      "key_scale": 0.0625,
+      "metadata_hex": "00000000000000000121400000000167",
+      "multiplier": 1073741824,
+      "name": "eight_token_saturation_and_mixed",
+      "q_sha256": "9abcdb71d53e6c2e37b192440d5e6ce732ec5f8fb00c4b828aad69a9616ca3e6",
+      "query_head": 2,
+      "query_scale": 0.03125,
+      "right_shift": 33,
+      "saturation_seen": true,
+      "score_sha256": "67cad2e1929ca819e521acba0ca12347dea74eadae5c2a3b122fbe0c506bfc48"
+    },
+    {
+      "context_count": 4,
+      "core_score_sha256": "d478b81a2cb285daee8ec7a1091fe1f3c8a447e5caa1eb3752d6cdffb6e9fd50",
+      "k_sha256": "fce76bbab2448047602556d90b6e18cfbb4134fac295e7faf7da53c9dd4dcc09",
+      "key_scale": 1.25,
+      "metadata_hex": "00000000000000000199780000000167",
+      "multiplier": 2013265920,
+      "name": "unequal_qk_scales_dynamic_requantization",
+      "q_sha256": "8667e718294e9e0df1d30600ba3eeb201f764aad2dad72748643e4a285e1d1f7",
+      "query_head": 3,
+      "query_scale": 0.75,
+      "right_shift": 25,
+      "saturation_seen": false,
+      "score_sha256": "135e1db76667dd59d9c48d63070f96d2f3f2c0e8db41433a361a5e92c9ad3edb"
+    }
+  ],
+  "context_max": 8,
+  "generator": "tools/gen_attention_score_vectors.py",
+  "head_dim": 64,
+  "invalid_metadata_cases": [
+    {
+      "expected_error": "numeric_overflow",
+      "expected_output_writes": 0,
+      "name": "negative_multiplier"
+    },
+    {
+      "expected_error": "numeric_overflow",
+      "expected_output_writes": 0,
+      "name": "nonzero_reserved_bits"
+    },
+    {
+      "expected_error": "numeric_overflow",
+      "expected_output_writes": 0,
+      "name": "zero_conversion"
+    },
+    {
+      "expected_error": "numeric_overflow",
+      "expected_output_writes": 0,
+      "name": "query_head_id_mismatch"
+    },
+    {
+      "expected_error": "numeric_overflow",
+      "expected_output_writes": 0,
+      "name": "kv_head_mapping_mismatch"
+    },
+    {
+      "expected_error": "numeric_overflow",
+      "expected_output_writes": 0,
+      "name": "zero_multiplier"
+    }
+  ],
+  "mac_lanes": 1,
+  "metadata_format": {
+    "mapped_kv_head": "bit_54_equals_floor_query_head_divided_by_7",
+    "multiplier": "bits_47_16_positive_signed_int32",
+    "query_head": "bits_58_55_equal_record_index_0_to_13",
+    "reserved": "bits_127_59_zero",
+    "right_shift": "bits_53_48_unsigned_0_to_63",
+    "rope_conversion": "bits_15_0_positive_signed_int16_Q6.9"
+  },
+  "reference": "tools/ace2_attention_score_reference.py",
+  "schema_version": 2
+}

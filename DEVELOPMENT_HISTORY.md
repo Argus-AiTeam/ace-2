@@ -1,5 +1,8 @@
 # Development History to the ACE-2 Alpha
 
+> **Historical Alpha 1 snapshot.** This document intentionally ends at the
+> first release. Alpha 2 changes are summarized in `CHANGELOG.md`.
+
 This is a curated, public-safe engineering history of **Argus Compute Engine 2
 (ACE-2)** from mission definition through the `v0.1.0-alpha` package cut. It is
 not a raw agent transcript. Private prompts, credentials, machine paths,

@@ -1,5 +1,8 @@
 # ACE-2 Beta Engineering Log
 
+> **Historical pre-Alpha-2 candidate ledger.** Its unresolved boundaries are
+> not the current release status. See `STATUS.md` and `CERTIFICATION.md`.
+
 This is the detailed, public-safe candidate ledger for the numerical repair
 work that continues from the ACE-2 Alpha baseline. It records what was built,
 which gates ran, the measured result, why a candidate was accepted or rejected,

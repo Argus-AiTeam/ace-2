@@ -1,0 +1,49 @@
+{
+  "cases": [
+    {
+      "context_count": 9,
+      "exp_sum_q15": 141519,
+      "max_score_q6_9": 512,
+      "name": "first_cross_tile_9",
+      "output_sha256": "6b1772dc830b4091b56a67c95c07ca67b32ad1258987394d3ba80ef1f3f30e27",
+      "probability_sha256": "b5b0df6f897eeb9656b9393cb5df79f38d2d96f18ab5a63a486be990a100cc22",
+      "saturation_seen": false,
+      "score_sha256": "4a981e80b6baa5660c8c95c5d27eac87af0c4f1725c1fa01f318d1006bb5ab1f",
+      "tile_count": 2,
+      "value_sha256": "de2f3783ff5941e2b0f6fcdafd33d24c66d5899962b77f2fed9b2637908b833a"
+    },
+    {
+      "context_count": 16,
+      "exp_sum_q15": 117962,
+      "max_score_q6_9": 970,
+      "name": "exact_two_tiles_16",
+      "output_sha256": "35d1f9f0b6de61fb7d4c26992a96af0e6366bc581650c529fbebc083b3f6b055",
+      "probability_sha256": "c73d9e1731c21bd514e5c7b7d4cd80da42c8a334ae2191d0b67f04aef802a3b8",
+      "saturation_seen": false,
+      "score_sha256": "4e50f19cfd92e693f9cd785c30843acd20c568f3b285fa9116808a966fec9d36",
+      "tile_count": 2,
+      "value_sha256": "dba6a36f77af2266eb8bbc76750d99926a00ded6401595e3315a0baaf544eec2"
+    },
+    {
+      "context_count": 17,
+      "exp_sum_q15": 83626,
+      "max_score_q6_9": 1992,
+      "name": "partial_third_tile_17",
+      "output_sha256": "3d814546b99e0691d3917542178cae8931051936680ea1af54d7e1944940d6e7",
+      "probability_sha256": "b81c5a0a27f3d12bd751a26ca1e3864f54c7b442896eebccb5b930ab11223627",
+      "saturation_seen": false,
+      "score_sha256": "d52b05ce07e33b81f692bf57ae2de2ce1c24061c1fc304cef4cd3f88c9aa3749",
+      "tile_count": 3,
+      "value_sha256": "606923c83fb9b5baa583dc8e9e3c5396656f748e06dceb67cc043863a9aeac63"
+    }
+  ],
+  "context_max": 32768,
+  "generator": "tools/gen_attention_compose_vectors.py",
+  "probability_format": "unsigned_int16 Q0.15",
+  "reference": "tools/ace2_attention_compose_reference.py",
+  "rounding": "ties_to_even",
+  "schema_version": 1,
+  "score_format": "signed_int16 Q6.9",
+  "tile_size": 8,
+  "value_format": "signed_int8"
+}

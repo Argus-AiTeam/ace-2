@@ -1,0 +1,87 @@
+{
+  "beats": 56,
+  "cases": [
+    {
+      "gain_sha256": "2df6e83dfb4b549f341e4d2328e4dff9832d58932b7521bab937e23ab0458da0",
+      "input_sha256": "d54f02b97ed5bc2a642756268b41d4b8f7a077e73224e1580d22436834a14db5",
+      "inv_rms_q30": 1073741824,
+      "name": "residual_zero",
+      "output_scale": 0.0234375,
+      "output_sha256": "d54f02b97ed5bc2a642756268b41d4b8f7a077e73224e1580d22436834a14db5",
+      "saturation_seen": false,
+      "sumsq": 0,
+      "weight_sha256": "b1aec7af90c3d8d0d36edcd278d9ead2562946422df15f7d674040fea5d1a273"
+    },
+    {
+      "gain_sha256": "204908db50b55fb3809a7d4019341f3ef3bf7a3b80ad48992c96e9c1c251b9b5",
+      "input_sha256": "0ae169cafd366e9c9762c6b97e42feda6d2dc23b988805c2cd0ac7255083150d",
+      "inv_rms_q30": 11184810,
+      "name": "residual_alternating",
+      "output_scale": 0.0390625,
+      "output_sha256": "1545453a90798b00e311bbc718db34daa5922b10b65564c712cc4f3a87c31ac7",
+      "saturation_seen": false,
+      "sumsq": 8257536,
+      "weight_sha256": "b1aec7af90c3d8d0d36edcd278d9ead2562946422df15f7d674040fea5d1a273"
+    },
+    {
+      "gain_sha256": "5970ca051aa61350e1d829bf54b69370a770fc0bbdf854de6a33b1ed0b364245",
+      "input_sha256": "76b3c0cdc6c699ea770ae5ec8fc5302d3a3617257e8ab55ea91e98527cd2af8d",
+      "inv_rms_q30": 14316557,
+      "name": "post_attention_seeded_0",
+      "output_scale": 0.03125,
+      "output_sha256": "d68ca3cc2a8beed762ccf0b3a8b2f8bb6f8880192243696b8be949ae605cb7d2",
+      "saturation_seen": false,
+      "sumsq": 4991849,
+      "weight_sha256": "460c58fd28d41f626665bdee845d935747325aac7110484bcf0a5aea49f0b9de"
+    },
+    {
+      "gain_sha256": "1237134c96dc4232a06403204b39d165e259339152f6dc9434ede93296a2377a",
+      "input_sha256": "a754774d97c4458f81015165a1754fdee4b5d8282fdf18ffb06cf49e4f06f13a",
+      "inv_rms_q30": 14510024,
+      "name": "post_attention_seeded_1",
+      "output_scale": 0.046875,
+      "output_sha256": "897947d015b7e1958591b01bb298d44b9e2f24112c09f51524b2aa893fbeebe0",
+      "saturation_seen": false,
+      "sumsq": 4856370,
+      "weight_sha256": "f24baa74e7d21406d6a4664d09956369c6862f8428126cf19011513e80cb3c85"
+    },
+    {
+      "gain_sha256": "fa0b63da875c1d5cbf6ed389b1d11fdee08d04877be9ed80f4aed40f3ca10f0d",
+      "input_sha256": "f8c52c2b057649d09404baa1c37630fce31034dcb7256e5946d87c26732710fb",
+      "inv_rms_q30": 14128181,
+      "name": "post_attention_seeded_2",
+      "output_scale": 0.015625,
+      "output_sha256": "820676832db015cdbc843fc07f6a906d4bba2b14dae2b14f06110a8eaefccada",
+      "saturation_seen": false,
+      "sumsq": 5054573,
+      "weight_sha256": "f11f30b47cde221a9cf43b043a41ec5f6aace7020e55a77c8105195a5a79d345"
+    },
+    {
+      "gain_sha256": "9e11e631ebc6db9f841634ee4359ef18b807bbd3053a5640f066ea2ed87dcb8f",
+      "input_sha256": "7e1302847ba75c01e80ce78060d92dbb12b6ed0eaba59491cc768d23938e4023",
+      "inv_rms_q30": 14316557,
+      "name": "post_attention_seeded_3",
+      "output_scale": 0.0390625,
+      "output_sha256": "ee66f09dd9fb0f71b217690cf34161b4d7018eaa5013477cae8fe21271d8798e",
+      "saturation_seen": false,
+      "sumsq": 5020447,
+      "weight_sha256": "0701546613efdd32ca8b3b154d0933a73febadb9b912d7d8b3535aafbfe87f08"
+    }
+  ],
+  "generator": "tools/gen_post_attention_rmsnorm_vectors.py",
+  "hidden_size": 896,
+  "operator": "layer_0.post_attention_rmsnorm",
+  "output_format": {
+    "gain_metadata": "signed_int16_Q7.8_of_weight_divided_by_output_scale",
+    "rounding": "nearest_ties_to_even",
+    "saturation": [
+      -128,
+      127
+    ],
+    "scale": "static_per_test_tensor",
+    "scale_derivation": "calibrated_BF16_output_absmax_divided_by_127",
+    "storage": "signed_int8"
+  },
+  "reference": "tools/ace2_rmsnorm_reference.py",
+  "schema_version": 2
+}

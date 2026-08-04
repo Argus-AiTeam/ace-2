@@ -1,0 +1,59 @@
+{
+  "accumulator_format": "signed_int32",
+  "cases": [
+    {
+      "accumulator_sha256": "50bbd16983c97e8cec04fd0beb79a2d47b6c27d90a4ecb0e91b46004f9938d58",
+      "context_count": 1,
+      "name": "single_token_identity",
+      "output_sha256": "d7fd8d136951b97a6396643539060e36e1371aefb1ca535341b14fa1ec5db659",
+      "probability_sha256": "085edad400785fca7e7e90b1fac4beb776fc2beee5aa24352d5f39b5d57efcad",
+      "saturation_seen": false,
+      "value_sha256": "d7fd8d136951b97a6396643539060e36e1371aefb1ca535341b14fa1ec5db659"
+    },
+    {
+      "accumulator_sha256": "91a7e30220644bca982b92f9775b3412130e5e4169a980de27bf6426516e592e",
+      "context_count": 2,
+      "name": "two_token_ties_to_even",
+      "output_sha256": "2978fc7783f104a9f625efe7bab2ec67044c672cf5f3ea1c3a31cb59f7c20ae9",
+      "probability_sha256": "da4146ab366b94ee64b586140e1c9c2adedefd03f1af708eb04d3daf9fc6c12f",
+      "saturation_seen": false,
+      "value_sha256": "99ade72dea61681eb0ec2e92dd3dd30ca0cb9a2c35cf62b914291e8f0ce7a61e"
+    },
+    {
+      "accumulator_sha256": "cdec45e779bec51ffa121b8aca7f9d834b9497592cea1f1cc9a439c21cd9c471",
+      "context_count": 8,
+      "name": "eight_token_mixed",
+      "output_sha256": "888e605dd06ad40feccccc6666d1a126705b95ea3a065d6190102819fc6340a9",
+      "probability_sha256": "f14c056a3882f3010273f3bd713fa4227b1dcba2864dc6523f757271788b9eac",
+      "saturation_seen": false,
+      "value_sha256": "f93851d9331f8bd40b809991178b90967a952fe8e3c1361de68f559285247b22"
+    },
+    {
+      "accumulator_sha256": "98146b4e9fb4ee47bfc8a8490a3b71d22135f00353e426e51f219d548ff871bd",
+      "context_count": 2,
+      "name": "positive_saturation",
+      "output_sha256": "e0205519f6bcde4208fd5e9aece72f518eb4ce5879ca1832a6cb221d534a2d7e",
+      "probability_sha256": "ad95131bc0b799c0b1af477fb14fcf26a6a9f76079e48bf090acb7e8367bfd0e",
+      "saturation_seen": true,
+      "value_sha256": "ae16eb1567bb016bb1c5e879f0d88088c88110d591521931e3f91e0964b12e43"
+    },
+    {
+      "accumulator_sha256": "2efb822460e7cad75e723ad71942b99881446681289dff543c35bf69543ebf2c",
+      "context_count": 2,
+      "name": "negative_saturation",
+      "output_sha256": "1df1b7ce1fd8fcbe20cde61646875e54fe38d8945ea7911afd59e025cc520a68",
+      "probability_sha256": "ad95131bc0b799c0b1af477fb14fcf26a6a9f76079e48bf090acb7e8367bfd0e",
+      "saturation_seen": true,
+      "value_sha256": "b7effd43ee5016021d067dd32ade04f37a347efe942297070e5cc56f47fddfbb"
+    }
+  ],
+  "context_max": 8,
+  "generator": "tools/gen_attention_value_vectors.py",
+  "head_dim": 64,
+  "output_format": "signed_int8",
+  "probability_format": "unsigned_int16 Q0.15",
+  "reference": "tools/ace2_attention_value_reference.py",
+  "rounding": "round_to_nearest_ties_to_even_after_15_fractional_bits",
+  "schema_version": 1,
+  "value_format": "signed_int8"
+}

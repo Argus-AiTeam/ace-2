@@ -1,0 +1,25 @@
+read_liberty -lib /OpenROAD-flow-scripts/flow/platforms/sky130hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib
+read_verilog -sv rtl/ace2_pkg.sv
+read_verilog -sv rtl/ace2_rmsnorm_core.sv
+read_verilog -sv rtl/ace2_w4a8_proj_core.sv
+read_verilog -sv rtl/ace2_rope_core.sv
+read_verilog -sv rtl/ace2_attention_score_core.sv
+read_verilog -sv rtl/ace2_softmax_core.sv
+read_verilog -sv rtl/ace2_attention_compose_core.sv
+read_verilog -Irtl -sv rtl/ace2_silu_gate_core.sv
+read_verilog -sv rtl/ace2_shell.sv
+hierarchy -check -top ace2_shell
+proc
+opt
+fsm
+opt
+memory_collect
+memory_map
+opt
+techmap
+opt
+dfflibmap -liberty /OpenROAD-flow-scripts/flow/platforms/sky130hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib
+abc -liberty /OpenROAD-flow-scripts/flow/platforms/sky130hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib
+clean
+stat -liberty /OpenROAD-flow-scripts/flow/platforms/sky130hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib
+write_verilog -noattr build/sky130_rmsnorm/ace2_shell_mapped.v

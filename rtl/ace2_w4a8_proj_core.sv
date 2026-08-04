@@ -26,11 +26,13 @@ module ace2_w4a8_proj_core #(
     input  wire signed [31:0]                multiplier_i,
     input  wire [5:0]                        right_shift_i,
     input  wire signed [ACT_WIDTH-1:0]       output_zero_point_i,
+    input  wire signed [ACC_WIDTH-1:0]       bias_accumulator_i,
 
     output wire                              out_valid_o,
     input  wire                              out_ready_i,
     output wire [ACT_WIDTH-1:0]              out_data_o,
     output wire signed [ACC_WIDTH-1:0]       acc_o,
+    output wire                              accumulator_overflow_o,
     output wire                              saturation_seen_o
 );
     localparam [3:0] ST_IDLE        = 4'd0;
@@ -49,6 +51,7 @@ module ace2_w4a8_proj_core #(
     reg signed [ACC_WIDTH-1:0] acc_q;
     reg out_valid_q;
     reg [ACT_WIDTH-1:0] out_data_q;
+    reg accumulator_overflow_q;
     reg saturation_seen_q;
     reg product_sign_q;
     reg [5:0] right_shift_q;
@@ -76,6 +79,8 @@ module ace2_w4a8_proj_core #(
     reg [15:0] mul_multiplicand_chunk_w;
     wire [31:0] acc_abs_w;
     wire [31:0] multiplier_abs_w;
+    wire signed [ACC_WIDTH:0] biased_acc_w;
+    wire bias_add_overflow_w;
     wire [15:0] mul_addend_chunk_w;
     wire [16:0] mul_chunk_sum_w;
     wire [63:0] mul_next_acc_w;
@@ -96,7 +101,12 @@ module ace2_w4a8_proj_core #(
     assign out_valid_o = out_valid_q;
     assign out_data_o = out_data_q;
     assign acc_o = acc_q;
+    assign accumulator_overflow_o = accumulator_overflow_q;
     assign saturation_seen_o = saturation_seen_q;
+    assign biased_acc_w =
+        $signed({acc_q[ACC_WIDTH-1], acc_q}) +
+        $signed({bias_accumulator_i[ACC_WIDTH-1], bias_accumulator_i});
+    assign bias_add_overflow_w = biased_acc_w[ACC_WIDTH] != biased_acc_w[ACC_WIDTH-1];
     assign acc_abs_w = acc_q[ACC_WIDTH-1] ? (~acc_q + {{(ACC_WIDTH-1){1'b0}}, 1'b1}) : acc_q;
     assign multiplier_abs_w = meta_multiplier_q[31] ? (~meta_multiplier_q + 32'd1) : meta_multiplier_q;
     assign mul_addend_chunk_w = mul_multiplier_q[0] ? mul_multiplicand_chunk_w : 16'd0;
@@ -155,6 +165,7 @@ module ace2_w4a8_proj_core #(
             acc_q <= {ACC_WIDTH{1'b0}};
             out_valid_q <= 1'b0;
             out_data_q <= {ACT_WIDTH{1'b0}};
+            accumulator_overflow_q <= 1'b0;
             saturation_seen_q <= 1'b0;
             product_sign_q <= 1'b0;
             right_shift_q <= 6'd0;
@@ -181,6 +192,7 @@ module ace2_w4a8_proj_core #(
                 acc_q <= {ACC_WIDTH{1'b0}};
                 out_valid_q <= 1'b0;
                 out_data_q <= {ACT_WIDTH{1'b0}};
+                accumulator_overflow_q <= 1'b0;
                 saturation_seen_q <= 1'b0;
                 product_sign_q <= 1'b0;
                 right_shift_q <= 6'd0;
@@ -210,6 +222,7 @@ module ace2_w4a8_proj_core #(
                             group_idx_q <= {GROUP_INDEX_WIDTH{1'b0}};
                             acc_q <= {ACC_WIDTH{1'b0}};
                             out_data_q <= {ACT_WIDTH{1'b0}};
+                            accumulator_overflow_q <= 1'b0;
                             saturation_seen_q <= 1'b0;
                             state_q <= ST_RUN;
                         end
@@ -235,7 +248,9 @@ module ace2_w4a8_proj_core #(
 
                 ST_META: begin
                     if (meta_valid_i && meta_ready_o) begin
-                        product_sign_q <= acc_q[ACC_WIDTH-1] ^ multiplier_i[31];
+                        acc_q <= biased_acc_w[ACC_WIDTH-1:0];
+                        accumulator_overflow_q <= bias_add_overflow_w;
+                        product_sign_q <= biased_acc_w[ACC_WIDTH-1] ^ multiplier_i[31];
                         right_shift_q <= right_shift_i;
                         output_zero_point_q <= output_zero_point_i;
                         meta_multiplier_q <= multiplier_i;

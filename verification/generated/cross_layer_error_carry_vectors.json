@@ -1,0 +1,227 @@
+{
+  "consumer_completion_tag_cases": [
+    {
+      "accepted_completion_tag": 2766,
+      "descriptor_error": false,
+      "expected_completion_tag": 2766,
+      "name": "valid_consumer_tag_held_through_completion_backpressure",
+      "subsequent_completion_tags": [
+        48879,
+        4660
+      ]
+    },
+    {
+      "accepted_completion_tag": 57005,
+      "descriptor_error": true,
+      "expected_completion_tag": 57005,
+      "name": "invalid_consumer_start_reports_accepted_tag",
+      "subsequent_completion_tags": [
+        51966
+      ]
+    }
+  ],
+  "contract_id": "cross_layer_quantization_error_carry_final_output_v1",
+  "implementation_provenance": {
+    "role": "engineer",
+    "status": "fresh_regeneration_from_frozen_contract",
+    "supersedes": "unaccepted_planner_draft"
+  },
+  "invalid_scale32": 32767,
+  "producer_overflow_vectors": [
+    {
+      "accumulator_s32": 128,
+      "accumulator_scale32": 32768,
+      "destination_scale32": 32768,
+      "name": "positive_hidden_overflow",
+      "residual_s8": 0,
+      "residual_scale32": 32768
+    },
+    {
+      "accumulator_s32": -129,
+      "accumulator_scale32": 32768,
+      "destination_scale32": 32768,
+      "name": "negative_hidden_overflow",
+      "residual_s8": 0,
+      "residual_scale32": 32768
+    }
+  ],
+  "producer_vectors": [
+    {
+      "accumulator_s32": 1,
+      "accumulator_scale32": 32768,
+      "carry_s16_q15": 0,
+      "common_exponent": 0,
+      "denominator_u64": 32768,
+      "destination_scale32": 32768,
+      "hidden_s8": 3,
+      "latency_cycles": 26,
+      "name": "unit_exact",
+      "numerator_s96": 98304,
+      "residual_s8": 2,
+      "residual_scale32": 32768
+    },
+    {
+      "accumulator_s32": 1,
+      "accumulator_scale32": 16744448,
+      "carry_s16_q15": 16384,
+      "common_exponent": -1,
+      "denominator_u64": 65536,
+      "destination_scale32": 32768,
+      "hidden_s8": 0,
+      "latency_cycles": 26,
+      "name": "positive_half_tie_even",
+      "numerator_s96": 32768,
+      "residual_s8": 0,
+      "residual_scale32": 32768
+    },
+    {
+      "accumulator_s32": 3,
+      "accumulator_scale32": 16744448,
+      "carry_s16_q15": -16384,
+      "common_exponent": -1,
+      "denominator_u64": 65536,
+      "destination_scale32": 32768,
+      "hidden_s8": 2,
+      "latency_cycles": 26,
+      "name": "positive_one_half_tie_even",
+      "numerator_s96": 98304,
+      "residual_s8": 0,
+      "residual_scale32": 32768
+    },
+    {
+      "accumulator_s32": -1,
+      "accumulator_scale32": 16744448,
+      "carry_s16_q15": -16384,
+      "common_exponent": -1,
+      "denominator_u64": 65536,
+      "destination_scale32": 32768,
+      "hidden_s8": 0,
+      "latency_cycles": 26,
+      "name": "negative_half_tie_even",
+      "numerator_s96": -32768,
+      "residual_s8": 0,
+      "residual_scale32": 32768
+    },
+    {
+      "accumulator_s32": -3,
+      "accumulator_scale32": 16744448,
+      "carry_s16_q15": 16384,
+      "common_exponent": -1,
+      "denominator_u64": 65536,
+      "destination_scale32": 32768,
+      "hidden_s8": -2,
+      "latency_cycles": 26,
+      "name": "negative_one_half_tie_even",
+      "numerator_s96": -98304,
+      "residual_s8": 0,
+      "residual_scale32": 32768
+    },
+    {
+      "accumulator_s32": 126,
+      "accumulator_scale32": 32768,
+      "carry_s16_q15": 16384,
+      "common_exponent": -1,
+      "denominator_u64": 65536,
+      "destination_scale32": 32768,
+      "hidden_s8": 126,
+      "latency_cycles": 26,
+      "name": "mixed_scale",
+      "numerator_s96": 8290304,
+      "residual_s8": 1,
+      "residual_scale32": 16744448
+    },
+    {
+      "accumulator_s32": 7,
+      "accumulator_scale32": 16678912,
+      "carry_s16_q15": 8192,
+      "common_exponent": -2,
+      "denominator_u64": 131072,
+      "destination_scale32": 32768,
+      "hidden_s8": 0,
+      "latency_cycles": 26,
+      "name": "exponent_alignment",
+      "numerator_s96": 32768,
+      "residual_s8": -3,
+      "residual_scale32": 16744448
+    },
+    {
+      "accumulator_s32": 127,
+      "accumulator_scale32": 32768,
+      "carry_s16_q15": 0,
+      "common_exponent": 0,
+      "denominator_u64": 32768,
+      "destination_scale32": 32768,
+      "hidden_s8": 127,
+      "latency_cycles": 26,
+      "name": "positive_limit",
+      "numerator_s96": 4161536,
+      "residual_s8": 0,
+      "residual_scale32": 32768
+    },
+    {
+      "accumulator_s32": -128,
+      "accumulator_scale32": 32768,
+      "carry_s16_q15": 0,
+      "common_exponent": 0,
+      "denominator_u64": 32768,
+      "destination_scale32": 32768,
+      "hidden_s8": -128,
+      "latency_cycles": 26,
+      "name": "negative_limit",
+      "numerator_s96": -4194304,
+      "residual_s8": 0,
+      "residual_scale32": 32768
+    }
+  ],
+  "rmsnorm_small": {
+    "carry_s16_q15": [
+      16384,
+      -16384,
+      0,
+      8192
+    ],
+    "hidden_s8": [
+      1,
+      -2,
+      3,
+      -4
+    ],
+    "inverse_q30": 382243550,
+    "mean_square_q30": 8472494080,
+    "output_scale": 0.03125,
+    "outputs_s8": [
+      17,
+      -36,
+      -26,
+      -21
+    ],
+    "reconstructed_q15": [
+      49152,
+      -81920,
+      98304,
+      -122880
+    ],
+    "root_q15": 92047,
+    "saturation_seen": false,
+    "scaled_gain_s16_q8": [
+      8192,
+      10240,
+      -6144,
+      4096
+    ],
+    "sum_squares_q30": 33889976320,
+    "weights": [
+      1.0,
+      1.25,
+      -0.75,
+      0.5
+    ]
+  },
+  "schema_version": 1,
+  "workspace_proof": {
+    "producer_denominator_bits": 44,
+    "producer_numerator_magnitude_bits": 75,
+    "reconstruction_magnitude_bits": 23,
+    "square_sum_bits": 54
+  }
+}

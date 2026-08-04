@@ -58,6 +58,7 @@ module ace2_rmsnorm_core #(
     localparam [3:0] ST_SCALE_MUL_HI = 4'd9;
     localparam [3:0] ST_SCALE_ROUND = 4'd10;
     localparam [3:0] ST_DONE        = 4'd11;
+    localparam [3:0] ST_MEAN_PRELOAD = 4'd12;
     localparam integer DIV_COUNT_WIDTH = (ACC_WIDTH <= 1) ? 1 : $clog2(ACC_WIDTH + 1);
     localparam [DIV_COUNT_WIDTH-1:0] DIV_COUNT_INIT = DIV_COUNT_WIDTH'(ACC_WIDTH);
     localparam integer DIV_QUOT_WIDTH = INV_RMS_FRAC + 1;
@@ -187,8 +188,7 @@ module ace2_rmsnorm_core #(
     always @(posedge clk_i) begin
         if (in_valid_i && in_ready_o) begin
             collect_beat_q <= in_data_i;
-        end else if ((state_q == ST_COLLECT) && collect_active_q &&
-                     !collect_square_valid_q) begin
+        end else if (collect_active_q && !collect_square_valid_q) begin
             collect_beat_q <= collect_beat_q >> ACT_WIDTH;
         end
     end
@@ -196,30 +196,12 @@ module ace2_rmsnorm_core #(
     always @(posedge clk_i or negedge rst_ni) begin
         if (!rst_ni) begin
             div_dividend_q <= {ACC_WIDTH{1'b0}};
+        end else if (state_q == ST_MEAN_PRELOAD) begin
+            div_dividend_q <= sumsq_q + HIDDEN_HALF_ACC;
+        end else if ((state_q == ST_SQRT_DECIDE) && sqrt_done_q) begin
+            div_dividend_q <= ACC_WIDTH'(1) << INV_RMS_FRAC;
         end else begin
-            case (state_q)
-                ST_IDLE: begin
-                    if (start_valid_i && start_ready_o) begin
-                        div_dividend_q <= {ACC_WIDTH{1'b0}};
-                    end
-                end
-                ST_COLLECT: begin
-                    if (collect_active_q && collect_square_valid_q &&
-                        lane_last_q && (collect_idx_q == LAST_BEAT)) begin
-                        div_dividend_q <= next_sumsq_w + HIDDEN_HALF_ACC;
-                    end
-                end
-                ST_MEAN_DIV,
-                ST_INV_DIV:
-                    div_dividend_q <= div_dividend_next_w;
-                ST_SQRT_DECIDE: begin
-                    if (sqrt_done_q) begin
-                        div_dividend_q <= ACC_WIDTH'(1) << INV_RMS_FRAC;
-                    end
-                end
-                default: begin
-                end
-            endcase
+            div_dividend_q <= div_dividend_next_w;
         end
     end
 
@@ -346,7 +328,7 @@ module ace2_rmsnorm_core #(
                                     div_count_q <= DIV_COUNT_INIT;
                                     collect_idx_q <= {BEAT_INDEX_WIDTH{1'b0}};
                                     scale_idx_q <= {BEAT_INDEX_WIDTH{1'b0}};
-                                    state_q <= ST_MEAN_DIV;
+                                    state_q <= ST_MEAN_PRELOAD;
                                 end else begin
                                     collect_idx_q <= collect_idx_q + {{(BEAT_INDEX_WIDTH-1){1'b0}}, 1'b1};
                                 end
@@ -356,6 +338,10 @@ module ace2_rmsnorm_core #(
                             end
                         end
                     end
+                end
+
+                ST_MEAN_PRELOAD: begin
+                    state_q <= ST_MEAN_DIV;
                 end
 
                 ST_MEAN_DIV: begin

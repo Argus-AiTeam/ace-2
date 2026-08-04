@@ -20,11 +20,14 @@ module ace2_w4a8_proj_tb;
     reg signed [31:0] multiplier;
     reg [5:0] right_shift;
     reg signed [ACT_WIDTH-1:0] output_zero_point;
+    reg signed [31:0] bias_accumulator;
     wire out_valid;
     reg out_ready;
     wire [ACT_WIDTH-1:0] out_data;
     wire signed [31:0] acc;
+    wire accumulator_overflow;
     wire saturation_seen;
+    reg force_c4_dot_only;
 
     integer failures;
     integer group_index;
@@ -56,23 +59,18 @@ module ace2_w4a8_proj_tb;
         .multiplier_i(multiplier),
         .right_shift_i(right_shift),
         .output_zero_point_i(output_zero_point),
+        .bias_accumulator_i(bias_accumulator),
         .out_valid_o(out_valid),
         .out_ready_i(out_ready),
         .out_data_o(out_data),
         .acc_o(acc),
+        .accumulator_overflow_o(accumulator_overflow),
         .saturation_seen_o(saturation_seen)
     );
 
     initial begin
         clk = 1'b0;
         forever #5 clk = ~clk;
-    end
-
-    initial begin
-        $dumpfile("build/projection-waveform.vcd");
-        $dumpvars(0, clk, rst_n, start_valid, start_ready, pair_valid, pair_ready,
-                  meta_valid, meta_ready, out_valid, out_ready, out_data, acc,
-                  saturation_seen);
     end
 
     task apply_reset;
@@ -87,6 +85,7 @@ module ace2_w4a8_proj_tb;
             multiplier = 32'sd0;
             right_shift = 6'd0;
             output_zero_point = 8'sd0;
+            bias_accumulator = 32'sd0;
             out_ready = 1'b0;
             repeat (4) @(posedge clk);
             rst_n = 1'b1;
@@ -128,6 +127,7 @@ module ace2_w4a8_proj_tb;
             multiplier = meta_word[31:0];
             right_shift = meta_word[37:32];
             output_zero_point = meta_word[47:40];
+            bias_accumulator = force_c4_dot_only ? 32'sd0 : meta_word[79:48];
             @(negedge clk);
             meta_valid = 1'b1;
             @(posedge clk);
@@ -146,14 +146,39 @@ module ace2_w4a8_proj_tb;
                 expected_flat = selected_case*PROJ_MAX_ROWS*PROJ_MAX_OUTPUT_BEATS +
                                 selected_row*PROJ_MAX_OUTPUT_BEATS + (selected_out >> 4);
                 expected_beat = proj_expected_beats[expected_flat];
-                if (out_data !== expected_beat[(selected_out & 15)*8 +: 8]) begin
+                if (force_c4_dot_only) begin
+                    if ((selected_case != PROJ_CASE_C4_V_BIAS) ||
+                        (selected_out != PROJ_C4_V_OUTPUT_CHANNEL) ||
+                        (out_data !== PROJ_C4_V_DOT_ONLY_OUTPUT) ||
+                        (acc !== PROJ_C4_V_DOT_ACC) || saturation_seen ||
+                        accumulator_overflow) begin
+                        $display("PROJ_C4_DOT_ONLY_NEGATIVE_MISMATCH got=%02x expected=%02x acc=%0d expected_acc=%0d saturation=%0d overflow=%0d",
+                                 out_data, PROJ_C4_V_DOT_ONLY_OUTPUT, acc,
+                                 PROJ_C4_V_DOT_ACC, saturation_seen,
+                                 accumulator_overflow);
+                        failures = failures + 1;
+                    end
+                end else if (out_data !== expected_beat[(selected_out & 15)*8 +: 8]) begin
                     $display("PROJ_CORE_MISMATCH case=%0d row=%0d out=%0d got=%02x expected=%02x acc=%0d",
                              selected_case, selected_row, selected_out, out_data,
                              expected_beat[(selected_out & 15)*8 +: 8], acc);
                     failures = failures + 1;
                 end
-                if (proj_expected_saturation[selected_case] && !saturation_seen) begin
+                if (!force_c4_dot_only &&
+                    proj_expected_saturation[selected_case] && !saturation_seen) begin
                     $display("PROJ_CORE_EXPECTED_SATURATION_MISSING out=%0d", selected_out);
+                    failures = failures + 1;
+                end
+                if (!force_c4_dot_only &&
+                    (selected_case == PROJ_CASE_C4_V_BIAS) &&
+                    (selected_out == PROJ_C4_V_OUTPUT_CHANNEL) &&
+                    ((acc !== PROJ_C4_V_BIASED_ACC) ||
+                     (out_data !== PROJ_C4_V_BIASED_OUTPUT) ||
+                     !saturation_seen || accumulator_overflow)) begin
+                    $display("PROJ_C4_BIAS_MISMATCH got=%02x expected=%02x acc=%0d expected_acc=%0d saturation=%0d overflow=%0d",
+                             out_data, PROJ_C4_V_BIASED_OUTPUT, acc,
+                             PROJ_C4_V_BIASED_ACC, saturation_seen,
+                             accumulator_overflow);
                     failures = failures + 1;
                 end
                 out_ready = 1'b1;
@@ -198,6 +223,7 @@ module ace2_w4a8_proj_tb;
             multiplier = selected_multiplier;
             right_shift = selected_shift;
             output_zero_point = selected_zero_point;
+            bias_accumulator = 32'sd0;
             @(negedge clk);
             meta_valid = 1'b1;
             @(posedge clk);
@@ -215,7 +241,7 @@ module ace2_w4a8_proj_tb;
                 failures = failures + 1;
             end else begin
                 if ((out_data !== selected_expected) || (acc !== selected_acc) ||
-                    saturation_seen) begin
+                    saturation_seen || accumulator_overflow) begin
                     $display("PROJ_SEMANTIC_MISMATCH case=%0d shift=%0d got=%02x expected=%02x acc=%0d expected_acc=%0d saturation=%0d",
                              semantic_id, selected_shift, out_data, selected_expected,
                              acc, selected_acc, saturation_seen);
@@ -231,6 +257,7 @@ module ace2_w4a8_proj_tb;
 
     initial begin
         failures = 0;
+        force_c4_dot_only = 1'b0;
         apply_reset();
         run_output(0, 0, 0);
         run_output(0, 1, 17);
@@ -247,6 +274,10 @@ module ace2_w4a8_proj_tb;
         run_output(PROJ_CASE_RMSNORM_CONSUMER, 0, 0);
         run_output(PROJ_CASE_RMSNORM_CONSUMER, 0, 17);
         run_output(PROJ_CASE_RMSNORM_CONSUMER, 0, 31);
+        run_output(PROJ_CASE_C4_V_BIAS, 0, PROJ_C4_V_OUTPUT_CHANNEL);
+        force_c4_dot_only = 1'b1;
+        run_output(PROJ_CASE_C4_V_BIAS, 0, PROJ_C4_V_OUTPUT_CHANNEL);
+        force_c4_dot_only = 1'b0;
         run_semantic_case(0, 8'sd3, 4'sd1, 32'sd2, 6'd0, 8'sd0, 8'h06);
         run_semantic_case(1, 8'sd1, 4'sd1, 32'sd1, 6'd63, 8'sd0, 8'h00);
         run_semantic_case(2, 8'sd10, 4'sd1, 32'sd1, 6'd2, 8'sd0, 8'h02);
@@ -258,7 +289,8 @@ module ace2_w4a8_proj_tb;
             $fatal(1, "ACE2_W4A8_PROJ_TB_FAIL");
         end
         $display("ACE2_PROJ_SEMANTIC_BINS_PASS round_half_ties=4 shift_0=1 shift_63=1 semantic_cases=6");
-        $display("ACE2_W4A8_PROJ_TB_PASS cases=%0d checked_outputs=21 max_groups=%0d", PROJ_CASE_COUNT, PROJ_MAX_GROUPS);
+        $display("ACE2_PROJ_C4_BIAS_PASS coordinate=[0,0,13,30] dot_acc=1078 bias_acc=593 biased_acc=1671 multiplier=1350522781 shift=34 rounded_raw=131 output=127 saturation=1 dot_only_output=85 dot_only_saturation=0");
+        $display("ACE2_W4A8_PROJ_TB_PASS cases=%0d checked_outputs=23 max_groups=%0d", PROJ_CASE_COUNT, PROJ_MAX_GROUPS);
         $finish;
     end
 endmodule

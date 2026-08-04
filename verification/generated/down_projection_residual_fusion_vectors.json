@@ -1,0 +1,329 @@
+{
+  "cases": [
+    {
+      "expected": {
+        "common_exponent": 0,
+        "denominator_u64": 32768,
+        "latency_cycles": 10,
+        "negative_saturation": false,
+        "numerator_s96": 98304,
+        "output_s8": 3,
+        "positive_saturation": false,
+        "rounded_integer": 3
+      },
+      "inputs": {
+        "accumulator_s32": 1,
+        "accumulator_scale32": 32768,
+        "destination_scale32": 32768,
+        "residual_s8": 2,
+        "residual_scale32": 32768
+      },
+      "name": "unit_add",
+      "valid": true
+    },
+    {
+      "expected": {
+        "common_exponent": -1,
+        "denominator_u64": 65536,
+        "latency_cycles": 10,
+        "negative_saturation": false,
+        "numerator_s96": 32768,
+        "output_s8": 0,
+        "positive_saturation": false,
+        "rounded_integer": 0
+      },
+      "inputs": {
+        "accumulator_s32": 1,
+        "accumulator_scale32": 16744448,
+        "destination_scale32": 32768,
+        "residual_s8": 0,
+        "residual_scale32": 32768
+      },
+      "name": "positive_half_to_even_zero",
+      "valid": true
+    },
+    {
+      "expected": {
+        "common_exponent": -1,
+        "denominator_u64": 65536,
+        "latency_cycles": 10,
+        "negative_saturation": false,
+        "numerator_s96": 98304,
+        "output_s8": 2,
+        "positive_saturation": false,
+        "rounded_integer": 2
+      },
+      "inputs": {
+        "accumulator_s32": 3,
+        "accumulator_scale32": 16744448,
+        "destination_scale32": 32768,
+        "residual_s8": 0,
+        "residual_scale32": 32768
+      },
+      "name": "positive_one_point_five_to_even_two",
+      "valid": true
+    },
+    {
+      "expected": {
+        "common_exponent": -1,
+        "denominator_u64": 65536,
+        "latency_cycles": 10,
+        "negative_saturation": false,
+        "numerator_s96": -98304,
+        "output_s8": -2,
+        "positive_saturation": false,
+        "rounded_integer": -2
+      },
+      "inputs": {
+        "accumulator_s32": -3,
+        "accumulator_scale32": 16744448,
+        "destination_scale32": 32768,
+        "residual_s8": 0,
+        "residual_scale32": 32768
+      },
+      "name": "negative_one_point_five_to_even_two",
+      "valid": true
+    },
+    {
+      "expected": {
+        "common_exponent": 0,
+        "denominator_u64": 32768,
+        "latency_cycles": 10,
+        "negative_saturation": false,
+        "numerator_s96": 4194304,
+        "output_s8": 127,
+        "positive_saturation": true,
+        "rounded_integer": 128
+      },
+      "inputs": {
+        "accumulator_s32": 127,
+        "accumulator_scale32": 32768,
+        "destination_scale32": 32768,
+        "residual_s8": 1,
+        "residual_scale32": 32768
+      },
+      "name": "positive_saturation",
+      "valid": true
+    },
+    {
+      "expected": {
+        "common_exponent": 0,
+        "denominator_u64": 32768,
+        "latency_cycles": 10,
+        "negative_saturation": true,
+        "numerator_s96": -4227072,
+        "output_s8": -128,
+        "positive_saturation": false,
+        "rounded_integer": -129
+      },
+      "inputs": {
+        "accumulator_s32": -128,
+        "accumulator_scale32": 32768,
+        "destination_scale32": 32768,
+        "residual_s8": -1,
+        "residual_scale32": 32768
+      },
+      "name": "negative_saturation",
+      "valid": true
+    },
+    {
+      "expected": {
+        "common_exponent": -1,
+        "denominator_u64": 65536,
+        "latency_cycles": 10,
+        "negative_saturation": false,
+        "numerator_s96": 8355840,
+        "output_s8": 127,
+        "positive_saturation": true,
+        "rounded_integer": 128
+      },
+      "inputs": {
+        "accumulator_s32": 255,
+        "accumulator_scale32": 16744448,
+        "destination_scale32": 32768,
+        "residual_s8": 0,
+        "residual_scale32": 32768
+      },
+      "name": "positive_127_point_5_tie_clamps",
+      "valid": true
+    },
+    {
+      "expected": {
+        "common_exponent": -1,
+        "denominator_u64": 65536,
+        "latency_cycles": 10,
+        "negative_saturation": false,
+        "numerator_s96": -8421376,
+        "output_s8": -128,
+        "positive_saturation": false,
+        "rounded_integer": -128
+      },
+      "inputs": {
+        "accumulator_s32": -257,
+        "accumulator_scale32": 16744448,
+        "destination_scale32": 32768,
+        "residual_s8": 0,
+        "residual_scale32": 32768
+      },
+      "name": "negative_128_point_5_tie_stays_minus128",
+      "valid": true
+    },
+    {
+      "expected": {
+        "common_exponent": -24,
+        "denominator_u64": 77309411328,
+        "latency_cycles": 10,
+        "negative_saturation": true,
+        "numerator_s96": -158327257779373,
+        "output_s8": -128,
+        "positive_saturation": false,
+        "rounded_integer": -2048
+      },
+      "inputs": {
+        "accumulator_s32": 17,
+        "accumulator_scale32": 15245603,
+        "destination_scale32": 16617472,
+        "residual_s8": -9,
+        "residual_scale32": 327679
+      },
+      "name": "exponent_extremes",
+      "valid": true
+    },
+    {
+      "expected": {
+        "common_exponent": -24,
+        "denominator_u64": 32768,
+        "latency_cycles": 10,
+        "negative_saturation": false,
+        "numerator_s96": 37778357618786477015040,
+        "output_s8": 127,
+        "positive_saturation": true,
+        "rounded_integer": 1152903980065505280
+      },
+      "inputs": {
+        "accumulator_s32": 2147483647,
+        "accumulator_scale32": 327679,
+        "destination_scale32": 15237120,
+        "residual_s8": 127,
+        "residual_scale32": 327679
+      },
+      "name": "maximum_positive_workspace",
+      "valid": true
+    },
+    {
+      "expected": {
+        "common_exponent": -24,
+        "denominator_u64": 32768,
+        "latency_cycles": 10,
+        "negative_saturation": true,
+        "numerator_s96": -37778357653970312232960,
+        "output_s8": -128,
+        "positive_saturation": false,
+        "rounded_integer": -1152903981139230720
+      },
+      "inputs": {
+        "accumulator_s32": -2147483648,
+        "accumulator_scale32": 327679,
+        "destination_scale32": 15237120,
+        "residual_s8": -128,
+        "residual_scale32": 327679
+      },
+      "name": "maximum_negative_workspace",
+      "valid": true
+    },
+    {
+      "expected": {
+        "common_exponent": -24,
+        "denominator_u64": 1475757473792,
+        "latency_cycles": 10,
+        "negative_saturation": false,
+        "numerator_s96": 0,
+        "output_s8": 0,
+        "positive_saturation": false,
+        "rounded_integer": 0
+      },
+      "inputs": {
+        "accumulator_s32": 0,
+        "accumulator_scale32": 15269887,
+        "destination_scale32": 109517,
+        "residual_s8": 0,
+        "residual_scale32": 294912
+      },
+      "name": "zero_numerator",
+      "valid": true
+    },
+    {
+      "expected": {
+        "descriptor_error": true,
+        "latency_cycles": 0
+      },
+      "inputs": {
+        "accumulator_s32": 0,
+        "accumulator_scale32": 16809984,
+        "destination_scale32": 32768,
+        "residual_s8": 0,
+        "residual_scale32": 32768
+      },
+      "name": "reserved_byte_nonzero",
+      "valid": false
+    },
+    {
+      "expected": {
+        "descriptor_error": true,
+        "latency_cycles": 0
+      },
+      "inputs": {
+        "accumulator_s32": 0,
+        "accumulator_scale32": 32767,
+        "destination_scale32": 32768,
+        "residual_s8": 0,
+        "residual_scale32": 32768
+      },
+      "name": "unnormalized_significand",
+      "valid": false
+    },
+    {
+      "expected": {
+        "descriptor_error": true,
+        "latency_cycles": 0
+      },
+      "inputs": {
+        "accumulator_s32": 0,
+        "accumulator_scale32": 15171584,
+        "destination_scale32": 32768,
+        "residual_s8": 0,
+        "residual_scale32": 32768
+      },
+      "name": "exponent_below_minimum",
+      "valid": false
+    },
+    {
+      "expected": {
+        "descriptor_error": true,
+        "latency_cycles": 0
+      },
+      "inputs": {
+        "accumulator_s32": 0,
+        "accumulator_scale32": 32768,
+        "destination_scale32": 32768,
+        "residual_s8": 0,
+        "residual_scale32": 360448
+      },
+      "name": "exponent_above_maximum",
+      "valid": false
+    }
+  ],
+  "contract_id": "shared_down_projection_residual_fusion_v1",
+  "schedule": {
+    "algorithm": "exact_preclamp_then_one_shift_subtract_bit_per_cycle",
+    "quotient_bits": 8,
+    "valid_start_to_out_valid_cycles": 10
+  },
+  "schema_version": 1,
+  "workspace_proof": {
+    "denominator_required_bits": 44,
+    "max_abs_numerator_bound": 37778357653970312232960,
+    "max_denominator_bound": 17591917608960,
+    "numerator_required_magnitude_bits": 75
+  }
+}

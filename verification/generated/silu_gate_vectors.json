@@ -1,0 +1,180 @@
+{
+  "boundary_coverage_bits": {
+    "lut_clip_high": 5,
+    "lut_clip_low": 4,
+    "negative_saturation": 3,
+    "positive_saturation": 2,
+    "tie_even_increment": 1,
+    "tie_even_keep": 0
+  },
+  "cases": [
+    {
+      "boundary_hits": {
+        "lut_clip_high": 0,
+        "lut_clip_low": 0,
+        "negative_saturation": 0,
+        "positive_saturation": 0,
+        "tie_even_increment": 0,
+        "tie_even_keep": 0
+      },
+      "input_beats": 1,
+      "length": 1,
+      "multiplier": 1,
+      "name": "single_negative",
+      "output_beats": 1,
+      "output_sha256": "98722e2ebed8ed3d3652e11e4181f0dccc1ce7d192d8f1db370af8ec4a4e174a",
+      "output_zero_point": -3,
+      "right_shift": 21,
+      "saturation_seen": false
+    },
+    {
+      "boundary_hits": {
+        "lut_clip_high": 0,
+        "lut_clip_low": 0,
+        "negative_saturation": 0,
+        "positive_saturation": 0,
+        "tie_even_increment": 2,
+        "tie_even_keep": 2
+      },
+      "input_beats": 1,
+      "length": 4,
+      "multiplier": 1,
+      "name": "tie_even_rounding",
+      "output_beats": 1,
+      "output_sha256": "3663f513631d46158db707d31dcacd41d235926c2eeb930ebecda179a66f7611",
+      "output_zero_point": 0,
+      "right_shift": 1,
+      "saturation_seen": false
+    },
+    {
+      "boundary_hits": {
+        "lut_clip_high": 0,
+        "lut_clip_low": 0,
+        "negative_saturation": 0,
+        "positive_saturation": 1,
+        "tie_even_increment": 0,
+        "tie_even_keep": 0
+      },
+      "input_beats": 1,
+      "length": 1,
+      "multiplier": 1,
+      "name": "positive_saturation",
+      "output_beats": 1,
+      "output_sha256": "620bfdaa346b088fb49998d92f19a7eaf6bfc2fb0aee015753966da1028cb731",
+      "output_zero_point": 0,
+      "right_shift": 21,
+      "saturation_seen": true
+    },
+    {
+      "boundary_hits": {
+        "lut_clip_high": 0,
+        "lut_clip_low": 0,
+        "negative_saturation": 1,
+        "positive_saturation": 0,
+        "tie_even_increment": 0,
+        "tie_even_keep": 0
+      },
+      "input_beats": 1,
+      "length": 1,
+      "multiplier": 1,
+      "name": "negative_saturation",
+      "output_beats": 1,
+      "output_sha256": "76be8b528d0075f7aae98d6fa57a6d3c83ae480a8469e668d7b0af968995ac71",
+      "output_zero_point": 0,
+      "right_shift": 21,
+      "saturation_seen": true
+    },
+    {
+      "boundary_hits": {
+        "lut_clip_high": 0,
+        "lut_clip_low": 1,
+        "negative_saturation": 0,
+        "positive_saturation": 0,
+        "tie_even_increment": 0,
+        "tie_even_keep": 0
+      },
+      "input_beats": 1,
+      "length": 2,
+      "multiplier": 1,
+      "name": "lut_clip_low",
+      "output_beats": 1,
+      "output_sha256": "ecc76c19c9f3c5108773d6c3a18a6c25c9bf1131c4e250b71213274e3b2b5d08",
+      "output_zero_point": 0,
+      "right_shift": 12,
+      "saturation_seen": false
+    },
+    {
+      "boundary_hits": {
+        "lut_clip_high": 1,
+        "lut_clip_low": 0,
+        "negative_saturation": 0,
+        "positive_saturation": 0,
+        "tie_even_increment": 0,
+        "tie_even_keep": 0
+      },
+      "input_beats": 1,
+      "length": 2,
+      "multiplier": 1,
+      "name": "lut_clip_high",
+      "output_beats": 1,
+      "output_sha256": "3330e5ba53cb09ab97dd287ad8ba30380b88a5aca467b6c231b0a46f261c16e1",
+      "output_zero_point": 0,
+      "right_shift": 12,
+      "saturation_seen": false
+    },
+    {
+      "boundary_hits": {
+        "lut_clip_high": 0,
+        "lut_clip_low": 0,
+        "negative_saturation": 0,
+        "positive_saturation": 0,
+        "tie_even_increment": 0,
+        "tie_even_keep": 0
+      },
+      "input_beats": 3,
+      "length": 17,
+      "multiplier": 7,
+      "name": "ragged_mixed_values",
+      "output_beats": 2,
+      "output_sha256": "b3901dbf985300afada5077e22cac4641673ef4fd469f38a18927d11055000d7",
+      "output_zero_point": 1,
+      "right_shift": 18,
+      "saturation_seen": false
+    },
+    {
+      "boundary_hits": {
+        "lut_clip_high": 0,
+        "lut_clip_low": 0,
+        "negative_saturation": 0,
+        "positive_saturation": 0,
+        "tie_even_increment": 0,
+        "tie_even_keep": 0
+      },
+      "input_beats": 608,
+      "length": 4864,
+      "multiplier": 3,
+      "name": "full_mlp_intermediate",
+      "output_beats": 304,
+      "output_sha256": "0196c2d639acedb36687ea046576f23d5f5f83f795da8e5551bfb130d2e334bc",
+      "output_zero_point": -2,
+      "right_shift": 20,
+      "saturation_seen": false
+    }
+  ],
+  "generator": "tools/gen_silu_gate_vectors.py",
+  "input_format": "signed int16 Q6.9",
+  "lookup_output_format": "signed int16 Q3.12",
+  "lookup_step": "1/8, floor-indexed, clipped to [-8,8]",
+  "product_format": "signed int32 Q9.21",
+  "reference": "tools/ace2_silu_gate_reference.py",
+  "requant_metadata_scope": "one multiplier/right-shift/zero-point tuple per descriptor",
+  "required_boundary_cases": {
+    "lut_clip_high": "lut_clip_high",
+    "lut_clip_low": "lut_clip_low",
+    "negative_saturation": "negative_saturation",
+    "positive_saturation": "positive_saturation",
+    "tie_even_increment": "tie_even_rounding",
+    "tie_even_keep": "tie_even_rounding"
+  },
+  "schema_version": 1
+}

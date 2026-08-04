@@ -129,15 +129,18 @@ module ace2_shell #(
     localparam integer PROJ_HIDDEN_GROUPS = HIDDEN_SIZE / PROJ_MAC_LANES;
     localparam integer PROJ_MLP_GROUPS = MLP_INTERMEDIATE_SIZE / PROJ_MAC_LANES;
     localparam integer PROJ_GROUPS = PROJ_MLP_GROUPS;
-    localparam integer PROJ_GROUPS_PER_STORAGE_BEAT = LANES / PROJ_MAC_LANES;
-    localparam integer PROJ_GROUP_STORAGE_SHIFT = (PROJ_GROUPS_PER_STORAGE_BEAT <= 1) ? 0 : $clog2(PROJ_GROUPS_PER_STORAGE_BEAT);
-    localparam integer PROJ_GROUP_SELECT_WIDTH = (PROJ_GROUP_STORAGE_SHIFT == 0) ? 1 : PROJ_GROUP_STORAGE_SHIFT;
+    localparam integer PROJ_ACT_GROUPS_PER_STORAGE_BEAT = LANES / PROJ_MAC_LANES;
+    localparam integer PROJ_WGT_GROUPS_PER_STORAGE_BEAT = (LANES * ACT_WIDTH) / (PROJ_MAC_LANES * 4);
+    localparam integer PROJ_ACT_GROUP_STORAGE_SHIFT = (PROJ_ACT_GROUPS_PER_STORAGE_BEAT <= 1) ? 0 : $clog2(PROJ_ACT_GROUPS_PER_STORAGE_BEAT);
+    localparam integer PROJ_WGT_GROUP_STORAGE_SHIFT = (PROJ_WGT_GROUPS_PER_STORAGE_BEAT <= 1) ? 0 : $clog2(PROJ_WGT_GROUPS_PER_STORAGE_BEAT);
+    localparam integer PROJ_ACT_GROUP_SELECT_WIDTH = (PROJ_ACT_GROUP_STORAGE_SHIFT == 0) ? 1 : PROJ_ACT_GROUP_STORAGE_SHIFT;
+    localparam integer PROJ_WGT_GROUP_SELECT_WIDTH = (PROJ_WGT_GROUP_STORAGE_SHIFT == 0) ? 1 : PROJ_WGT_GROUP_STORAGE_SHIFT;
     localparam integer PROJ_GROUP_INDEX_WIDTH = (PROJ_GROUPS <= 1) ? 1 : $clog2(PROJ_GROUPS + 1);
     localparam integer PROJ_OUTPUT_MAX = (MLP_INTERMEDIATE_SIZE > HIDDEN_SIZE) ? MLP_INTERMEDIATE_SIZE : HIDDEN_SIZE;
     localparam integer PROJ_OUT_INDEX_WIDTH = (PROJ_OUTPUT_MAX <= 1) ? 1 : $clog2(PROJ_OUTPUT_MAX + 1);
     localparam integer PROJ_ROW_INDEX_WIDTH = (PROJ_M_MAX <= 1) ? 1 : $clog2(PROJ_M_MAX + 1);
-    localparam integer PROJ_HIDDEN_WEIGHT_BYTES_PER_OUTPUT = (HIDDEN_SIZE / LANES) * 16;
-    localparam integer PROJ_MLP_WEIGHT_BYTES_PER_OUTPUT = (MLP_INTERMEDIATE_SIZE / LANES) * 16;
+    localparam integer PROJ_HIDDEN_WEIGHT_BYTES_PER_OUTPUT = HIDDEN_SIZE / 2;
+    localparam integer PROJ_MLP_WEIGHT_BYTES_PER_OUTPUT = MLP_INTERMEDIATE_SIZE / 2;
     localparam integer PROJ_WEIGHT_OFFSET_MAX = HIDDEN_SIZE * MLP_INTERMEDIATE_SIZE;
     localparam integer PROJ_WEIGHT_OFFSET_WIDTH = (PROJ_WEIGHT_OFFSET_MAX <= 1) ? 1 : $clog2(PROJ_WEIGHT_OFFSET_MAX + PROJ_MLP_WEIGHT_BYTES_PER_OUTPUT + 1);
     localparam integer PROJ_LINEAR_OFFSET_MAX = PROJ_M_MAX * PROJ_OUTPUT_MAX;
@@ -157,7 +160,7 @@ module ace2_shell #(
         (PAYLOAD_BANKS <= 1) ? 1 : $clog2(PAYLOAD_BANKS);
     localparam integer SILU_PAYLOAD_BANKS = 64 / PAYLOAD_BANK_WIDTH;
     localparam integer SILU_INPUT_BANKS = 128 / PAYLOAD_BANK_WIDTH;
-    localparam integer SILU_INPUT_BEATS_MAX = (MLP_INTERMEDIATE_SIZE + SILU_LANES - 1) / SILU_LANES;
+    localparam integer SILU_INPUT_BEATS_MAX = (MLP_INTERMEDIATE_SIZE + LANES - 1) / LANES;
     localparam integer SILU_INPUT_BEAT_WIDTH = $clog2(SILU_INPUT_BEATS_MAX + 1);
     localparam integer ATTN_GROUPS = ATTN_HEAD_DIM / ATTN_MAC_LANES;
     localparam integer ATTN_GROUPS_PER_MEM_BEAT = LANES / ATTN_MAC_LANES;
@@ -325,6 +328,7 @@ module ace2_shell #(
     localparam [3:0] OP_KIND_ATTN_COMPOSE = 4'd9;
 
     reg [6:0] state_low_q;
+    (* keep = "true" *) reg state_soft_reset_q;
     reg silu_active_q;
     reg [6:0] state_d;
     wire [6:0] state_q = state_low_q;
@@ -417,11 +421,13 @@ module ace2_shell #(
     reg [31:0] proj_multiplier_q;
     reg [5:0] proj_right_shift_q;
     reg signed [ACT_WIDTH-1:0] proj_output_zero_point_q;
+    reg signed [PROJ_ACC_WIDTH-1:0] proj_bias_accumulator_q;
     reg proj_start_valid_q;
     reg proj_meta_valid_q;
     reg proj_wait_out_active_q;
     reg proj_write_data_active_q;
     reg proj_done_saturation_q;
+    reg proj_done_overflow_q;
     reg [ROPE_LANES*ACT_WIDTH-1:0] rope_act_q;
     reg [ROPE_LANES*ACT_WIDTH-1:0] rope_pair_act_q;
     reg [ROPE_LANES*16-1:0] rope_scale_q;
@@ -456,6 +462,7 @@ module ace2_shell #(
     reg attn_shift_sticky_q;
     reg attn_shift_guard_q;
     reg [64:0] attn_rounded_abs_q;
+    reg attn_score_update_max_q;
     reg attn_score_negative_q;
     reg [63:0] attn_mul_multiplicand_q;
     reg [31:0] attn_mul_multiplier_q;
@@ -488,6 +495,8 @@ module ace2_shell #(
     reg silu_write_final_q;
     reg [127:0] silu_gate_data_q;
     wire [127:0] silu_up_data_q;
+    wire [127:0] silu_gate_core_data_w;
+    wire [127:0] silu_up_core_data_w;
     reg signed [31:0] silu_multiplier_q;
     reg [5:0] silu_right_shift_q;
     reg signed [7:0] silu_zero_point_q;
@@ -533,10 +542,19 @@ module ace2_shell #(
     wire strict_errors_w = control_q[3];
     wire perf_clear_w = control_q[4];
     wire soft_reset_req_w = control_q[1];
-    wire [6:0] state_commit_w =
-        soft_reset_req_w ? ST_IDLE :
-        (response_fault_pending_w || watchdog_fire_w) ? ST_COMPLETE :
-        (((state_q == ST_IDLE) && cmd_dispatch_q) ? ST_CMD_DISPATCH : state_d);
+    wire [6:0] state_regular_w =
+        ((state_q == ST_IDLE) && cmd_dispatch_q) ? ST_CMD_DISPATCH : state_d;
+    wire state_fault_or_watchdog_w = response_fault_pending_w || watchdog_fire_w;
+    (* keep = "true" *) wire state_upper_enable_w;
+    wire [6:0] state_commit_w;
+    assign state_upper_enable_w =
+        !state_soft_reset_q && !read_fault_q && !write_fault_q &&
+        !watchdog_fire_q;
+    assign state_commit_w[6:4] =
+        state_regular_w[6:4] & {3{state_upper_enable_w}};
+    assign state_commit_w[3:0] =
+        state_soft_reset_q ? 4'd0 :
+        state_fault_or_watchdog_w ? 4'd15 : state_regular_w[3:0];
     wire shell_busy_w = (state_q != ST_IDLE) || done_valid_q || reset_drain_q;
     wire halted_on_error_w = strict_errors_w && (error_status_q != {STATUS_BITS{1'b0}});
     wire csr_fire_w = csr_valid_i && csr_ready_o;
@@ -586,18 +604,23 @@ module ace2_shell #(
         (state_q == ST_SILU_GATE_RECV) ? 8'hb1 :
         (state_q == ST_SILU_UP_RECV) ? 8'hb2 : 8'd0;
     wire [SILU_INPUT_BEAT_WIDTH-1:0] silu_input_beats_w =
-        SILU_INPUT_BEAT_WIDTH'((n_q + 16'd7) >> 3);
+        SILU_INPUT_BEAT_WIDTH'((n_q + 16'd15) >> 4);
     wire [SILU_INPUT_BEAT_WIDTH-1:0] silu_last_input_beat_w =
         silu_input_beats_w - SILU_INPUT_BEAT_WIDTH'(1);
     wire silu_final_input_w = (silu_input_beat_q == silu_last_input_beat_w);
+    wire [4:0] silu_final_byte_count_w =
+        (n_q[3:0] == 4'd0) ? 5'd16 : {1'b0, n_q[3:0]};
+    wire silu_has_upper_w =
+        !silu_final_input_w || (silu_final_byte_count_w > 5'd8);
     wire [3:0] silu_lane_count_w =
-        silu_final_input_w && (n_q[2:0] != 3'd0) ? {1'b0, n_q[2:0]} : 4'd8;
+        !silu_final_input_w ? 4'd8 :
+        silu_output_half_q ? silu_final_byte_count_w[3:0] - 4'd8 :
+        (silu_final_byte_count_w > 5'd8) ? 4'd8 :
+        silu_final_byte_count_w[3:0];
     wire [14:0] silu_input_offset_w =
         {{(15-SILU_INPUT_BEAT_WIDTH-4){1'b0}}, silu_input_beat_q, 4'd0};
     wire [14:0] silu_next_input_offset_w = silu_input_offset_w + 15'd16;
-    wire [14:0] silu_output_offset_w =
-        {{(15-SILU_INPUT_BEAT_WIDTH-3){1'b0}},
-         silu_input_beat_q[SILU_INPUT_BEAT_WIDTH-1:1], 4'd0};
+    wire [14:0] silu_output_offset_w = silu_input_offset_w;
     wire read_response_fault_w = mem_rerror_i || (mem_rtag_i != expected_read_tag_w);
     wire write_response_fault_w = mem_berror_i || (mem_btag_i != write_response_tag_q);
     wire mem_stall_w = ((mem_req_valid_o && !mem_req_ready_i) ||
@@ -655,9 +678,11 @@ module ace2_shell #(
     wire [63:0] proj_row_idx_ext_w = {{(64-PROJ_ROW_INDEX_WIDTH){1'b0}}, proj_row_idx_q};
     wire [63:0] proj_group_idx_ext_w = {{(64-PROJ_GROUP_INDEX_WIDTH){1'b0}}, proj_group_idx_q};
     wire [63:0] proj_next_group_idx_ext_w = proj_group_idx_ext_w + 64'd1;
-    wire [63:0] proj_group_storage_idx_ext_w = proj_group_idx_ext_w >> PROJ_GROUP_STORAGE_SHIFT;
-    wire [63:0] proj_next_group_storage_idx_ext_w = proj_next_group_idx_ext_w >> PROJ_GROUP_STORAGE_SHIFT;
-    wire [3:0] proj_group_lane_offset_w = 4'(proj_group_idx_q[PROJ_GROUP_SELECT_WIDTH-1:0] * PROJ_MAC_LANES);
+    wire [63:0] proj_act_group_storage_idx_ext_w = proj_group_idx_ext_w >> PROJ_ACT_GROUP_STORAGE_SHIFT;
+    wire [63:0] proj_next_act_group_storage_idx_ext_w = proj_next_group_idx_ext_w >> PROJ_ACT_GROUP_STORAGE_SHIFT;
+    wire [63:0] proj_wgt_group_storage_idx_ext_w = proj_group_idx_ext_w >> PROJ_WGT_GROUP_STORAGE_SHIFT;
+    wire [3:0] proj_act_group_lane_offset_w = 4'(proj_group_idx_q[PROJ_ACT_GROUP_SELECT_WIDTH-1:0] * PROJ_MAC_LANES);
+    wire [5:0] proj_wgt_group_lane_offset_w = 6'(proj_group_idx_q[PROJ_WGT_GROUP_SELECT_WIDTH-1:0] * PROJ_MAC_LANES);
     wire [63:0] proj_hidden_row_base_w = (proj_row_idx_ext_w << 10) - (proj_row_idx_ext_w << 7);
     wire [63:0] proj_mlp_row_base_w =
         (proj_row_idx_ext_w << 12) + (proj_row_idx_ext_w << 9) + (proj_row_idx_ext_w << 8);
@@ -673,7 +698,7 @@ module ace2_shell #(
     wire [PROJ_ROW_INDEX_WIDTH-1:0] proj_last_row_w = m_q[PROJ_ROW_INDEX_WIDTH-1:0] - {{(PROJ_ROW_INDEX_WIDTH-1){1'b0}}, 1'b1};
     wire proj_final_output_w = (proj_out_idx_q == proj_last_out_w) && (proj_row_idx_q == proj_last_row_w);
     wire [PROJ_WEIGHT_OFFSET_WIDTH-1:0] proj_group_byte_offset_w =
-        PROJ_WEIGHT_OFFSET_WIDTH'(proj_group_storage_idx_ext_w << 4);
+        PROJ_WEIGHT_OFFSET_WIDTH'(proj_wgt_group_storage_idx_ext_w << 4);
     wire [PROJ_WEIGHT_OFFSET_WIDTH-1:0] proj_weight_request_offset_w =
         proj_weight_offset_q + proj_group_byte_offset_w;
     wire [PROJ_WEIGHT_OFFSET_WIDTH-1:0] proj_meta_request_offset_w =
@@ -851,12 +876,14 @@ module ace2_shell #(
     wire proj_out_ready_w = proj_wait_out_active_q;
     wire [ACT_WIDTH-1:0] proj_out_data_w;
     wire signed [PROJ_ACC_WIDTH-1:0] proj_acc_w;
+    wire proj_accumulator_overflow_w;
     wire proj_saturation_w;
     wire signed [31:0] proj_meta_multiplier_w = proj_multiplier_q;
     wire [5:0] proj_meta_right_shift_w = proj_right_shift_q;
     wire signed [ACT_WIDTH-1:0] proj_meta_zero_point_w = proj_output_zero_point_q;
-    wire [PROJ_MAC_LANES*ACT_WIDTH-1:0] proj_selected_act_w = mem_rdata_i[proj_group_lane_offset_w*ACT_WIDTH +: PROJ_MAC_LANES*ACT_WIDTH];
-    wire [PROJ_MAC_LANES*4-1:0] proj_selected_weight_w = mem_rdata_i[proj_group_lane_offset_w*4 +: PROJ_MAC_LANES*4];
+    wire signed [PROJ_ACC_WIDTH-1:0] proj_meta_bias_accumulator_w = proj_bias_accumulator_q;
+    wire [PROJ_MAC_LANES*ACT_WIDTH-1:0] proj_selected_act_w = mem_rdata_i[proj_act_group_lane_offset_w*ACT_WIDTH +: PROJ_MAC_LANES*ACT_WIDTH];
+    wire [PROJ_MAC_LANES*4-1:0] proj_selected_weight_w = mem_rdata_i[proj_wgt_group_lane_offset_w*4 +: PROJ_MAC_LANES*4];
     wire [ROPE_AUX_SELECT_WIDTH-1:0] rope_aux_select_w = rope_segment_q[ROPE_AUX_SELECT_WIDTH-1:0];
     wire [ROPE_LANES*ACT_WIDTH-1:0] rope_selected_act_w = mem_rdata_i[(rope_segment_q*ROPE_LANES*ACT_WIDTH) +: ROPE_LANES*ACT_WIDTH];
     wire [ROPE_LANES*16-1:0] rope_selected_aux_w = mem_rdata_i[(rope_aux_select_w*ROPE_LANES*16) +: ROPE_LANES*16];
@@ -956,12 +983,13 @@ module ace2_shell #(
         (attn_shift_sticky_q || attn_shift_value_q[0]);
     wire [64:0] attn_rounded_abs_w =
         {1'b0, attn_shift_value_q} + {{64{1'b0}}, attn_round_increment_w};
-    wire attn_score_gt_max_w =
+    wire attn_score_update_max_w =
+        (attn_token_idx_q == {ATTN_TOKEN_INDEX_WIDTH{1'b0}}) ||
         (!attn_score_negative_q && attn_score_max_negative_q) ||
         ((attn_score_negative_q == attn_score_max_negative_q) &&
          (attn_score_negative_q ?
-          (attn_rounded_abs_q < attn_score_max_magnitude_q) :
-          (attn_rounded_abs_q > attn_score_max_magnitude_q)));
+          (attn_rounded_abs_w < attn_score_max_magnitude_q) :
+          (attn_rounded_abs_w > attn_score_max_magnitude_q)));
     wire attn_center_fetch_negative_w =
         attn_score_negative_row_q[attn_center_idx_q];
     wire [64:0] attn_center_fetch_magnitude_w =
@@ -1030,6 +1058,9 @@ module ace2_shell #(
     wire proj_numeric_saturation_w =
         (state_q == ST_PROJ_WAIT_OUT) && proj_wait_out_active_q &&
         proj_out_valid_w && proj_saturation_w;
+    wire proj_numeric_overflow_w =
+        (state_q == ST_PROJ_WAIT_OUT) && proj_wait_out_active_q &&
+        proj_out_valid_w && proj_accumulator_overflow_w;
     wire softmax_numeric_saturation_w =
         (state_q == ST_SOFTMAX_WAIT_OUT) && softmax_out_valid_w &&
         softmax_saturation_w;
@@ -1287,7 +1318,7 @@ module ace2_shell #(
     assign sram_wdata_o = {SRAM_BANKS*LANES*ACT_WIDTH{1'b0}};
     assign sram_wstrb_o = {SRAM_BANKS*16{1'b0}};
 
-    wire unused_inputs_w = ^{sram_req_ready_i, sram_rdata_i, sram_rvalid_i, n_q, k_q, sequence_position_q, proj_acc_w, proj_multiplier_q, proj_right_shift_q, proj_output_zero_point_q, compose_context_count_w};
+    wire unused_inputs_w = ^{sram_req_ready_i, sram_rdata_i, sram_rvalid_i, n_q, k_q, sequence_position_q, proj_acc_w, proj_multiplier_q, proj_right_shift_q, proj_output_zero_point_q, proj_bias_accumulator_q, compose_context_count_w};
 
     ace2_rmsnorm_core #(
         .HIDDEN_SIZE(HIDDEN_SIZE),
@@ -1344,10 +1375,12 @@ module ace2_shell #(
         .multiplier_i(proj_meta_multiplier_w),
         .right_shift_i(proj_meta_right_shift_w),
         .output_zero_point_i(proj_meta_zero_point_w),
+        .bias_accumulator_i(proj_meta_bias_accumulator_w),
         .out_valid_o(proj_out_valid_w),
         .out_ready_i(proj_out_ready_w),
         .out_data_o(proj_out_data_w),
         .acc_o(proj_acc_w),
+        .accumulator_overflow_o(proj_accumulator_overflow_w),
         .saturation_seen_o(proj_saturation_w)
     );
 
@@ -1430,8 +1463,8 @@ module ace2_shell #(
         .beat_valid_i(silu_beat_valid_q),
         .beat_ready_o(silu_beat_ready_w),
         .lane_count_i(silu_lane_count_w),
-        .gate_data_i(silu_gate_data_q),
-        .up_data_i(silu_up_data_q),
+        .gate_data_i(silu_gate_core_data_w),
+        .up_data_i(silu_up_core_data_w),
         .out_valid_o(silu_out_valid_w),
         .out_ready_i(silu_out_ready_w),
         .out_data_o(silu_out_data_w),
@@ -2123,8 +2156,8 @@ module ace2_shell #(
             end
             ST_SILU_WAIT: begin
                 if (silu_out_valid_w) begin
-                    state_d = (silu_output_half_q || silu_final_input_w) ?
-                              ST_SILU_WRITE_REQ : ST_SILU_GATE_REQ;
+                    state_d = (!silu_output_half_q && silu_has_upper_w) ?
+                              ST_SILU_FEED : ST_SILU_WRITE_REQ;
                 end
             end
             ST_SILU_WRITE_REQ: begin
@@ -2218,6 +2251,7 @@ module ace2_shell #(
             proj_multiplier_q <= mem_rdata_i[31:0];
             proj_right_shift_q <= mem_rdata_i[37:32];
             proj_output_zero_point_q <= mem_rdata_i[47:40];
+            proj_bias_accumulator_q <= mem_rdata_i[79:48];
         end
         if (rope_act_recv_q) begin
             rope_act_q <= rope_selected_act_w;
@@ -2291,6 +2325,29 @@ module ace2_shell #(
                     ];
                 end
             end
+        end
+    endgenerate
+
+    // The projection predecessors store sixteen packed signed-int8 values per
+    // memory beat. Present each buffered beat to the unchanged arithmetic core
+    // as ordered lower/upper groups of eight sign-extended signed-int16 lanes.
+    genvar silu_core_lane;
+    generate
+        for (silu_core_lane = 0; silu_core_lane < SILU_LANES;
+             silu_core_lane = silu_core_lane + 1) begin : gen_silu_width_adapter
+            wire [7:0] silu_gate_byte_w = silu_output_half_q ?
+                silu_gate_data_q[(silu_core_lane + SILU_LANES)*ACT_WIDTH +: ACT_WIDTH] :
+                silu_gate_data_q[silu_core_lane*ACT_WIDTH +: ACT_WIDTH];
+            wire [7:0] silu_up_byte_w = silu_output_half_q ?
+                silu_up_data_q[(silu_core_lane + SILU_LANES)*ACT_WIDTH +: ACT_WIDTH] :
+                silu_up_data_q[silu_core_lane*ACT_WIDTH +: ACT_WIDTH];
+
+            assign silu_gate_core_data_w[
+                silu_core_lane*(2*ACT_WIDTH) +: (2*ACT_WIDTH)
+            ] = {{ACT_WIDTH{silu_gate_byte_w[ACT_WIDTH-1]}}, silu_gate_byte_w};
+            assign silu_up_core_data_w[
+                silu_core_lane*(2*ACT_WIDTH) +: (2*ACT_WIDTH)
+            ] = {{ACT_WIDTH{silu_up_byte_w[ACT_WIDTH-1]}}, silu_up_byte_w};
         end
     endgenerate
 
@@ -2452,6 +2509,7 @@ module ace2_shell #(
             attn_shift_sticky_q <= 1'b0;
             attn_shift_guard_q <= 1'b0;
             attn_rounded_abs_q <= 65'd0;
+            attn_score_update_max_q <= 1'b0;
             attn_score_negative_q <= 1'b0;
             attn_mul_multiplicand_q <= 64'd0;
             attn_mul_multiplier_q <= 32'd0;
@@ -2479,6 +2537,7 @@ module ace2_shell #(
             attn_shift_sticky_q <= 1'b0;
             attn_shift_guard_q <= 1'b0;
             attn_rounded_abs_q <= 65'd0;
+            attn_score_update_max_q <= 1'b0;
             attn_score_negative_q <= 1'b0;
             attn_mul_multiplicand_q <= 64'd0;
             attn_mul_multiplier_q <= 32'd0;
@@ -2508,6 +2567,7 @@ module ace2_shell #(
                     attn_shift_sticky_q <= 1'b0;
                     attn_shift_guard_q <= 1'b0;
                     attn_rounded_abs_q <= 65'd0;
+                    attn_score_update_max_q <= 1'b0;
                     attn_score_negative_q <= 1'b0;
                     attn_mul_multiplicand_q <= 64'd0;
                     attn_mul_multiplier_q <= 32'd0;
@@ -2600,14 +2660,15 @@ module ace2_shell #(
                 end
                     ST_ATTN_ROUND: begin
                         attn_rounded_abs_q <= attn_rounded_abs_w;
+                        attn_score_update_max_q <=
+                            attn_score_update_max_w;
                     end
                     ST_ATTN_WAIT_OUT: begin
                         attn_score_magnitude_q[attn_token_idx_q] <=
                             attn_rounded_abs_q;
                         attn_score_negative_row_q[attn_token_idx_q] <=
                             attn_score_negative_q;
-                        if ((attn_token_idx_q == {ATTN_TOKEN_INDEX_WIDTH{1'b0}}) ||
-                            attn_score_gt_max_w) begin
+                        if (attn_score_update_max_q) begin
                             attn_score_max_magnitude_q <= attn_rounded_abs_q;
                             attn_score_max_negative_q <= attn_score_negative_q;
                         end
@@ -2649,8 +2710,8 @@ module ace2_shell #(
                 ST_IDLE,
                 ST_CMD_DISPATCH:
                     silu_input_beat_q <= {SILU_INPUT_BEAT_WIDTH{1'b0}};
-                ST_SILU_WAIT: begin
-                    if (silu_out_valid_w && !silu_final_input_w) begin
+                ST_SILU_WRITE_DATA: begin
+                    if (silu_write_accepted_w && !silu_write_final_q) begin
                         silu_input_beat_q <= silu_input_beat_q +
                             SILU_INPUT_BEAT_WIDTH'(1);
                     end
@@ -2869,7 +2930,7 @@ module ace2_shell #(
                     if (proj_start_valid_q && proj_start_ready_w) begin
                         proj_mem_req_addr_q <=
                             src0_addr_q + proj_row_base_w +
-                            (proj_group_storage_idx_ext_w << 4);
+                            (proj_act_group_storage_idx_ext_w << 4);
                     end
                 end
                 ST_PROJ_ACT0_RECV,
@@ -2884,7 +2945,7 @@ module ace2_shell #(
                         end else begin
                             proj_mem_req_addr_q <=
                                 src0_addr_q + proj_row_base_w +
-                                (proj_next_group_storage_idx_ext_w << 4);
+                                (proj_next_act_group_storage_idx_ext_w << 4);
                         end
                     end
                 end
@@ -2983,6 +3044,7 @@ module ace2_shell #(
     always @(posedge clk_i or negedge rst_ni) begin
         if (!rst_ni) begin
             state_low_q <= ST_IDLE;
+            state_soft_reset_q <= 1'b0;
             silu_active_q <= 1'b0;
             control_q <= {CONTROL_BITS{1'b0}};
             interrupt_enable_q <= {STATUS_BITS{1'b0}};
@@ -3054,6 +3116,7 @@ module ace2_shell #(
             proj_wait_out_active_q <= 1'b0;
             proj_write_data_active_q <= 1'b0;
             proj_done_saturation_q <= 1'b0;
+            proj_done_overflow_q <= 1'b0;
             rope_start_valid_q <= 1'b0;
             rope_done_saturation_q <= 1'b0;
             rope_segment_q <= {ROPE_SEGMENT_INDEX_WIDTH{1'b0}};
@@ -3107,6 +3170,7 @@ module ace2_shell #(
             csr_error_o <= 1'b0;
         end else begin
             state_low_q <= state_commit_w;
+            state_soft_reset_q <= 1'b0;
             if (silu_active_q) begin
                 if ((state_q == ST_SILU_WRITE_DATA) && mem_wready_i) begin
                     silu_active_q <= 1'b0;
@@ -3290,6 +3354,11 @@ module ace2_shell #(
             if (core_numeric_saturation_w) begin
                 error_status_q[ACE2_ERR_NUMERIC] <= 1'b1;
             end
+            if (proj_numeric_overflow_w) begin
+                error_status_q[ACE2_ERR_NUMERIC] <= 1'b1;
+                interrupt_status_q[ACE2_ERR_NUMERIC] <= 1'b1;
+                done_error_q <= 1'b1;
+            end
             if (core_numeric_saturation_w || proj_numeric_saturation_w ||
                 attn_numeric_saturation_w || softmax_numeric_saturation_w ||
                 silu_numeric_saturation_w ||
@@ -3321,6 +3390,8 @@ module ace2_shell #(
                     case (csr_req_addr_low_q)
                         ACE2_CSR_CONTROL[7:0]: begin
                             control_q <= apply_wstrb_control(control_q, csr_req_wdata_q[CONTROL_BITS-1:0], csr_req_wstrb_q[0]);
+                            state_soft_reset_q <= csr_req_wstrb_q[0] ?
+                                csr_req_wdata_q[1] : state_soft_reset_q;
                         end
                         ACE2_CSR_ERROR_STATUS[7:0]: begin
                             error_status_q <= error_status_q & ~apply_wstrb_status({STATUS_BITS{1'b0}}, csr_req_wdata_q[STATUS_BITS-1:0], csr_req_wstrb_q[0]);
@@ -3389,6 +3460,7 @@ module ace2_shell #(
                 proj_wait_out_active_q <= 1'b0;
                 proj_write_data_active_q <= 1'b0;
                 proj_done_saturation_q <= 1'b0;
+                proj_done_overflow_q <= 1'b0;
                 rope_start_valid_q <= 1'b0;
                 rope_done_saturation_q <= 1'b0;
                 rope_segment_q <= {ROPE_SEGMENT_INDEX_WIDTH{1'b0}};
@@ -3513,6 +3585,7 @@ module ace2_shell #(
                         proj_group_idx_q <= {PROJ_GROUP_INDEX_WIDTH{1'b0}};
                         proj_pack_lane_q <= 4'd0;
                         proj_done_saturation_q <= 1'b0;
+                        proj_done_overflow_q <= 1'b0;
                         rope_done_saturation_q <= 1'b0;
                         rope_segment_q <= {ROPE_SEGMENT_INDEX_WIDTH{1'b0}};
                         attn_token_idx_q <= {ATTN_TOKEN_INDEX_WIDTH{1'b0}};
@@ -3574,7 +3647,7 @@ module ace2_shell #(
                     ST_PROJ_START: begin
                         if (proj_start_valid_q && proj_start_ready_w) begin
                             proj_group_idx_q <= {PROJ_GROUP_INDEX_WIDTH{1'b0}};
-                            mem_req_addr_q <= src0_addr_q + proj_row_base_w + (proj_group_storage_idx_ext_w << 4);
+                            mem_req_addr_q <= src0_addr_q + proj_row_base_w + (proj_act_group_storage_idx_ext_w << 4);
                         end
                     end
                     ST_PROJ_ACT0_RECV: begin
@@ -3592,7 +3665,7 @@ module ace2_shell #(
                                 mem_req_addr_q <= add_proj_offset64(scale_addr_q, proj_meta_request_offset_w);
                             end else begin
                                 proj_group_idx_q <= proj_group_idx_q + {{(PROJ_GROUP_INDEX_WIDTH-1){1'b0}}, 1'b1};
-                                mem_req_addr_q <= src0_addr_q + proj_row_base_w + (proj_next_group_storage_idx_ext_w << 4);
+                                mem_req_addr_q <= src0_addr_q + proj_row_base_w + (proj_next_act_group_storage_idx_ext_w << 4);
                             end
                         end
                     end
@@ -3834,26 +3907,20 @@ module ace2_shell #(
                         ST_SILU_WAIT: begin
                             if (silu_out_valid_w) begin
                                 done_saturation_q <= done_saturation_q | silu_saturation_w;
-                                if (silu_output_half_q) begin
+                                if (!silu_output_half_q && silu_has_upper_w) begin
+                                    silu_output_half_q <= 1'b1;
+                                end else begin
                                     silu_output_half_q <= 1'b0;
                                     silu_write_final_q <= silu_final_input_w;
                                     silu_mem_req_addr_q <=
                                         add_silu_offset64(dst_addr_q, silu_output_offset_w);
-                                end else if (silu_final_input_w) begin
-                                    silu_write_final_q <= 1'b1;
-                                    silu_mem_req_addr_q <=
-                                        add_silu_offset64(dst_addr_q, silu_output_offset_w);
-                                end else begin
-                                    silu_output_half_q <= 1'b1;
-                                    silu_mem_req_addr_q <=
-                                        add_silu_offset64(src0_addr_q, silu_next_input_offset_w);
                                 end
                             end
                         end
                         ST_SILU_WRITE_DATA: begin
                             if (silu_write_accepted_w && !silu_write_final_q) begin
                                 silu_mem_req_addr_q <=
-                                    add_silu_offset64(src0_addr_q, silu_input_offset_w);
+                                    add_silu_offset64(src0_addr_q, silu_next_input_offset_w);
                             end
                         end
                     ST_WRITE_RESP: begin
@@ -3862,6 +3929,7 @@ module ace2_shell #(
                         if (write_completes_descriptor_q) begin
                             done_valid_q <= 1'b1;
                             done_error_q <= done_error_q | done_saturation_q |
+                                            proj_done_overflow_q |
                                             ((op_kind_q ==
                                               OP_KIND_ATTN_COMPOSE) &&
                                              compose_saturation_w);
@@ -3871,7 +3939,7 @@ module ace2_shell #(
                                     compose_saturation_w;
                             end
                             interrupt_status_q[0] <= 1'b1;
-                            if (done_saturation_q ||
+                            if (done_saturation_q || proj_done_overflow_q ||
                                 ((op_kind_q == OP_KIND_ATTN_COMPOSE) &&
                                  compose_saturation_w)) begin
                                 error_status_q[ACE2_ERR_NUMERIC] <= 1'b1;
@@ -3925,6 +3993,8 @@ module ace2_shell #(
                 end
                 if (proj_wait_out_active_q && proj_out_valid_w) begin
                     proj_done_saturation_q <= proj_done_saturation_q | proj_saturation_w;
+                    proj_done_overflow_q <=
+                        proj_done_overflow_q | proj_accumulator_overflow_w;
                     done_saturation_q <= done_saturation_q | proj_saturation_w;
                     if (proj_pack_lane_q == PROJ_LAST_PACK_LANE) begin
                         proj_pack_lane_q <= 4'd0;
@@ -3971,6 +4041,71 @@ module ace2_shell #(
             end
         end
     end
+
+`ifdef ACE2_ATTN_MAX_RETIME_FORMAL
+    reg attn_retime_formal_past_valid_q;
+    initial attn_retime_formal_past_valid_q = 1'b0;
+
+    always @(posedge clk_i) begin
+        attn_retime_formal_past_valid_q <= 1'b1;
+        if (attn_retime_formal_past_valid_q && rst_ni && $past(rst_ni)) begin
+            if ($past(soft_reset_req_w)) begin
+                assert(state_q == ST_IDLE);
+            end
+            if ($past(watchdog_fire_w)) begin
+                assert(attn_rounded_abs_q == 65'd0);
+                assert(attn_score_update_max_q == 1'b0);
+                assert(attn_score_max_magnitude_q == 65'd0);
+                assert(attn_score_max_negative_q == 1'b0);
+            end else if ($past(response_fault_pending_w)) begin
+                assert(attn_rounded_abs_q == $past(attn_rounded_abs_q));
+                assert(attn_score_update_max_q ==
+                       $past(attn_score_update_max_q));
+                assert(attn_score_max_magnitude_q ==
+                       $past(attn_score_max_magnitude_q));
+                assert(attn_score_max_negative_q ==
+                       $past(attn_score_max_negative_q));
+            end else begin
+                if ($past(state_q) == ST_ATTN_ROUND) begin
+                    assert(attn_rounded_abs_q ==
+                           $past(attn_rounded_abs_w));
+                    assert(attn_score_update_max_q == $past(
+                        (attn_token_idx_q ==
+                         {ATTN_TOKEN_INDEX_WIDTH{1'b0}}) ||
+                        (!attn_score_negative_q &&
+                         attn_score_max_negative_q) ||
+                        ((attn_score_negative_q ==
+                          attn_score_max_negative_q) &&
+                         (attn_score_negative_q ?
+                          (attn_rounded_abs_w <
+                           attn_score_max_magnitude_q) :
+                          (attn_rounded_abs_w >
+                           attn_score_max_magnitude_q)))
+                    ));
+                end
+                if ($past(state_q) == ST_ATTN_WAIT_OUT) begin
+                    if ($past(attn_score_update_max_q)) begin
+                        assert(attn_score_max_magnitude_q ==
+                               $past(attn_rounded_abs_q));
+                        assert(attn_score_max_negative_q ==
+                               $past(attn_score_negative_q));
+                    end else begin
+                        assert(attn_score_max_magnitude_q ==
+                               $past(attn_score_max_magnitude_q));
+                        assert(attn_score_max_negative_q ==
+                               $past(attn_score_max_negative_q));
+                    end
+                end
+                if ($past(state_q) == ST_IDLE) begin
+                    assert(attn_rounded_abs_q == 65'd0);
+                    assert(attn_score_update_max_q == 1'b0);
+                    assert(attn_score_max_magnitude_q == 65'd0);
+                    assert(attn_score_max_negative_q == 1'b0);
+                end
+            end
+        end
+    end
+`endif
 
     wire unused_sink_w = unused_inputs_w;
 endmodule
