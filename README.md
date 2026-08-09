@@ -8,29 +8,33 @@
 **An evidence-driven Qwen2.5-0.5B W4A8 accelerator designed and iterated by
 [Argus](https://argusbot.cn/).**
 
-![ACE-2 Alpha 2 overview](docs/ace2-alpha2-overview.svg)
+![ACE-2 certified Alpha 2 baseline](docs/ace2-alpha2-overview.svg)
 
-> **Alpha 2 scope:** complete 24-layer, two-token RTL command integration for
-> one frozen pre-tokenized input, plus mapped SKY130 synthesis/OpenSTA.
-> General chat, FPGA execution, routed signoff, and silicon are roadmap items,
-> not current claims.
+> **Alpha 3 scope:** a public productization-progress snapshot built on the
+> unchanged Alpha 2 certified RTL baseline. It documents the post-Alpha-2 BF16
+> model-quality program and the exact gates that still block arbitrary-text
+> W4A8 chat and U280 deployment. Alpha 3 does not claim a new certified model,
+> general chat, FPGA execution, routed signoff, or silicon.
 
-## Alpha 2 at a glance
+## Alpha 3 at a glance
 
-| Result | Certified value |
-|---|---:|
+| Area | Alpha 3 status |
+|---|---|
+| Certified RTL baseline | **Preserved unchanged from Alpha 2** |
 | Layer-0 fixed-point operators | **18 / 18 exact PASS** |
 | Full runtime commands | **13,914 / 13,914 PASS** |
-| Model path | **24 layers, two generated tokens** |
-| Certified RTL tree | **23 SystemVerilog files** |
-| SKY130 mapped cells | **62,283** |
-| Non-SRAM area | **0.614082704 mm2** |
-| Setup slack at 100 MHz | **+0.6966 ns** |
-| OpenSTA WNS / TNS | **0.00 ns / 0.00 ns** |
+| Demonstrated model path | **24 layers, two generated tokens** |
+| SKY130 mapped result | **62,283 cells, 0.614082704 mm2** |
+| Timing | **100 MHz PASS, +0.6966 ns setup slack** |
+| BF16 successor | **S6 sealed at probe-gate NO-GO; official dev was not accessed** |
+| Arbitrary-text W4A8 chat | **Not yet accepted** |
+| Alveo U280 deployment | **Not started; external tool/board access required** |
 
 The machine-readable identities, model revision, image hash, schedule hash,
-and exact claim boundary are summarized in
-[CERTIFICATION.md](CERTIFICATION.md).
+and exact Alpha 2 certification boundary remain summarized in
+[CERTIFICATION.md](CERTIFICATION.md). See
+[Alpha 3 productization progress](docs/ALPHA3_PROGRESS.md) for the new work and
+its explicit non-claims.
 
 ## What ACE-2 contains
 
@@ -106,7 +110,7 @@ sum-of-squares carry from dividend loading. The exact final tree is bound by
 
 ## What is proven, and what is not
 
-**Proven for Alpha 2**
+**Proven and carried forward unchanged from Alpha 2**
 
 - all 18 Layer-0 operator boundaries;
 - 13,914-command, 24-layer, two-token RTL execution;
@@ -123,15 +127,18 @@ sum-of-squares carry from dividend loading. The exact final tree is bound by
 
 See [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md) for the full list.
 
-## Roadmap
+## Productization path
 
-- **In progress:** arbitrary-text prefill, KV reuse, multi-token decoding, and
-  a one-command local chat demo.
-- **Next:** AMD/Xilinx Alveo U280 PCIe/XRT + HBM2 integration and emulation.
+- **Current gate:** design and independently review a new BF16 successor after
+  S6 failed closed at probe lock. S6 may not be retried, resumed, or rescored.
+- **After that:** arbitrary-text prefill, KV reuse, readable multi-token
+  decoding, quantized-reference/RTL agreement, and a one-command local chat
+  demo.
+- **Then:** AMD/Xilinx Alveo U280 PCIe/XRT + HBM2 integration and emulation.
 - **Later:** board validation and physical-design signoff.
 
-Roadmap progress is not included in the Alpha 2 certification until it receives
-its own reproducible evidence and Fresh Reviewer verdict.
+Productization work is not part of the certified baseline until it receives
+reproducible evidence and an independent Fresh Reviewer verdict.
 
 ## Repository map
 
@@ -149,6 +156,8 @@ CHANGELOG.md          Version history
 
 ## Versions
 
+- [`v0.3.0-alpha.1`](../../releases/tag/v0.3.0-alpha.1) — **ACE-2 Alpha 3**,
+  productization progress with the certified Alpha 2 baseline preserved.
 - [`v0.2.0-alpha.1`](../../releases/tag/v0.2.0-alpha.1) — **ACE-2 Alpha 2**,
   certified two-token RTL snapshot.
 - [`v0.1.0-alpha.1`](../../releases/tag/v0.1.0-alpha.1) — **ACE-2 Alpha 1**,

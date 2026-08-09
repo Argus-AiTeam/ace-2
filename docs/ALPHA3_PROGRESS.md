@@ -1,0 +1,75 @@
+# ACE-2 Alpha 3 Productization Progress
+
+Alpha 3 is a public-safe progress release. It preserves the exact Alpha 2
+certified RTL baseline and documents the work required to turn that bounded
+two-token demonstration into a useful accelerator-backed chat system.
+
+## Preserved certified result
+
+The accepted baseline remains:
+
+- 18/18 Layer-0 fixed-point operator boundaries;
+- 13,914/13,914 runtime commands;
+- all 24 transformer layers and two generated tokens;
+- a 23-file synthesizable RTL tree;
+- mapped SKY130 100 MHz timing closure;
+- 62,283 mapped cells and 0.614082704 mm2 non-SRAM area.
+
+No exactly-once certification or PPA action was replayed for Alpha 3.
+
+## Model-quality work after Alpha 2
+
+The product path uses Qwen2.5-0.5B-Instruct as the authenticated source model.
+Several bounded BF16 successor attempts were rejected by frozen quality gates.
+The current S6 successor was redesigned around:
+
+- category-balanced training data;
+- independent per-category gradients;
+- deterministic conflict projection;
+- post-combine clipping;
+- probe-locked checkpoint selection with no fallback;
+- frozen dev, per-category, safety, retention, and holdout gates.
+
+The S6 package passed its independent package review. Exactly one lifecycle was
+then explicitly authorized and executed. It failed closed at probe lock:
+
+- epoch 1: 8/28 hard passes;
+- epoch 2: 7/28 hard passes;
+- epoch 3: 7/28 hard passes;
+- only arithmetic and context-memory category minima passed;
+- each epoch recorded four critical safety failures;
+- no checkpoint was selected;
+- official dev, retention, and holdout were not accessed.
+
+The terminal taxonomy is `PROBE_QUALITY_GATE_FAILURE`. S6 is sealed and may not
+be retried, resumed, rescored, or converted into a downstream quality claim.
+Alpha 3 includes only these aggregate facts, not checkpoints, model weights,
+row-level probe outputs, backend logs, or authority records.
+
+## Ordered remaining gates
+
+1. A structurally justified new BF16 successor must be frozen and independently
+   reviewed; S6 itself cannot continue.
+2. That successor must pass its frozen probe selector before official dev.
+3. It must then pass official dev, all category minima, zero critical safety
+   failures, retention, and exactly-once holdout.
+4. A Fresh Reviewer must accept the complete BF16 result.
+5. Only then may W4A8 arbitrary-text prefill, tokenizer/host integration, KV
+   reuse, readable multi-token decoding, and quantized-reference/RTL agreement
+   become the active product gate.
+6. U280 work follows the accepted local chat system and requires a build-ready
+   PCIe/XRT/HBM2 package plus external Vitis/Vivado/XRT and board access.
+
+## Explicit non-claims
+
+Alpha 3 does not claim:
+
+- a qualified S6 model or permission to replay S6;
+- arbitrary-text or multi-turn chat;
+- a general W4A8 quality result;
+- a new RTL certification beyond Alpha 2;
+- FPGA emulation, bitstream generation, or U280 board execution;
+- routed signoff, tapeout, or silicon.
+
+The release is useful as a reproducible certified RTL baseline and an honest
+record of the productization gates still in progress.
