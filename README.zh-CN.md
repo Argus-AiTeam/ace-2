@@ -1,0 +1,178 @@
+# Argus Compute Engine 2（ACE-2）
+
+[English](README.md) | [简体中文](README.zh-CN.md)
+
+[![Release](https://img.shields.io/github/v/release/aHappend/ace-2?include_prereleases&label=release)](https://github.com/aHappend/ace-2/releases)
+[![License](https://img.shields.io/github/license/aHappend/ace-2)](LICENSE)
+[![RTL](https://img.shields.io/badge/RTL-SystemVerilog-5C4EE5)](rtl/)
+[![Target](https://img.shields.io/badge/SKY130-100%20MHz-18A999)](docs/PPA_SUMMARY.md)
+
+**由 [Argus](https://argusbot.cn/) 自主设计并持续迭代、以证据为核心的
+Qwen2.5-0.5B W4A8 加速器。**
+
+![ACE-2 已认证的 Alpha 2 基线](docs/ace2-alpha2-overview.svg)
+
+> **Alpha 3 的范围：**这是建立在 Alpha 2 已认证 RTL 基线之上的公开产品化进展快照。
+> Alpha 2 基线保持不变；Alpha 3 记录了后续 BF16 模型质量工作，以及目前仍阻止任意文本
+> W4A8 对话和 U280 部署的具体门禁。Alpha 3 不声明新的已认证模型、通用对话能力、
+> FPGA 执行、布线后签核或硅片成果。
+
+## Alpha 3 进展概览
+
+| 项目 | Alpha 3 状态 |
+|---|---|
+| 已认证 RTL 基线 | **完整保留 Alpha 2，未发生变化** |
+| Layer-0 定点算子 | **18 / 18 精确通过** |
+| 完整运行时命令 | **13,914 / 13,914 通过** |
+| 已演示模型路径 | **24 层，生成两个 token** |
+| SKY130 映射结果 | **62,283 个单元，0.614082704 mm²** |
+| 时序 | **100 MHz 通过，setup slack 为 +0.6966 ns** |
+| BF16 后继模型 | **S6 在 probe gate 处 NO-GO 封存，未访问 official dev** |
+| 执行准入 | **等待独立 host trust root；恢复包正在审查** |
+| 任意文本 W4A8 对话 | **尚未验收** |
+| Alveo U280 部署 | **尚未开始，需要外部工具链和板卡** |
+
+模型修订、镜像哈希、调度哈希、机器可读身份以及 Alpha 2 的精确认证边界，统一记录在
+[CERTIFICATION.md](CERTIFICATION.md) 中。后续工作及其明确的非声明边界见
+[Alpha 3 产品化进展](docs/ALPHA3_PROGRESS.md)。
+
+2026-08-17 的开发更新没有扩大已认证基线。由于当前尚未建立独立 host trust root，
+受保护的 Stage 1 执行继续保持 fail-closed。一个非特权恢复包正在重新构建并接受新一轮
+独立审查；它只是供外部管理员使用的准备材料，不代表执行授权，也不代表产品化完成。
+
+## ACE-2 包含什么
+
+```mermaid
+flowchart LR
+    H[主机命令流] --> D[描述符与 DMA 外壳]
+    D --> N[RMSNorm]
+    N --> Q[W4A8 Q / K / V / O 投影]
+    Q --> R[RoPE 与注意力分数]
+    R --> S[Softmax 与 Value 合成]
+    S --> M[MLP Gate / Up / SiLU / Down]
+    M --> A[残差与 KV 状态]
+    A --> L[最终 RMSNorm 与 LM Head]
+    L --> T[Token ID]
+```
+
+公开版本包含已认证 RTL、确定性定点参考实现、生成式测试向量、Verilator/Icarus
+测试平台、镜像与运行时工具，以及版本内自带的 SKY130 流程脚本。
+
+以下内容不随仓库分发：
+
+- 模型权重与训练 checkpoint；
+- 专有 PDK 数据和私有评测集；
+- 本地构建产物与运行日志；
+- 受保护或已封存的内部执行证据。
+
+## 运行可视化 Demo
+
+安装 Python 3、GNU Make、Verilator 和 Icarus Verilog，然后运行：
+
+```sh
+make demo
+```
+
+该 Demo 不会重放十亿周期级的完整模型认证。它执行的是一条快速、适合公开复现的证据链：
+
+1. 校验每个已认证 RTL 文件的哈希；
+2. 检查开源工具链；
+3. lint 完整加速器外壳；
+4. 使用独立 oracle 重新生成确定性 RMSNorm 向量；
+5. 对 15 个 RTL 用例、每个 56 个 beat 进行仿真并比对预期结果；
+6. 生成独立的可视化证据面板。
+
+预期的最终标记为：
+
+```text
+ACE2_ALPHA2_DEMO_PASS
+```
+
+生成的报告位于：
+
+```text
+build/DEMO_REPORT.html
+```
+
+如果暂时不安装仿真工具链，也可以直接查看
+**[Alpha 2 示例证据报告](docs/DEMO_REPORT.md)**。
+完整操作流程与原始 artifact 映射见 [DEMO.md](DEMO.md)。
+
+## 工程演进
+
+ACE-2 通过可测量、与具体 RTL tree 绑定的迭代实现时序收敛，而不是隐藏失败候选：
+
+| RTL 迭代前沿 | Setup slack | 结果 |
+|---|---:|---|
+| 初始完整运行时 RTL tree | -0.1484 ns | NO-GO |
+| 低扇出外壳控制修复 | -0.5275 ns | NO-GO |
+| RMSNorm capture-enable 修复 | -0.1741 ns | NO-GO |
+| RMSNorm 最终求和 preload 拆分 | **+0.6966 ns** | **100 MHz 通过** |
+
+最终迭代引入 `ST_MEAN_PRELOAD`，将 48 位平方和的最终进位与被除数加载分离。
+精确的最终 RTL tree 由 [CERTIFIED_RTL.sha256](CERTIFIED_RTL.sha256) 绑定。
+
+## 已经证明什么，尚未证明什么
+
+**已经证明，并从 Alpha 2 原样继承**
+
+- Layer-0 的全部 18 个算子边界；
+- 13,914 条命令、24 层、两个 token 的 RTL 执行；
+- 精确的模型、镜像和调度身份；
+- SKY130 映射达到 100 MHz，并满足 2.0 mm² 面积上限；
+- 通过独立 Fresh Reviewer 认证。
+
+**尚未声明**
+
+- 任意自然语言对话或不受限制的文本生成；
+- 稳定的 tokenizer、主机运行时或部署 API；
+- FPGA 仿真、bitstream 生成或板卡执行；
+- 布线后时序、功耗签核、DRC/LVS、GDS、流片或硅片。
+
+完整限制清单见 [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md)。
+
+## 产品化路线
+
+1. **当前门禁：**建立并独立验证执行准入所需的 trust root。
+2. 在 S6 probe-lock 失败后，设计并独立审查一个结构上有充分依据的新 BF16 后继模型。
+   S6 本身不得重试、恢复或重新评分。
+3. 新后继模型必须先通过冻结的 probe selector，才能访问 official dev。
+4. 随后必须通过 official dev、全部类别最低门槛、零关键安全失败、retention 和
+   exactly-once holdout，并获得 Fresh Reviewer 验收。
+5. 之后才能推进任意文本 prefill、tokenizer/主机集成、KV 复用、可读多 token 解码、
+   量化参考与 RTL 一致性，以及一条命令启动的本地对话 Demo。
+6. 本地对话系统通过验收后，再进行 AMD/Xilinx Alveo U280 PCIe/XRT + HBM2
+   集成与仿真。
+7. 更后续的目标是板卡验证和物理设计签核。
+
+任何产品化工作只有在具备可复现证据并通过独立 Fresh Reviewer 验收后，才会进入认证基线。
+
+## 仓库结构
+
+```text
+rtl/                  已认证的可综合 RTL
+constraints/          版本内自带的时序约束
+flow/                 SKY130 综合与 STA 脚本
+verification/         确定性向量、测试和运行时 harness
+tools/                定点参考实现以及镜像/运行时工具
+docs/                 架构、PPA 和可追溯性文档
+CERTIFIED_RTL.sha256  精确的已认证 RTL 清单
+CERTIFICATION.md      证据身份与声明边界
+CHANGELOG.md          版本历史
+```
+
+## 版本
+
+- [`v0.3.0-alpha.1`](../../releases/tag/v0.3.0-alpha.1) — **ACE-2 Alpha 3**：
+  产品化进展快照，保留 Alpha 2 已认证基线。
+- [`v0.2.0-alpha.1`](../../releases/tag/v0.2.0-alpha.1) — **ACE-2 Alpha 2**：
+  已认证的双 token RTL 快照。
+- [`v0.1.0-alpha.1`](../../releases/tag/v0.1.0-alpha.1) — **ACE-2 Alpha 1**：
+  验收范围推进至 `layer_0.v_proj`。
+
+历史 tag 保留对应版本快照；`main` 描述当前最新状态。
+
+## 许可证
+
+本项目采用 [Apache License 2.0](LICENSE)。除非某个文件另有明确说明，该许可证适用于
+本仓库中的 ACE-2 源码、工具、文档以及保留的历史版本。
