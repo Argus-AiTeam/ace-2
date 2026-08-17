@@ -1,5 +1,7 @@
 # Argus Compute Engine 2 (ACE-2)
 
+[English](README.md) | [简体中文](README.zh-CN.md)
+
 [![Release](https://img.shields.io/github/v/release/aHappend/ace-2?include_prereleases&label=release)](https://github.com/aHappend/ace-2/releases)
 [![License](https://img.shields.io/github/license/aHappend/ace-2)](LICENSE)
 [![RTL](https://img.shields.io/badge/RTL-SystemVerilog-5C4EE5)](rtl/)
