@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- document the fail-closed execution-admission blocker observed after Alpha 3;
+- record that non-privileged host-trust recovery packaging is under independent
+  review and is not execution authority;
+- preserve all Alpha 2 certification claims and explicitly retain the
+  non-claims for arbitrary-text chat, new RTL, XRT, and U280 execution.
+
 ## v0.3.0-alpha.1 - 2026-08-09
 
 ACE-2 Alpha 3:

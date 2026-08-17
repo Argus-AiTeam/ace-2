@@ -46,18 +46,43 @@ be retried, resumed, rescored, or converted into a downstream quality claim.
 Alpha 3 includes only these aggregate facts, not checkpoints, model weights,
 row-level probe outputs, backend logs, or authority records.
 
+## Development update: 2026-08-17
+
+Post-Alpha-3 work strengthened the provenance and execution-admission boundary
+needed before any protected Stage 1 action. The activation attempt failed
+closed because the available host account retained root-equivalent local
+service access, so it could not provide a trust root independent of the agent
+being evaluated.
+
+The resulting status is:
+
+- the Alpha 2 certified RTL and all terminal model evidence remain unchanged;
+- no protected Stage 1 execution was accepted or replayed;
+- arbitrary-text chat, new RTL acceptance, XRT integration, and U280 execution
+  remain unauthorized and unclaimed;
+- a fresh, non-privileged host-trust recovery package is under independent
+  review for use by an external administrator;
+- that package is build preparation only and cannot establish trust or grant
+  execution authority from the current account.
+
+This update intentionally excludes local paths, claims, receipts, runtime logs,
+credentials, protected evidence, and in-progress package contents. A reviewed
+recovery package would still leave one external prerequisite: an administrator
+channel that the evaluated account cannot invoke or impersonate.
+
 ## Ordered remaining gates
 
-1. A structurally justified new BF16 successor must be frozen and independently
+1. Establish and independently verify the execution-admission trust root.
+2. A structurally justified new BF16 successor must be frozen and independently
    reviewed; S6 itself cannot continue.
-2. That successor must pass its frozen probe selector before official dev.
-3. It must then pass official dev, all category minima, zero critical safety
+3. That successor must pass its frozen probe selector before official dev.
+4. It must then pass official dev, all category minima, zero critical safety
    failures, retention, and exactly-once holdout.
-4. A Fresh Reviewer must accept the complete BF16 result.
-5. Only then may W4A8 arbitrary-text prefill, tokenizer/host integration, KV
+5. A Fresh Reviewer must accept the complete BF16 result.
+6. Only then may W4A8 arbitrary-text prefill, tokenizer/host integration, KV
    reuse, readable multi-token decoding, and quantized-reference/RTL agreement
    become the active product gate.
-6. U280 work follows the accepted local chat system and requires a build-ready
+7. U280 work follows the accepted local chat system and requires a build-ready
    PCIe/XRT/HBM2 package plus external Vitis/Vivado/XRT and board access.
 
 ## Explicit non-claims
@@ -65,6 +90,7 @@ row-level probe outputs, backend logs, or authority records.
 Alpha 3 does not claim:
 
 - a qualified S6 model or permission to replay S6;
+- an established independent host trust root or execution authority;
 - arbitrary-text or multi-turn chat;
 - a general W4A8 quality result;
 - a new RTL certification beyond Alpha 2;

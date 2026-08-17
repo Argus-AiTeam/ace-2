@@ -27,6 +27,7 @@
 | SKY130 mapped result | **62,283 cells, 0.614082704 mm2** |
 | Timing | **100 MHz PASS, +0.6966 ns setup slack** |
 | BF16 successor | **S6 sealed at probe-gate NO-GO; official dev was not accessed** |
+| Execution admission | **Blocked pending an independent host trust root; recovery packaging is under review** |
 | Arbitrary-text W4A8 chat | **Not yet accepted** |
 | Alveo U280 deployment | **Not started; external tool/board access required** |
 
@@ -35,6 +36,12 @@ and exact Alpha 2 certification boundary remain summarized in
 [CERTIFICATION.md](CERTIFICATION.md). See
 [Alpha 3 productization progress](docs/ALPHA3_PROGRESS.md) for the new work and
 its explicit non-claims.
+
+The 2026-08-17 development update does not advance the certified baseline.
+Protected Stage 1 execution remains fail-closed while an independent host trust
+root is unavailable. A non-privileged recovery package is being rebuilt under
+fresh review; it is preparation for an external administrator, not execution
+authority or product completion.
 
 ## What ACE-2 contains
 
