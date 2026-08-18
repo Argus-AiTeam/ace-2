@@ -152,8 +152,9 @@ make demo-extended
 
 Replay a reported random challenge with `make demo SEED=<seed>`.
 
-The dashboard marks those slow rows PASS only after the complete shell log
-contains `ACE2_SHELL_TB_PASS`. Neither command replays the sealed full-model
+The dashboard marks all 18 rows PASS only after the default shell log contains
+`ACE2_SHELL_TB_PASS` and the dedicated MLP-up replay contains
+`ACE2_SHELL_MLP_UP_TB_PASS`. Neither command replays the sealed full-model
 schedule or claims FPGA execution.
 
 ## Engineering progression

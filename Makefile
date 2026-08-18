@@ -28,6 +28,7 @@ demo: certified-rtl-check env-check lint oracle-check sim local-challenge challe
 demo-extended: demo full-shell-sim
 	@echo "ACE2_EXTENDED_SHELL_DEMO_PASS"
 	@echo "Full shell log: build/operator_demo/full-shell.log"
+	@echo "MLP-up proof log: build/operator_demo/mlp-up.log"
 
 visuals: demo schematic
 	@echo
@@ -131,6 +132,10 @@ full-shell-sim:
 		verification/tb/ace2_shell_tb.sv
 	$(VVP) build/operator_demo/ace2_shell_full.vvp | tee build/operator_demo/full-shell.log
 	@grep -q "ACE2_SHELL_TB_PASS" build/operator_demo/full-shell.log
+	@echo
+	@echo "== Proving the MLP-up path omitted by the default shell schedule =="
+	$(VVP) build/operator_demo/ace2_shell_full.vvp +MLP_UP_ONLY | tee build/operator_demo/mlp-up.log
+	@grep -q "ACE2_SHELL_MLP_UP_TB_PASS" build/operator_demo/mlp-up.log
 	@$(PYTHON) scripts/generate_demo_report.py
 
 schematic:

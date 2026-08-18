@@ -85,6 +85,11 @@ The Markdown companion is suitable for CI logs and text-only environments.
 make demo-extended
 ```
 
+The extended target runs the default full-shell schedule and then a dedicated
+`+MLP_UP_ONLY` replay. Both `ACE2_SHELL_TB_PASS` and
+`ACE2_SHELL_MLP_UP_TB_PASS` are required before the report marks all 18
+Layer-0 operator rows PASS.
+
 To replay exactly the same random operator questions:
 
 ```sh

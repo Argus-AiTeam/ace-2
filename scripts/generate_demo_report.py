@@ -21,6 +21,7 @@ LINT_LOG = BUILD / "verilator-lint.log"
 RTL_MANIFEST = ROOT / "CERTIFIED_RTL.sha256"
 OPERATOR_SUITE = BUILD / "operator_demo" / "operator-suite.json"
 FULL_SHELL_LOG = BUILD / "operator_demo" / "full-shell.log"
+MLP_UP_LOG = BUILD / "operator_demo" / "mlp-up.log"
 REPORT = BUILD / "DEMO_REPORT.md"
 HTML_REPORT = BUILD / "DEMO_REPORT.html"
 
@@ -95,10 +96,15 @@ def main() -> None:
     shell_results = [
         item for item in operator_results if item["kind"] == "shell_integration"
     ]
-    full_shell_pass = (
+    default_shell_pass = (
         FULL_SHELL_LOG.is_file()
         and "ACE2_SHELL_TB_PASS" in FULL_SHELL_LOG.read_text(encoding="utf-8")
     )
+    mlp_up_pass = (
+        MLP_UP_LOG.is_file()
+        and "ACE2_SHELL_MLP_UP_TB_PASS" in MLP_UP_LOG.read_text(encoding="utf-8")
+    )
+    full_shell_pass = default_shell_pass and mlp_up_pass
     fast_operator_count = sum(mode == "fast" for _, _, mode, _ in LAYER0_OPERATORS)
     metrics = (
         (str(len(rtl_rows)), "Certified RTL files checked now"),
@@ -145,6 +151,8 @@ def main() -> None:
 | Random Python-oracle groups | {len(random_oracles)} |
 | Layer-0 operator rows run by fast demo | {fast_operator_count}/18 |
 | Complete shell regression | {"PASS in this workspace" if full_shell_pass else "Run make demo-extended"} |
+| Default shell proof | {"PASS" if default_shell_pass else "not run"} |
+| Dedicated MLP-up proof | {"PASS" if mlp_up_pass else "not run"} |
 
 ## Evidence chain
 
@@ -161,6 +169,9 @@ def main() -> None:
    bit-accurate Python references.
 9. Six selected `ace2_shell` integration modes passed their packaged
    bit-accurate oracle vectors.
+10. Extended coverage is marked complete only when both the default shell log
+    contains `ACE2_SHELL_TB_PASS` and the dedicated MLP-up log contains
+    `ACE2_SHELL_MLP_UP_TB_PASS`.
 
 ![Fresh local RMSNorm challenge waveform](demo_challenge/rmsnorm-waveform.svg)
 
@@ -362,7 +373,9 @@ shell integration modes, corrupted-result rejection, and VCD waveform generation
 The same operator challenge is reproducible with <code>make demo SEED={escape(random_seed)}</code>.
 <br><br><strong>Available separately:</strong>
 <code>make demo-extended</code> runs the complete slow public shell regression.
-It is not claimed as run unless its log contains <code>ACE2_SHELL_TB_PASS</code>.
+It is not claimed as 18/18 unless the default log contains
+<code>ACE2_SHELL_TB_PASS</code> and the dedicated MLP-up log contains
+<code>ACE2_SHELL_MLP_UP_TB_PASS</code>.
 <br><br><strong>Historical certification,
 not rerun here:</strong> 13,914 commands across 24 layers/two tokens and mapped
 SKY130 100 MHz timing.<br><br><strong>Not claimed:</strong> arbitrary-text chat,

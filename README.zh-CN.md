@@ -142,8 +142,9 @@ make demo-extended
 
 可用 `make demo SEED=<报告中的种子>` 原样重放同一组随机题。
 
-只有完整 shell 日志真实产生 `ACE2_SHELL_TB_PASS` 后，报告才会把这些慢速算子
-标记为 PASS。两个命令都不会重放封存的完整模型 schedule，也不声称 FPGA 执行。
+只有默认完整 shell 日志产生 `ACE2_SHELL_TB_PASS`，并且专用 MLP-Up 重放产生
+`ACE2_SHELL_MLP_UP_TB_PASS` 后，报告才会把全部 18 个算子标记为 PASS。两个命令
+都不会重放封存的完整模型 schedule，也不声称 FPGA 执行。
 
 ## 工程演进
 
