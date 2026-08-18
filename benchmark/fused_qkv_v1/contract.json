@@ -1,0 +1,147 @@
+{
+  "created_at_utc": "2026-08-18T18:08:36.901719+00:00",
+  "evaluator": {
+    "tools/run_fused_qkv_benchmark.py": {
+      "bytes": 17730,
+      "sha256": "9ee2d2ba2b2b8e4a9d1a1cf3994283a839cca469df27afb68bb14f9f76fbfa65"
+    },
+    "verification/tb/ace2_fused_qkv_benchmark_tb.sv": {
+      "bytes": 23055,
+      "sha256": "c0c7e455774a39a493d67c0d1d42c7c737fd781cde76dad3e9263037f9022951"
+    }
+  },
+  "fixed_external_benchmark": false,
+  "limitations": [
+    "This deterministic Qwen-shaped QKV workload is not a full model or chat attempt.",
+    "The abstract streaming-memory boundary does not model a physical DRAM controller.",
+    "Area and timing require separate mission-local SKY130 synthesis/OpenSTA evidence."
+  ],
+  "name": "fused-qkv-v1",
+  "official_full_chat_invoked": false,
+  "pre_edit_sources_and_constraint_hashes": {
+    "constraints/ace2_rmsnorm_core.sdc": {
+      "bytes": 250,
+      "sha256": "b21f8da39a0bdc5bf4db70b82013efb3d06a686347749c0070f37f37eca9e9ea"
+    },
+    "rtl/ace2_attention_compose_core.sv": {
+      "bytes": 26322,
+      "sha256": "33ca20e48a6f9eb8f93874e95c8e8b73a48c00e435693b84d4a5915da7ca78ff"
+    },
+    "rtl/ace2_attention_score_core.sv": {
+      "bytes": 6361,
+      "sha256": "400234b1f5b28f379792d5c1e023adc3f2c81e7bea825d5f7683bdc6ccd1dd55"
+    },
+    "rtl/ace2_dynamic_rope_head_core.sv": {
+      "bytes": 13414,
+      "sha256": "938ab70d2ccef3e1dc03177c4e281a27d33307464d7ecee8c6ff1ca295e32f77"
+    },
+    "rtl/ace2_dynamic_scale32_core.sv": {
+      "bytes": 36215,
+      "sha256": "6bd7fdf378895212b98dfe4727f2151cc37e6d2f648cc885a08c0ec8895f65b1"
+    },
+    "rtl/ace2_fixed_q7_rope_score_core.sv": {
+      "bytes": 14705,
+      "sha256": "fc7b8590a0a16257392f3483581744a28a03c9b47d55fc7e48bf389ad48a398d"
+    },
+    "rtl/ace2_pkg.sv": {
+      "bytes": 3364,
+      "sha256": "de25e2b4ba09f89cee23b56101d808b00a83e310b440d86f27639f554f895ba1"
+    },
+    "rtl/ace2_relative_rope_score_fusion_core.sv": {
+      "bytes": 18952,
+      "sha256": "d3d6b5d7458b53cfba7359ff3fa1216a2aa88f9b2eb45f8134caf1da716901cd"
+    },
+    "rtl/ace2_rmsnorm_core.sv": {
+      "bytes": 23260,
+      "sha256": "b09fe7073fd6509f0ca83d5b0982b1952aa624d4883631690df35c0bfabb014d"
+    },
+    "rtl/ace2_rope_core.sv": {
+      "bytes": 30023,
+      "sha256": "e5feff02169c5f58b81bfd44350380f6074ca0cbbedf536a0744d8c2f663f3c8"
+    },
+    "rtl/ace2_shell.sv": {
+      "bytes": 207306,
+      "sha256": "3022fead9cadae344876073921addace9f83c272f75615c42c0421ffa7959663"
+    },
+    "rtl/ace2_silu_gate_core.sv": {
+      "bytes": 11356,
+      "sha256": "ace98af2654bb2ea0ccb256e55ee6d755ff4bc34d0fe0d2cdeff6dcd581199ae"
+    },
+    "rtl/ace2_softmax_core.sv": {
+      "bytes": 14073,
+      "sha256": "33b76b6a840111bf17f3c5324b6c2f71f1ca1a6ca29a67746fc92ffa53043ea6"
+    },
+    "rtl/ace2_w4a8_proj_core.sv": {
+      "bytes": 14914,
+      "sha256": "e4e7ff9d458ae823728669ae0a53ba650dbb0633d28c613347e4af2e1e198dfe"
+    },
+    "tools/run_fused_qkv_benchmark.py": {
+      "bytes": 17730,
+      "sha256": "9ee2d2ba2b2b8e4a9d1a1cf3994283a839cca469df27afb68bb14f9f76fbfa65"
+    },
+    "verification/tb/ace2_fused_qkv_benchmark_tb.sv": {
+      "bytes": 23055,
+      "sha256": "c0c7e455774a39a493d67c0d1d42c7c737fd781cde76dad3e9263037f9022951"
+    }
+  },
+  "protected_or_sealed_inputs_used": false,
+  "public_rtl_contract": {
+    "clock": "clk_i, 10 ns period",
+    "command_protocol": "legacy opcode 0x01 remains one projection per descriptor; fused opcode 0x0b is one ordered Q/K/V descriptor",
+    "compile_probe": {
+      "bytes": 1013697,
+      "sha256": "3bb01d7eca50e7865e8bcf4e4fdf0fe1062b097ab891ac1039d8264dcc438889"
+    },
+    "memory_protocol": "one-beat abstract streaming requests, deterministic ready stalls, and one-cycle read responses",
+    "parameters": "unchanged defaults",
+    "ports_frozen_by": {
+      "bytes": 207306,
+      "sha256": "3022fead9cadae344876073921addace9f83c272f75615c42c0421ffa7959663"
+    },
+    "reset": "rst_ni active-low asynchronous; five initial rising edges",
+    "top_module": "ace2_shell"
+  },
+  "schema_version": 1,
+  "score_policy": {
+    "control": "fused commands equal 1 and legacy commands equal 3",
+    "correctness": "all 1152 Q/K/V RTL bytes exactly equal the Python fixed-point oracle in legacy and fused modes",
+    "performance": "fused simulator cycles or measured wall time is lower than three legacy projections",
+    "regressions": "deterministic request/write backpressure, mid-command reset recovery, read-tag corruption, and legacy commands all pass",
+    "shared_reads": "fused activation reads equal 56 and are fewer than legacy"
+  },
+  "tools": {
+    "iverilog": "Icarus Verilog version 11.0 (stable) ()",
+    "python": "3.13.5",
+    "vvp": "Icarus Verilog runtime version 11.0 (stable) ()",
+    "yosys": "Yosys 0.9 (git sha1 1979e0b)"
+  },
+  "workload": {
+    "activation_formula": "((element*13+7)%255)-127",
+    "bias_formula": "output*31+projection*257-1984",
+    "expected_output": {
+      "bytes": 1152,
+      "distinct_values_q_k_v": [
+        134,
+        98,
+        111
+      ],
+      "sha256": "cf36a885ce341f75b2fc7537ad80cc63a598fe0f9a91279aa9c4f9ec19ac7ecb"
+    },
+    "flags": 0,
+    "fused_host_commands": 1,
+    "fused_opcode": 11,
+    "k": 896,
+    "k_n": 128,
+    "legacy_host_commands": 3,
+    "legacy_opcode": 1,
+    "m": 1,
+    "multiplier_formula": "1000003+projection*4099+output*97",
+    "operator": "Qwen2.5-0.5B-shaped Q/K/V projection",
+    "output_zero_point": 0,
+    "outputs_checked": 1152,
+    "q_n": 896,
+    "right_shift": 25,
+    "v_n": 128,
+    "weight_formula": "((projection*11+output*5+element*3+1)%15)-7"
+  }
+}

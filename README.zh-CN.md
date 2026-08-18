@@ -143,11 +143,34 @@ flowchart TB
 - RMSNorm、RoPE、Softmax 和 SiLU 是相对独立、可复用的 Core；
 - KV 状态跨 token 保存；
 - 各算子按顺序执行，目前还不是整层自主流水线；
-- Q、K、V Projection 尚未实现三路并行；
+- Fused `0x0b` 指令会用一个有序描述符执行 Q、K、V，并复用 Activation Tile；
+  它并没有增加三套独立 Projection Engine；
 - 更大的 Qwen 和其他 Decoder-only 模型仍需要计划中的参数化模型硬件契约。
 
 这种结构能够控制面积并提高 IP 复用性，同时也明确了后续优化方向：增加 MAC 并行度、
-融合 QKV、合并命令、进行算子融合，以及分别优化 Prefill 和 Decode 调度。
+进行算子融合，以及分别优化 Prefill 和 Decode 调度。
+
+### Fused QKV 数据流
+
+Shell 可以缓存一个包含 56 个 Beat、共 896 Bytes 的 Activation Tile，并按顺序在
+Q、K、V Projection 阶段复用。原有三描述符路径继续保留。在冻结的
+Qwen2.5-0.5B 形状 RTL Benchmark 中：
+
+| 指标 | 原有 Q/K/V | Fused QKV |
+|---|---:|---:|
+| 命令数 | 3 | 1 |
+| Activation Reads | 64,512 | 56 |
+| 总 Reads | 97,920 | 33,464 |
+| Simulator Cycles | 1,044,326 | 805,011 |
+
+两种模式的全部 1,152 个输出 Bytes 均与同一个定点 Oracle 位精确一致，并覆盖
+Backpressure、Reset/Restart、错误 Read Tag 和旧指令兼容性。这是有界 Projection
+结果，不代表完整模型聊天或 Full-shell 时序闭合。
+
+```sh
+make fused-qkv-freeze
+make fused-qkv-check
+```
 
 ### 参数化 Qwen2.5 模型契约
 

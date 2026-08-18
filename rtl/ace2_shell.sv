@@ -33,6 +33,7 @@ import ace2_pkg::ACE2_OPCODE_SILU_GATE;
 import ace2_pkg::ACE2_OPCODE_ROPE;
 import ace2_pkg::ACE2_OPCODE_KV_WRITE;
 import ace2_pkg::ACE2_OPCODE_W4A8_PROJ;
+import ace2_pkg::ACE2_OPCODE_FUSED_QKV;
 import ace2_pkg::ACE2_OPCODE_RMSNORM;
 import ace2_pkg::ACE2_OPCODE_RESIDUAL_ADD;
 import ace2_pkg::ACE2_SRAM_ADDR_WIDTH;
@@ -145,6 +146,12 @@ module ace2_shell #(
     localparam integer PROJ_WEIGHT_OFFSET_WIDTH = (PROJ_WEIGHT_OFFSET_MAX <= 1) ? 1 : $clog2(PROJ_WEIGHT_OFFSET_MAX + PROJ_MLP_WEIGHT_BYTES_PER_OUTPUT + 1);
     localparam integer PROJ_LINEAR_OFFSET_MAX = PROJ_M_MAX * PROJ_OUTPUT_MAX;
     localparam integer PROJ_LINEAR_OFFSET_WIDTH = (PROJ_LINEAR_OFFSET_MAX <= 1) ? 1 : $clog2(PROJ_LINEAR_OFFSET_MAX + 1);
+    localparam integer QKV_ACT_CACHE_BEATS = HIDDEN_SIZE / LANES;
+    localparam integer QKV_KV_OUTPUTS = 128;
+    localparam integer QKV_Q_WEIGHT_BYTES = HIDDEN_SIZE * HIDDEN_SIZE / 2;
+    localparam integer QKV_KV_WEIGHT_BYTES = QKV_KV_OUTPUTS * HIDDEN_SIZE / 2;
+    localparam integer QKV_Q_META_BYTES = HIDDEN_SIZE * 16;
+    localparam integer QKV_KV_META_BYTES = QKV_KV_OUTPUTS * 16;
     localparam integer ROPE_LANES = LANES / 8;
     localparam integer ROPE_SEGMENTS = LANES / ROPE_LANES;
     localparam integer ROPE_SEGMENT_INDEX_WIDTH = (ROPE_SEGMENTS <= 1) ? 1 : $clog2(ROPE_SEGMENTS);
@@ -184,6 +191,9 @@ module ace2_shell #(
     localparam [1:0] KV_PHASE_K = 2'd0;
     localparam [1:0] KV_PHASE_V = 2'd1;
     localparam [1:0] KV_PHASE_META = 2'd2;
+    localparam [1:0] QKV_PHASE_Q = 2'd0;
+    localparam [1:0] QKV_PHASE_K = 2'd1;
+    localparam [1:0] QKV_PHASE_V = 2'd2;
     localparam [BEAT_INDEX_WIDTH-1:0] LAST_BEAT = BEAT_INDEX_WIDTH'(BEATS - 1);
     localparam [PROJ_GROUP_INDEX_WIDTH-1:0] PROJ_HIDDEN_LAST_GROUP = PROJ_GROUP_INDEX_WIDTH'(PROJ_HIDDEN_GROUPS - 1);
     localparam [PROJ_GROUP_INDEX_WIDTH-1:0] PROJ_MLP_LAST_GROUP = PROJ_GROUP_INDEX_WIDTH'(PROJ_MLP_GROUPS - 1);
@@ -380,6 +390,9 @@ module ace2_shell #(
     reg [15:0] n_q;
     reg [15:0] k_q;
     reg proj_mlp_shape_q;
+    reg qkv_fused_q;
+    reg [1:0] qkv_phase_q;
+    reg [BEAT_INDEX_WIDTH-1:0] qkv_cache_fill_idx_q;
     reg [15:0] sequence_position_q;
     reg [63:0] src0_addr_q;
     reg [63:0] src1_addr_q;
@@ -414,7 +427,10 @@ module ace2_shell #(
     reg [PROJ_GROUP_INDEX_WIDTH-1:0] proj_group_idx_q;
     reg [3:0] proj_pack_lane_q;
     reg [PROJ_MAC_LANES*ACT_WIDTH-1:0] proj_act_low_q;
+    reg [LANES*ACT_WIDTH-1:0] proj_act_beat_q;
+    reg [LANES*ACT_WIDTH-1:0] qkv_activation_cache_q [0:QKV_ACT_CACHE_BEATS-1];
     reg [PROJ_MAC_LANES*4-1:0] proj_weight_q;
+    reg [LANES*ACT_WIDTH-1:0] proj_weight_beat_q;
     reg [PROJ_WEIGHT_OFFSET_WIDTH-1:0] proj_weight_offset_q;
     reg [PROJ_LINEAR_OFFSET_WIDTH-1:0] proj_meta_offset_q;
     reg [PROJ_LINEAR_OFFSET_WIDTH-1:0] proj_out_write_offset_q;
@@ -681,8 +697,16 @@ module ace2_shell #(
     wire [63:0] proj_act_group_storage_idx_ext_w = proj_group_idx_ext_w >> PROJ_ACT_GROUP_STORAGE_SHIFT;
     wire [63:0] proj_next_act_group_storage_idx_ext_w = proj_next_group_idx_ext_w >> PROJ_ACT_GROUP_STORAGE_SHIFT;
     wire [63:0] proj_wgt_group_storage_idx_ext_w = proj_group_idx_ext_w >> PROJ_WGT_GROUP_STORAGE_SHIFT;
+    wire [63:0] proj_next_wgt_group_storage_idx_ext_w =
+        proj_next_group_idx_ext_w >> PROJ_WGT_GROUP_STORAGE_SHIFT;
     wire [3:0] proj_act_group_lane_offset_w = 4'(proj_group_idx_q[PROJ_ACT_GROUP_SELECT_WIDTH-1:0] * PROJ_MAC_LANES);
+    wire [3:0] proj_next_act_group_lane_offset_w =
+        4'(proj_next_group_idx_ext_w[PROJ_ACT_GROUP_SELECT_WIDTH-1:0] *
+           PROJ_MAC_LANES);
     wire [5:0] proj_wgt_group_lane_offset_w = 6'(proj_group_idx_q[PROJ_WGT_GROUP_SELECT_WIDTH-1:0] * PROJ_MAC_LANES);
+    wire [5:0] proj_next_wgt_group_lane_offset_w =
+        6'(proj_next_group_idx_ext_w[PROJ_WGT_GROUP_SELECT_WIDTH-1:0] *
+           PROJ_MAC_LANES);
     wire [63:0] proj_hidden_row_base_w = (proj_row_idx_ext_w << 10) - (proj_row_idx_ext_w << 7);
     wire [63:0] proj_mlp_row_base_w =
         (proj_row_idx_ext_w << 12) + (proj_row_idx_ext_w << 9) + (proj_row_idx_ext_w << 8);
@@ -694,13 +718,35 @@ module ace2_shell #(
         proj_mlp_shape_q ?
         13'(PROJ_MLP_WEIGHT_BYTES_PER_OUTPUT) :
         13'(PROJ_HIDDEN_WEIGHT_BYTES_PER_OUTPUT);
-    wire [PROJ_OUT_INDEX_WIDTH-1:0] proj_last_out_w = n_q[PROJ_OUT_INDEX_WIDTH-1:0] - {{(PROJ_OUT_INDEX_WIDTH-1){1'b0}}, 1'b1};
+    wire [PROJ_OUT_INDEX_WIDTH-1:0] proj_output_count_w =
+        qkv_fused_q && (qkv_phase_q != QKV_PHASE_Q) ?
+        PROJ_OUT_INDEX_WIDTH'(QKV_KV_OUTPUTS) :
+        n_q[PROJ_OUT_INDEX_WIDTH-1:0];
+    wire [PROJ_OUT_INDEX_WIDTH-1:0] proj_last_out_w =
+        proj_output_count_w -
+        {{(PROJ_OUT_INDEX_WIDTH-1){1'b0}}, 1'b1};
     wire [PROJ_ROW_INDEX_WIDTH-1:0] proj_last_row_w = m_q[PROJ_ROW_INDEX_WIDTH-1:0] - {{(PROJ_ROW_INDEX_WIDTH-1){1'b0}}, 1'b1};
     wire proj_final_output_w = (proj_out_idx_q == proj_last_out_w) && (proj_row_idx_q == proj_last_row_w);
+    wire proj_descriptor_final_output_w =
+        proj_final_output_w &&
+        (!qkv_fused_q || (qkv_phase_q == QKV_PHASE_V));
+    wire [BEAT_INDEX_WIDTH-1:0] qkv_next_cache_idx_w =
+        proj_next_act_group_storage_idx_ext_w[BEAT_INDEX_WIDTH-1:0];
+    wire [LANES*ACT_WIDTH-1:0] qkv_next_act_beat_w =
+        qkv_activation_cache_q[qkv_next_cache_idx_w];
+    wire [PROJ_MAC_LANES*ACT_WIDTH-1:0] qkv_next_act_w =
+        qkv_next_act_beat_w[
+            proj_next_act_group_lane_offset_w*ACT_WIDTH +:
+            PROJ_MAC_LANES*ACT_WIDTH
+        ];
     wire [PROJ_WEIGHT_OFFSET_WIDTH-1:0] proj_group_byte_offset_w =
         PROJ_WEIGHT_OFFSET_WIDTH'(proj_wgt_group_storage_idx_ext_w << 4);
     wire [PROJ_WEIGHT_OFFSET_WIDTH-1:0] proj_weight_request_offset_w =
         proj_weight_offset_q + proj_group_byte_offset_w;
+    wire [PROJ_WEIGHT_OFFSET_WIDTH-1:0] proj_next_group_byte_offset_w =
+        PROJ_WEIGHT_OFFSET_WIDTH'(proj_next_wgt_group_storage_idx_ext_w << 4);
+    wire [PROJ_WEIGHT_OFFSET_WIDTH-1:0] proj_next_weight_request_offset_w =
+        proj_weight_offset_q + proj_next_group_byte_offset_w;
     wire [PROJ_WEIGHT_OFFSET_WIDTH-1:0] proj_meta_request_offset_w =
         PROJ_WEIGHT_OFFSET_WIDTH'(proj_meta_offset_q);
     wire [PROJ_WEIGHT_OFFSET_WIDTH-1:0] proj_out_request_offset_w =
@@ -745,6 +791,18 @@ module ace2_shell #(
                                    (cmd_src1_addr_buf_q[3:0] == 4'd0) &&
                                    (cmd_dst_addr_buf_q[3:0] == 4'd0) &&
                                    (cmd_scale_addr_buf_q[3:0] == 4'd0);
+    wire fused_qkv_descriptor_valid_w =
+        (cmd_opcode_buf_q == ACE2_OPCODE_FUSED_QKV) &&
+        (cmd_flags_buf_q == 8'd0) &&
+        (cmd_layer_id_buf_q < 8'd24) &&
+        (cmd_m_buf_q == 16'd1) &&
+        (cmd_n_buf_q == HIDDEN_SIZE_16) &&
+        (cmd_k_buf_q == HIDDEN_SIZE_16) &&
+        (cmd_src0_addr_buf_q[3:0] == 4'd0) &&
+        (cmd_src1_addr_buf_q[3:0] == 4'd0) &&
+        (cmd_dst_addr_buf_q[3:0] == 4'd0) &&
+        (cmd_scale_addr_buf_q[3:0] == 4'd0) &&
+        (cmd_scratch_addr_buf_q == 64'd0);
     wire rope_descriptor_valid_w = (cmd_opcode_buf_q == ACE2_OPCODE_ROPE) &&
                                    (cmd_flags_buf_q == ROPE_BASIS_ROTATION_HALF_DEGREES) &&
                                    (cmd_m_buf_q == 16'd1) &&
@@ -829,6 +887,7 @@ module ace2_shell #(
                                    (cmd_scale_addr_buf_q[3:0] == 4'd0);
     wire descriptor_valid_w = rms_descriptor_valid_w ||
                               proj_descriptor_valid_w ||
+                              fused_qkv_descriptor_valid_w ||
                               rope_descriptor_valid_w ||
                               kv_write_descriptor_valid_w ||
                               attn_score_descriptor_valid_w ||
@@ -838,7 +897,8 @@ module ace2_shell #(
                               residual_descriptor_valid_w ||
                               silu_descriptor_valid_w;
     wire [3:0] cmd_op_kind_i_w = (cmd_opcode_i == ACE2_OPCODE_RMSNORM) ? OP_KIND_RMSNORM :
-                                 (cmd_opcode_i == ACE2_OPCODE_W4A8_PROJ) ? OP_KIND_PROJ :
+                                 ((cmd_opcode_i == ACE2_OPCODE_W4A8_PROJ) ||
+                                  (cmd_opcode_i == ACE2_OPCODE_FUSED_QKV)) ? OP_KIND_PROJ :
                                  (cmd_opcode_i == ACE2_OPCODE_ROPE) ? OP_KIND_ROPE :
                                  (cmd_opcode_i == ACE2_OPCODE_ATTN_SCORE) ? OP_KIND_ATTN :
                                  (cmd_opcode_i == ACE2_OPCODE_SOFTMAX) ? OP_KIND_SOFTMAX :
@@ -884,6 +944,27 @@ module ace2_shell #(
     wire signed [PROJ_ACC_WIDTH-1:0] proj_meta_bias_accumulator_w = proj_bias_accumulator_q;
     wire [PROJ_MAC_LANES*ACT_WIDTH-1:0] proj_selected_act_w = mem_rdata_i[proj_act_group_lane_offset_w*ACT_WIDTH +: PROJ_MAC_LANES*ACT_WIDTH];
     wire [PROJ_MAC_LANES*4-1:0] proj_selected_weight_w = mem_rdata_i[proj_wgt_group_lane_offset_w*4 +: PROJ_MAC_LANES*4];
+    wire proj_next_act_cache_hit_w =
+        proj_next_act_group_storage_idx_ext_w ==
+        proj_act_group_storage_idx_ext_w;
+    wire proj_next_weight_cache_hit_w =
+        proj_next_wgt_group_storage_idx_ext_w ==
+        proj_wgt_group_storage_idx_ext_w;
+    wire proj_current_weight_cache_hit_w =
+        |proj_group_idx_q[PROJ_WGT_GROUP_SELECT_WIDTH-1:0];
+    wire proj_cache_advance_w =
+        (state_q == ST_PROJ_FEED) && proj_pair_valid_w &&
+        proj_pair_ready_w && (proj_group_idx_q != proj_last_group_w);
+    wire [PROJ_MAC_LANES*ACT_WIDTH-1:0] proj_cached_next_act_w =
+        proj_act_beat_q[
+            proj_next_act_group_lane_offset_w*ACT_WIDTH +:
+            PROJ_MAC_LANES*ACT_WIDTH
+        ];
+    wire [PROJ_MAC_LANES*4-1:0] proj_cached_next_weight_w =
+        proj_weight_beat_q[
+            proj_next_wgt_group_lane_offset_w*4 +:
+            PROJ_MAC_LANES*4
+        ];
     wire [ROPE_AUX_SELECT_WIDTH-1:0] rope_aux_select_w = rope_segment_q[ROPE_AUX_SELECT_WIDTH-1:0];
     wire [ROPE_LANES*ACT_WIDTH-1:0] rope_selected_act_w = mem_rdata_i[(rope_segment_q*ROPE_LANES*ACT_WIDTH) +: ROPE_LANES*ACT_WIDTH];
     wire [ROPE_LANES*16-1:0] rope_selected_aux_w = mem_rdata_i[(rope_aux_select_w*ROPE_LANES*16) +: ROPE_LANES*16];
@@ -1095,7 +1176,7 @@ module ace2_shell #(
         (state_q == ST_WRITE_DATA) ?
             ((out_idx_q == LAST_BEAT) ? ST_WAIT_DONE : ST_SCALE_ACT_REQ) :
         (state_q == ST_PROJ_WRITE_DATA) ?
-            (proj_final_output_w ? ST_COMPLETE : ST_PROJ_START) :
+            (proj_descriptor_final_output_w ? ST_COMPLETE : ST_PROJ_START) :
         (state_q == ST_ROPE_WRITE_DATA) ?
             ((beat_idx_q == rope_last_beat_w) ? ST_COMPLETE : ST_ROPE_START) :
         (state_q == ST_KV_WRITE_DATA) ?
@@ -1619,7 +1700,8 @@ module ace2_shell #(
                     end else if (op_kind_q == OP_KIND_ROPE) begin
                         state_d = ST_ROPE_START;
                     end else if (op_kind_q == OP_KIND_PROJ) begin
-                        state_d = ST_PROJ_START;
+                        state_d = qkv_fused_q ?
+                            ST_PROJ_ACT1_REQ : ST_PROJ_START;
                     end else if (op_kind_q == OP_KIND_ATTN) begin
                         state_d = ST_ATTN_META_REQ;
                     end else if (op_kind_q == OP_KIND_SOFTMAX) begin
@@ -1718,7 +1800,8 @@ module ace2_shell #(
             end
             ST_PROJ_START: begin
                 if (proj_start_valid_q && proj_start_ready_w) begin
-                    state_d = ST_PROJ_ACT0_REQ;
+                    state_d = qkv_fused_q ?
+                        ST_PROJ_WGT_REQ : ST_PROJ_ACT0_REQ;
                 end
             end
             ST_PROJ_ACT0_REQ: begin
@@ -1728,7 +1811,8 @@ module ace2_shell #(
             end
             ST_PROJ_ACT0_RECV: begin
                 if (accepted_read_transition_q) begin
-                    state_d = ST_PROJ_WGT_REQ;
+                    state_d = proj_current_weight_cache_hit_w ?
+                        ST_PROJ_FEED : ST_PROJ_WGT_REQ;
                 end
             end
             ST_PROJ_ACT1_REQ: begin
@@ -1737,8 +1821,14 @@ module ace2_shell #(
                 end
             end
             ST_PROJ_ACT1_RECV: begin
-                if (accepted_read_transition_q) begin
-                    state_d = ST_PROJ_WGT_REQ;
+                if (qkv_fused_q) begin
+                    if (accepted_read_w) begin
+                        state_d = (qkv_cache_fill_idx_q == LAST_BEAT) ?
+                            ST_PROJ_START : ST_PROJ_ACT1_REQ;
+                    end
+                end else if (accepted_read_transition_q) begin
+                    state_d = proj_current_weight_cache_hit_w ?
+                        ST_PROJ_FEED : ST_PROJ_WGT_REQ;
                 end
             end
             ST_PROJ_WGT_REQ: begin
@@ -1755,8 +1845,13 @@ module ace2_shell #(
                 if (proj_pair_valid_w && proj_pair_ready_w) begin
                     if (proj_group_idx_q == proj_last_group_w) begin
                         state_d = ST_PROJ_META_REQ;
-                    end else begin
+                    end else if (!qkv_fused_q &&
+                                 !proj_next_act_cache_hit_w) begin
                         state_d = ST_PROJ_ACT0_REQ;
+                    end else if (!proj_next_weight_cache_hit_w) begin
+                        state_d = ST_PROJ_WGT_REQ;
+                    end else begin
+                        state_d = ST_PROJ_FEED;
                     end
                 end
             end
@@ -2235,8 +2330,19 @@ module ace2_shell #(
     end
 
     always @(posedge clk_i) begin
-        if (proj_act_recv_q) begin
+        if (qkv_fused_q && (state_q == ST_PROJ_START) &&
+            proj_start_valid_q && proj_start_ready_w) begin
+            proj_act_low_q <=
+                qkv_activation_cache_q[0][PROJ_MAC_LANES*ACT_WIDTH-1:0];
+            proj_act_beat_q <= qkv_activation_cache_q[0];
+        end else if (proj_act_recv_q) begin
             proj_act_low_q <= proj_selected_act_w;
+            proj_act_beat_q <= mem_rdata_i;
+        end else if (proj_cache_advance_w && qkv_fused_q) begin
+            proj_act_low_q <= qkv_next_act_w;
+            proj_act_beat_q <= qkv_next_act_beat_w;
+        end else if (proj_cache_advance_w && proj_next_act_cache_hit_w) begin
+            proj_act_low_q <= proj_cached_next_act_w;
         end
         if (gain_low_recv_q) begin
             gain_low_q <= mem_rdata_i;
@@ -2246,6 +2352,9 @@ module ace2_shell #(
         end
         if (proj_wgt_recv_q) begin
             proj_weight_q <= proj_selected_weight_w;
+            proj_weight_beat_q <= mem_rdata_i;
+        end else if (proj_cache_advance_w && proj_next_weight_cache_hit_w) begin
+            proj_weight_q <= proj_cached_next_weight_w;
         end
         if (proj_meta_recv_q) begin
             proj_multiplier_q <= mem_rdata_i[31:0];
@@ -2926,26 +3035,59 @@ module ace2_shell #(
             proj_mem_req_addr_q <= 64'd0;
         end else if (!response_fault_pending_w && !watchdog_fire_w) begin
             case (prefix_state_q)
-                ST_PROJ_START: begin
-                    if (proj_start_valid_q && proj_start_ready_w) begin
-                        proj_mem_req_addr_q <=
-                            src0_addr_q + proj_row_base_w +
-                            (proj_act_group_storage_idx_ext_w << 4);
+                ST_CMD_DISPATCH: begin
+                    if (qkv_fused_q && descriptor_valid_q) begin
+                        proj_mem_req_addr_q <= src0_addr_q;
                     end
                 end
-                ST_PROJ_ACT0_RECV,
-                ST_PROJ_ACT1_RECV:
+                ST_PROJ_START: begin
+                    if (proj_start_valid_q && proj_start_ready_w) begin
+                        if (qkv_fused_q) begin
+                            proj_mem_req_addr_q <= add_proj_offset64(
+                                src1_addr_q, proj_weight_request_offset_w
+                            );
+                        end else begin
+                            proj_mem_req_addr_q <=
+                                src0_addr_q + proj_row_base_w +
+                                (proj_act_group_storage_idx_ext_w << 4);
+                        end
+                    end
+                end
+                ST_PROJ_ACT0_RECV:
                     proj_mem_req_addr_q <=
                         add_proj_offset64(src1_addr_q, proj_weight_request_offset_w);
+                ST_PROJ_ACT1_RECV: begin
+                    if (qkv_fused_q) begin
+                        if (accepted_read_w &&
+                            (qkv_cache_fill_idx_q != LAST_BEAT)) begin
+                            proj_mem_req_addr_q <=
+                                src0_addr_q +
+                                (({{(64-BEAT_INDEX_WIDTH){1'b0}},
+                                   qkv_cache_fill_idx_q} + 64'd1) << 4);
+                        end
+                    end else begin
+                        proj_mem_req_addr_q <= add_proj_offset64(
+                            src1_addr_q, proj_weight_request_offset_w
+                        );
+                    end
+                end
                 ST_PROJ_FEED: begin
                     if (proj_pair_valid_w && proj_pair_ready_w) begin
                         if (proj_group_idx_q == proj_last_group_w) begin
                             proj_mem_req_addr_q <=
                                 add_proj_offset64(scale_addr_q, proj_meta_request_offset_w);
-                        end else begin
+                        end else if (!qkv_fused_q &&
+                                     !proj_next_act_cache_hit_w) begin
                             proj_mem_req_addr_q <=
                                 src0_addr_q + proj_row_base_w +
                                 (proj_next_act_group_storage_idx_ext_w << 4);
+                        end else if (!proj_next_weight_cache_hit_w) begin
+                            proj_mem_req_addr_q <=
+                                add_proj_offset64(
+                                    src1_addr_q,
+                                    proj_next_weight_request_offset_w
+                                );
+                        end else begin
                         end
                     end
                 end
@@ -3090,6 +3232,9 @@ module ace2_shell #(
             n_q <= 16'd0;
             k_q <= 16'd0;
             proj_mlp_shape_q <= 1'b0;
+            qkv_fused_q <= 1'b0;
+            qkv_phase_q <= QKV_PHASE_Q;
+            qkv_cache_fill_idx_q <= {BEAT_INDEX_WIDTH{1'b0}};
             sequence_position_q <= 16'd0;
             src0_addr_q <= 64'd0;
             src1_addr_q <= 64'd0;
@@ -3239,6 +3384,8 @@ module ace2_shell #(
                 completion_tag_q <= cmd_completion_tag_buf_q;
                 flags_q <= cmd_flags_buf_q;
                 descriptor_valid_q <= descriptor_valid_w;
+                qkv_fused_q <=
+                    (cmd_opcode_buf_q == ACE2_OPCODE_FUSED_QKV);
             end
             if (cmd_fire_w) begin
                 op_kind_q <= cmd_op_kind_i_w;
@@ -3264,10 +3411,10 @@ module ace2_shell #(
                 scale_addr_q <= cmd_scale_addr_buf_q;
                 scratch_addr_q <= cmd_scratch_addr_buf_q;
             end
-            proj_wgt_recv_q <= (state_q == ST_PROJ_WGT_RECV) && !accepted_read_w && !soft_reset_req_w && !watchdog_fire_w && !response_fault_pending_w;
-            proj_meta_recv_q <= (state_q == ST_PROJ_META_RECV) && !accepted_read_w && !soft_reset_req_w && !watchdog_fire_w && !response_fault_pending_w;
-            proj_act_recv_q <= ((state_q == ST_PROJ_ACT0_RECV) ||
-                                (state_q == ST_PROJ_ACT1_RECV)) &&
+            proj_wgt_recv_q <= (state_commit_w == ST_PROJ_WGT_RECV) && !accepted_read_w && !soft_reset_req_w && !watchdog_fire_w && !response_fault_pending_w;
+            proj_meta_recv_q <= (state_commit_w == ST_PROJ_META_RECV) && !accepted_read_w && !soft_reset_req_w && !watchdog_fire_w && !response_fault_pending_w;
+            proj_act_recv_q <= ((state_commit_w == ST_PROJ_ACT0_RECV) ||
+                                (state_commit_w == ST_PROJ_ACT1_RECV)) &&
                                !accepted_read_w && !soft_reset_req_w &&
                                !watchdog_fire_w && !response_fault_pending_w;
             gain_low_recv_q <= ((state_q == ST_GAIN_RECV0) ||
@@ -3455,6 +3602,9 @@ module ace2_shell #(
                 proj_out_idx_q <= {PROJ_OUT_INDEX_WIDTH{1'b0}};
                 proj_group_idx_q <= {PROJ_GROUP_INDEX_WIDTH{1'b0}};
                 proj_pack_lane_q <= 4'd0;
+                qkv_fused_q <= 1'b0;
+                qkv_phase_q <= QKV_PHASE_Q;
+                qkv_cache_fill_idx_q <= {BEAT_INDEX_WIDTH{1'b0}};
                 proj_start_valid_q <= 1'b0;
                 proj_meta_valid_q <= 1'b0;
                 proj_wait_out_active_q <= 1'b0;
@@ -3584,6 +3734,8 @@ module ace2_shell #(
                         proj_out_idx_q <= {PROJ_OUT_INDEX_WIDTH{1'b0}};
                         proj_group_idx_q <= {PROJ_GROUP_INDEX_WIDTH{1'b0}};
                         proj_pack_lane_q <= 4'd0;
+                        qkv_phase_q <= QKV_PHASE_Q;
+                        qkv_cache_fill_idx_q <= {BEAT_INDEX_WIDTH{1'b0}};
                         proj_done_saturation_q <= 1'b0;
                         proj_done_overflow_q <= 1'b0;
                         rope_done_saturation_q <= 1'b0;
@@ -3654,6 +3806,18 @@ module ace2_shell #(
                         mem_req_addr_q <= add_proj_offset64(src1_addr_q, proj_weight_request_offset_w);
                     end
                     ST_PROJ_ACT1_RECV: begin
+                        if (qkv_fused_q && accepted_read_w) begin
+                            qkv_activation_cache_q[qkv_cache_fill_idx_q] <=
+                                mem_rdata_i;
+                            if (qkv_cache_fill_idx_q == LAST_BEAT) begin
+                                qkv_cache_fill_idx_q <=
+                                    {BEAT_INDEX_WIDTH{1'b0}};
+                            end else begin
+                                qkv_cache_fill_idx_q <=
+                                    qkv_cache_fill_idx_q +
+                                    {{(BEAT_INDEX_WIDTH-1){1'b0}}, 1'b1};
+                            end
+                        end
                         mem_req_addr_q <= add_proj_offset64(src1_addr_q, proj_weight_request_offset_w);
                     end
                     ST_PROJ_WGT_RECV: begin
@@ -3663,9 +3827,14 @@ module ace2_shell #(
                             if (proj_group_idx_q == proj_last_group_w) begin
                                 proj_group_idx_q <= {PROJ_GROUP_INDEX_WIDTH{1'b0}};
                                 mem_req_addr_q <= add_proj_offset64(scale_addr_q, proj_meta_request_offset_w);
-                            end else begin
+                            end else if (!proj_next_act_cache_hit_w) begin
                                 proj_group_idx_q <= proj_group_idx_q + {{(PROJ_GROUP_INDEX_WIDTH-1){1'b0}}, 1'b1};
                                 mem_req_addr_q <= src0_addr_q + proj_row_base_w + (proj_next_act_group_storage_idx_ext_w << 4);
+                            end else if (!proj_next_weight_cache_hit_w) begin
+                                proj_group_idx_q <= proj_group_idx_q + {{(PROJ_GROUP_INDEX_WIDTH-1){1'b0}}, 1'b1};
+                                mem_req_addr_q <= add_proj_offset64(src1_addr_q, proj_next_weight_request_offset_w);
+                            end else begin
+                                proj_group_idx_q <= proj_group_idx_q + {{(PROJ_GROUP_INDEX_WIDTH-1){1'b0}}, 1'b1};
                             end
                         end
                     end
@@ -3978,7 +4147,14 @@ module ace2_shell #(
                     default: begin
                     end
                 endcase
-                if (proj_write_accepted_w &&
+                if (proj_write_accepted_w && qkv_fused_q &&
+                    proj_final_output_w && (qkv_phase_q != QKV_PHASE_V)) begin
+                        qkv_phase_q <= qkv_phase_q + 2'd1;
+                        proj_row_idx_q <= {PROJ_ROW_INDEX_WIDTH{1'b0}};
+                        proj_out_idx_q <= {PROJ_OUT_INDEX_WIDTH{1'b0}};
+                        proj_group_idx_q <= {PROJ_GROUP_INDEX_WIDTH{1'b0}};
+                        proj_pack_lane_q <= 4'd0;
+                end else if (proj_write_accepted_w &&
                     !((proj_out_idx_q == proj_last_out_w) &&
                       (proj_row_idx_q == (m_q[PROJ_ROW_INDEX_WIDTH-1:0] -
                                           {{(PROJ_ROW_INDEX_WIDTH-1){1'b0}}, 1'b1})))) begin
@@ -3986,7 +4162,8 @@ module ace2_shell #(
                             proj_row_idx_q <= proj_row_idx_q + {{(PROJ_ROW_INDEX_WIDTH-1){1'b0}}, 1'b1};
                             proj_out_idx_q <= {PROJ_OUT_INDEX_WIDTH{1'b0}};
                         end else begin
-                            proj_out_idx_q <= proj_out_idx_q + {{(PROJ_OUT_INDEX_WIDTH-1){1'b0}}, 1'b1};
+                            proj_out_idx_q <= proj_out_idx_q +
+                                {{(PROJ_OUT_INDEX_WIDTH-1){1'b0}}, 1'b1};
                         end
                         proj_group_idx_q <= {PROJ_GROUP_INDEX_WIDTH{1'b0}};
                         proj_pack_lane_q <= 4'd0;
@@ -4019,7 +4196,27 @@ module ace2_shell #(
                 proj_meta_offset_q <= {PROJ_LINEAR_OFFSET_WIDTH{1'b0}};
                 proj_out_write_offset_q <= {PROJ_LINEAR_OFFSET_WIDTH{1'b0}};
             end
-            if (proj_write_accepted_w && !proj_final_output_w) begin
+            if (proj_write_accepted_w && qkv_fused_q &&
+                proj_final_output_w && (qkv_phase_q == QKV_PHASE_Q)) begin
+                proj_weight_offset_q <=
+                    PROJ_WEIGHT_OFFSET_WIDTH'(QKV_Q_WEIGHT_BYTES);
+                proj_meta_offset_q <=
+                    PROJ_LINEAR_OFFSET_WIDTH'(QKV_Q_META_BYTES);
+                proj_out_write_offset_q <=
+                    PROJ_LINEAR_OFFSET_WIDTH'(HIDDEN_SIZE);
+            end else if (proj_write_accepted_w && qkv_fused_q &&
+                         proj_final_output_w &&
+                         (qkv_phase_q == QKV_PHASE_K)) begin
+                proj_weight_offset_q <= PROJ_WEIGHT_OFFSET_WIDTH'(
+                    QKV_Q_WEIGHT_BYTES + QKV_KV_WEIGHT_BYTES
+                );
+                proj_meta_offset_q <= PROJ_LINEAR_OFFSET_WIDTH'(
+                    QKV_Q_META_BYTES + QKV_KV_META_BYTES
+                );
+                proj_out_write_offset_q <= PROJ_LINEAR_OFFSET_WIDTH'(
+                    HIDDEN_SIZE + QKV_KV_OUTPUTS
+                );
+            end else if (proj_write_accepted_w && !proj_final_output_w) begin
                 if (proj_out_idx_q == proj_last_out_w) begin
                     proj_weight_offset_q <= {PROJ_WEIGHT_OFFSET_WIDTH{1'b0}};
                     proj_meta_offset_q <= {PROJ_LINEAR_OFFSET_WIDTH{1'b0}};

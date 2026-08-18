@@ -152,13 +152,38 @@ The current design is command-driven and resource-shared:
 - KV state persists across token steps;
 - operators execute in sequence rather than as a fully autonomous layer
   pipeline;
-- Q, K and V projections are not yet three-way parallel;
+- fused opcode `0x0b` executes Q, K and V as one ordered descriptor while
+  reusing the activation tile; it does not add three independent projection
+  engines;
 - larger Qwen and other decoder-only model shapes still require the planned
   parameterized model/hardware contract.
 
 This organization keeps area controlled and makes the individual cores
 reusable, while leaving clear optimization opportunities in MAC parallelism,
-QKV fusion, command coalescing, operator fusion and Prefill/Decode scheduling.
+operator fusion and Prefill/Decode scheduling.
+
+### Fused QKV dataflow
+
+The shell can cache one 56-beat, 896-byte activation tile and reuse it across
+the ordered Q, K and V projection phases. The legacy three-descriptor path
+remains available. On the frozen Qwen2.5-0.5B-shaped RTL benchmark:
+
+| Metric | Legacy Q/K/V | Fused QKV |
+|---|---:|---:|
+| Commands | 3 | 1 |
+| Activation reads | 64,512 | 56 |
+| Total reads | 97,920 | 33,464 |
+| Simulator cycles | 1,044,326 | 805,011 |
+
+All 1,152 output bytes match the same fixed-point oracle in both modes.
+Backpressure, reset/restart, corrupted read tags and legacy compatibility are
+also checked. This is a bounded projection result, not a full-model chat or
+whole-shell timing claim.
+
+```sh
+make fused-qkv-freeze
+make fused-qkv-check
+```
 
 ### Parameterized Qwen2.5 model contracts
 

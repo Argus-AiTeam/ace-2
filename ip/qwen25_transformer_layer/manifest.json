@@ -14,7 +14,8 @@
   "dependencies": {
     "shared_paths": [
       "rtl/generated",
-      "verification/tb/ace2_shell_tb.sv"
+      "verification/tb/ace2_shell_tb.sv",
+      "verification/tb/ace2_fused_qkv_benchmark_tb.sv"
     ]
   },
   "interfaces": [
@@ -37,6 +38,8 @@
   "summary": "Discoverable bundle of the canonical ACE-2 shell and cores used for the demonstrated Qwen2.5-0.5B W4A8 layer path.",
   "supported_parameters": {
     "activation_width": 8,
+    "fused_qkv_activation_cache_bytes": 896,
+    "fused_qkv_opcode": "0x0b",
     "head_dim": 64,
     "hidden_size": 896,
     "intermediate_size": 4864,
@@ -53,8 +56,8 @@
       "post-attention-rmsnorm",
       "mlp-residual"
     ],
-    "proof_kind": "selected shared shell integration proofs",
-    "proof_note": "The package demo checks residual/post-norm and MLP-residual integration slices. It is not a full-layer or full-model replay; use existing extended/certification evidence for those separate scopes.",
+    "proof_kind": "selected shared shell integration proofs plus separate fused-QKV benchmark",
+    "proof_note": "The package demo checks residual/post-norm and MLP-residual integration slices. Run `make fused-qkv-freeze && make fused-qkv-check` for the ordered Q/K/V activation-reuse proof. Neither command is a full-layer or full-model replay.",
     "slow": false
   }
 }
