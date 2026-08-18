@@ -8,6 +8,7 @@ human-owned mission and explicit approval gates.
 
 Public Argus resources:
 
+- Argus AI Team projects: <https://github.com/Argus-AiTeam>
 - Official website: <https://argusbot.cn/>
 - Results: <https://argusbot.cn/results.html>
 - Research: <https://argusbot.cn/research.html>
@@ -18,6 +19,11 @@ construction, test generation, verification, quality localization, evidence
 binding, independent review handoffs, and rollback/reroute decisions. The human
 operator retained ownership of objectives, budgets, authorization, release,
 and external actions.
+
+ACE-2 follows the same public presentation principle as other Argus AI Team
+projects: lead with the strongest measured result, link it to reproducible
+artifacts, and state the claim boundary beside the result. Autonomous execution
+is part of the provenance; it does not weaken the evidence requirement.
 
 ## Engineering workflow
 

@@ -1,4 +1,8 @@
+<div align="center">
+
 # Argus Compute Engine 2（ACE-2）
+
+### 以证据为核心的 Qwen2.5-0.5B W4A8 加速器工程
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
@@ -6,9 +10,13 @@
 [![License](https://img.shields.io/github/license/aHappend/ace-2)](LICENSE)
 [![RTL](https://img.shields.io/badge/RTL-SystemVerilog-5C4EE5)](rtl/)
 [![Target](https://img.shields.io/badge/SKY130-100%20MHz-18A999)](docs/PPA_SUMMARY.md)
+[![Built by](https://img.shields.io/badge/built_by-Argus_AI_Team-7C3AED)](https://github.com/Argus-AiTeam)
+[![Claim boundary](https://img.shields.io/badge/claims-evidence_bound-0F766E)](KNOWN_LIMITATIONS.md)
 
-**由 [Argus](https://argusbot.cn/) 自主设计并持续迭代、以证据为核心的
-Qwen2.5-0.5B W4A8 加速器。**
+**ACE 即 Argus Compute Engine。ACE-2 的设计、实现、测试、审查和持续迭代主要由
+[Argus](https://argusbot.cn/) 在人类定义的目标与发布权限下自主完成。**
+
+</div>
 
 ![ACE-2 已认证的 Alpha 2 基线](docs/ace2-alpha2-overview.svg)
 
@@ -28,7 +36,7 @@ Qwen2.5-0.5B W4A8 加速器。**
 | SKY130 映射结果 | **62,283 个单元，0.614082704 mm²** |
 | 时序 | **100 MHz 通过，setup slack 为 +0.6966 ns** |
 | BF16 后继模型 | **S6 在 probe gate 处 NO-GO 封存，未访问 official dev** |
-| 执行准入 | **等待独立 host trust root；恢复包正在审查** |
+| 执行准入 | **V8 恢复包已获 Fresh-L2 接受；仍需要外部 root** |
 | 任意文本 W4A8 对话 | **尚未验收** |
 | Alveo U280 部署 | **尚未开始，需要外部工具链和板卡** |
 
@@ -36,9 +44,22 @@ Qwen2.5-0.5B W4A8 加速器。**
 [CERTIFICATION.md](CERTIFICATION.md) 中。后续工作及其明确的非声明边界见
 [Alpha 3 产品化进展](docs/ALPHA3_PROGRESS.md)。
 
-2026-08-17 的开发更新没有扩大已认证基线。由于当前尚未建立独立 host trust root，
-受保护的 Stage 1 执行继续保持 fail-closed。一个非特权恢复包正在重新构建并接受新一轮
-独立审查；它只是供外部管理员使用的准备材料，不代表执行授权，也不代表产品化完成。
+最新的公开安全产品化结果没有扩大已认证 RTL 基线。V8 host-trust 恢复包通过了
+58 项验证，报告零 issue，并以内容 SHA-256
+`07663099352edfad32eb39919ad9475f1f887328ebb549bdb9cae1c48f5ccad1`
+获得 Fresh-L2 接受。其状态为 `BUILD_READY_EXTERNAL_ROOT_REQUIRED`：尚未安装，
+没有发生特权执行，Stage 1 也尚未完成。详见
+[Host-trust 恢复状态](docs/HOST_TRUST_RECOVERY.md)。
+
+## 为什么 ACE-2 是 Argus 的成果
+
+ACE-2 是 [Argus AI Team](https://github.com/Argus-AiTeam) 公开成果体系的一部分。
+Argus 完成了主要的迭代工程闭环：架构拆解、RTL 与 oracle 实现、确定性测试生成、
+长时间验证、失败定位、证据绑定、Reviewer 交接，以及 fail-closed 回滚决策。
+人类保留任务目标、预算、授权、凭据和对外发布等边界的最终控制权。
+
+“由 Argus 制作”并不替代证据。仓库明确区分已验收结果、失败候选、可复现 Demo
+和非声明边界。完整说明见 [Argus 设计溯源](ARGUS_PROVENANCE.md)。
 
 ## ACE-2 包含什么
 
@@ -133,7 +154,8 @@ ACE-2 通过可测量、与具体 RTL tree 绑定的迭代实现时序收敛，�
 
 ## 产品化路线
 
-1. **当前门禁：**建立并独立验证执行准入所需的 trust root。
+1. **当前门禁：**由独立 external-root 渠道认证并调用精确的已接受 V8 恢复包；
+   当前账号不能自行建立这条 trust root。
 2. 在 S6 probe-lock 失败后，设计并独立审查一个结构上有充分依据的新 BF16 后继模型。
    S6 本身不得重试、恢复或重新评分。
 3. 新后继模型必须先通过冻结的 probe selector，才能访问 official dev。
@@ -142,7 +164,7 @@ ACE-2 通过可测量、与具体 RTL tree 绑定的迭代实现时序收敛，�
 5. 之后才能推进任意文本 prefill、tokenizer/主机集成、KV 复用、可读多 token 解码、
    量化参考与 RTL 一致性，以及一条命令启动的本地对话 Demo。
 6. 本地对话系统通过验收后，再进行 AMD/Xilinx Alveo U280 PCIe/XRT + HBM2
-   集成与仿真。
+   集成、构建证据与真实板卡执行；前提是外部工具链和硬件确实可用。
 7. 更后续的目标是板卡验证和物理设计签核。
 
 任何产品化工作只有在具备可复现证据并通过独立 Fresh Reviewer 验收后，才会进入认证基线。

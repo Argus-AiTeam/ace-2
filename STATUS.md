@@ -32,6 +32,10 @@ baseline:
 | BF16 quality conclusion | `PROBE_QUALITY_GATE_FAILURE` |
 | S6 probe result | 8/28 hard passes at epoch 1; 7/28 at epochs 2 and 3 |
 | Official dev / retention / holdout | Not accessed |
+| Host-trust recovery package | V8 Fresh-L2 accepted; 58 checks, zero issues |
+| V8 content SHA-256 | `07663099352edfad32eb39919ad9475f1f887328ebb549bdb9cae1c48f5ccad1` |
+| Execution-admission state | `BUILD_READY_EXTERNAL_ROOT_REQUIRED` |
+| Installed / privileged / Stage 1 | No / No / Not complete |
 | Arbitrary-text W4A8 chat | Blocked on a future accepted BF16 successor |
 | Quantized-reference/RTL chat agreement | Not yet demonstrated |
 | Alveo U280 package | Not yet built |

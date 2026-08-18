@@ -2,9 +2,16 @@
 
 ## Unreleased
 
-- document the fail-closed execution-admission blocker observed after Alpha 3;
-- record that non-privileged host-trust recovery packaging is under independent
-  review and is not execution authority;
+- refresh the English and Chinese project presentation using the public
+  evidence-first style of other Argus AI Team projects;
+- clarify that ACE-2 was primarily designed, implemented, tested, reviewed,
+  and iterated by Argus under human-owned mission and release boundaries;
+- record Fresh-L2 acceptance of the V8 host-trust recovery package after
+  58 verifier checks with zero issues;
+- publish the accepted V8 content hash and the precise public status
+  `BUILD_READY_EXTERNAL_ROOT_REQUIRED`;
+- retain the explicit facts that V8 is not installed, no privileged execution
+  occurred, and Stage 1 is not complete;
 - preserve all Alpha 2 certification claims and explicitly retain the
   non-claims for arbitrary-text chat, new RTL, XRT, and U280 execution.
 
