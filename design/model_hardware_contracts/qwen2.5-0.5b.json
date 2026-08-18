@@ -1,0 +1,87 @@
+{
+  "compatibility": {
+    "existing_ace2_runtime_preflight": true,
+    "full_rtl_execution_validated": false,
+    "validation_scope": "existing_0p5b_package_runtime_preflight"
+  },
+  "contract_id": "ace2-qwen2.5-0.5b-w4a8_scale32-v1",
+  "derived": {
+    "bf16_embedding_bytes": 272269312,
+    "estimated_weight_bytes": 526690832,
+    "head_dim": 64,
+    "kv_bytes_per_token_per_layer": 272,
+    "kv_payload_bytes_per_token_per_layer": 256,
+    "kv_scale_metadata_bytes_per_token_per_layer": 16,
+    "kv_width_elements": 128,
+    "maximum_kv_bytes": 213909504,
+    "maximum_weight_plus_kv_bytes": 740600336,
+    "operator_aux_metadata_bytes": 55296,
+    "packed_linear_weight_elements": 493961216,
+    "packed_w4_bytes": 246980608,
+    "projection_metadata_bytes": 7297024,
+    "projection_output_rows": 456064,
+    "query_heads_per_kv_head": 7,
+    "rmsnorm_metadata_bytes": 88592,
+    "transformer_linear_weight_elements": 357826560
+  },
+  "dimensions": {
+    "hidden_size": 896,
+    "intermediate_size": 4864,
+    "max_position_embeddings": 32768,
+    "num_attention_heads": 14,
+    "num_hidden_layers": 24,
+    "num_key_value_heads": 2,
+    "tie_word_embeddings": true,
+    "vocab_size": 151936
+  },
+  "estimate_scope": {
+    "kv_cache": "all layers at max_position_embeddings with signed-int8 K/V payload and one Scale32 value per K/V head per token",
+    "units": "bytes",
+    "weight": "packed W4 transformer and LM-head matrices, 16-byte per-output projection records, RMSNorm/operator metadata, and one BF16 input embedding table"
+  },
+  "hardware": {
+    "compute_tile": {
+      "lm_head_vocab": 32,
+      "projection_k": 32,
+      "projection_m": 1,
+      "projection_n": 32,
+      "vector_lanes": 16
+    },
+    "streaming_memory": {
+      "address_width_bits": 64,
+      "boundary": "abstract_streaming_memory",
+      "data_width_bits": 128,
+      "request_channels": 1,
+      "response_channels": 1,
+      "sram_banks": 8
+    }
+  },
+  "model_id": "qwen2.5-0.5b",
+  "precision": {
+    "accumulator_bits": 32,
+    "activation_bits": 8,
+    "default_mode": "w4a8_scale32",
+    "kv_cache_bits": 8,
+    "scale_format": "scale32",
+    "supported_modes": [
+      "w4a8_scale32"
+    ],
+    "weight_bits": 4
+  },
+  "schema_version": 1,
+  "source": {
+    "config_path": "config.json",
+    "config_url": "https://huggingface.co/Qwen/Qwen2.5-0.5B/blob/060db6499f32faf8b98477b0a26969ef7d8b9987/config.json",
+    "repository": "Qwen/Qwen2.5-0.5B",
+    "revision": "060db6499f32faf8b98477b0a26969ef7d8b9987"
+  },
+  "weight_layout": {
+    "embedding_storage": "bf16",
+    "lm_head_representation": "separate_packed_w4_copy",
+    "matrix_order": "output_channel_major_row_major",
+    "packing": "even_input_low_nibble_odd_input_high_nibble",
+    "projection_record_bytes": 16,
+    "signed_encoding": "twos_complement",
+    "weight_scale_granularity": "per_output_channel"
+  }
+}

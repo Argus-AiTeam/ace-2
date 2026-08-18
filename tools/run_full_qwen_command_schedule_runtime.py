@@ -20,6 +20,7 @@ from huggingface_hub.constants import HF_HUB_CACHE
 from tools.ace2_absolute_rope_online_attention_reference import (
     absolute_coefficients_q15,
 )
+from tools.model_hardware_contract import runtime_preflight
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -53,6 +54,9 @@ EXPECTED_MODEL_SHA256 = "88c142557820ccad55bb59756bfcfcf891de9cc6202816bd3464451
 EXPECTED_SHELL_SHA256 = "3bb8caab4f06e6be9b170b5b3d91cb89b237715132e52507cd60f0514c61ab30"
 EXPECTED_COMMANDS = 13_914
 EXPECTED_TOKEN_COUNTS = {"0": 6117, "1": 7797}
+MODEL_CONTRACT_ID = "qwen2.5-0.5b"
+MODEL_MAX_SEQUENCE_POSITIONS = 32_768
+MODEL_KV_BYTES_PER_TOKEN_PER_LAYER = 272
 
 OPERATORS = [
     "input_rmsnorm",
@@ -166,6 +170,17 @@ def rope_runtime_records(positions: tuple[int, int] = (0, 1)) -> bytes:
     return bytes(payload)
 
 
+def model_hardware_contract_preflight(
+    embedding_shape: list[int],
+) -> dict[str, Any]:
+    return runtime_preflight(
+        model_id=MODEL_CONTRACT_ID,
+        embedding_shape=embedding_shape,
+        max_sequence_positions=MODEL_MAX_SEQUENCE_POSITIONS,
+        kv_bytes_per_token_per_layer=MODEL_KV_BYTES_PER_TOKEN_PER_LAYER,
+    )
+
+
 def validate_inputs(
     image: Path,
     image_contract: Path,
@@ -226,6 +241,9 @@ def validate_inputs(
         require(command["completion_tag"] == (ordinal & 0xFFFF), f"completion tag changed at {ordinal}")
         require(command["operator"] in OPERATOR_IDS, f"unknown operator at {ordinal}")
     embedding_offset, embedding_shape = embedding_tensor_offset(model)
+    records["model_hardware_contract"] = model_hardware_contract_preflight(
+        embedding_shape
+    )
     return schedule, records, embedding_offset, embedding_shape
 
 
@@ -300,6 +318,7 @@ def build_package(
 def source_records() -> dict[str, Any]:
     paths = [
         Path(__file__),
+        ROOT / "tools/model_hardware_contract.py",
         ROOT / "verification/verilator/ace2_shell_runtime_harness.sv",
         ROOT / "verification/verilator/ace2_shell_runtime_main.cpp",
     ]
@@ -380,6 +399,7 @@ def main() -> int:
         },
         "runtime_sources": source_records(),
         "runtime_package": package_record,
+        "model_hardware_contract": inputs["model_hardware_contract"],
         "execution": {
             "requested_stop_after": args.stop_after or EXPECTED_COMMANDS,
             "resume": args.resume,

@@ -1,0 +1,400 @@
+{
+  "$id": "https://github.com/Argus-AiTeam/ace-2/design/model_hardware_contract.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "compatibility": {
+      "additionalProperties": false,
+      "properties": {
+        "existing_ace2_runtime_preflight": {
+          "type": "boolean"
+        },
+        "full_rtl_execution_validated": {
+          "const": false
+        },
+        "validation_scope": {
+          "enum": [
+            "existing_0p5b_package_runtime_preflight",
+            "structural_only_no_rtl_execution"
+          ]
+        }
+      },
+      "required": [
+        "validation_scope",
+        "existing_ace2_runtime_preflight",
+        "full_rtl_execution_validated"
+      ],
+      "type": "object"
+    },
+    "contract_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "derived": {
+      "additionalProperties": false,
+      "properties": {
+        "bf16_embedding_bytes": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "estimated_weight_bytes": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "head_dim": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "kv_bytes_per_token_per_layer": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "kv_payload_bytes_per_token_per_layer": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "kv_scale_metadata_bytes_per_token_per_layer": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "kv_width_elements": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "maximum_kv_bytes": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "maximum_weight_plus_kv_bytes": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "operator_aux_metadata_bytes": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "packed_linear_weight_elements": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "packed_w4_bytes": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "projection_metadata_bytes": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "projection_output_rows": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "query_heads_per_kv_head": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "rmsnorm_metadata_bytes": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "transformer_linear_weight_elements": {
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "head_dim",
+        "query_heads_per_kv_head",
+        "kv_width_elements",
+        "transformer_linear_weight_elements",
+        "packed_linear_weight_elements",
+        "packed_w4_bytes",
+        "projection_output_rows",
+        "projection_metadata_bytes",
+        "rmsnorm_metadata_bytes",
+        "operator_aux_metadata_bytes",
+        "bf16_embedding_bytes",
+        "estimated_weight_bytes",
+        "kv_payload_bytes_per_token_per_layer",
+        "kv_scale_metadata_bytes_per_token_per_layer",
+        "kv_bytes_per_token_per_layer",
+        "maximum_kv_bytes",
+        "maximum_weight_plus_kv_bytes"
+      ],
+      "type": "object"
+    },
+    "dimensions": {
+      "additionalProperties": false,
+      "properties": {
+        "hidden_size": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "intermediate_size": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "max_position_embeddings": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "num_attention_heads": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "num_hidden_layers": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "num_key_value_heads": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "tie_word_embeddings": {
+          "type": "boolean"
+        },
+        "vocab_size": {
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "hidden_size",
+        "intermediate_size",
+        "num_hidden_layers",
+        "num_attention_heads",
+        "num_key_value_heads",
+        "max_position_embeddings",
+        "vocab_size",
+        "tie_word_embeddings"
+      ],
+      "type": "object"
+    },
+    "estimate_scope": {
+      "additionalProperties": false,
+      "properties": {
+        "kv_cache": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "units": {
+          "const": "bytes"
+        },
+        "weight": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "weight",
+        "kv_cache",
+        "units"
+      ],
+      "type": "object"
+    },
+    "hardware": {
+      "additionalProperties": false,
+      "properties": {
+        "compute_tile": {
+          "additionalProperties": false,
+          "properties": {
+            "lm_head_vocab": {
+              "const": 32
+            },
+            "projection_k": {
+              "const": 32
+            },
+            "projection_m": {
+              "const": 1
+            },
+            "projection_n": {
+              "const": 32
+            },
+            "vector_lanes": {
+              "const": 16
+            }
+          },
+          "required": [
+            "vector_lanes",
+            "projection_m",
+            "projection_n",
+            "projection_k",
+            "lm_head_vocab"
+          ],
+          "type": "object"
+        },
+        "streaming_memory": {
+          "additionalProperties": false,
+          "properties": {
+            "address_width_bits": {
+              "const": 64
+            },
+            "boundary": {
+              "const": "abstract_streaming_memory"
+            },
+            "data_width_bits": {
+              "const": 128
+            },
+            "request_channels": {
+              "const": 1
+            },
+            "response_channels": {
+              "const": 1
+            },
+            "sram_banks": {
+              "const": 8
+            }
+          },
+          "required": [
+            "boundary",
+            "address_width_bits",
+            "data_width_bits",
+            "request_channels",
+            "response_channels",
+            "sram_banks"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "compute_tile",
+        "streaming_memory"
+      ],
+      "type": "object"
+    },
+    "model_id": {
+      "enum": [
+        "qwen2.5-0.5b",
+        "qwen2.5-1.5b",
+        "qwen2.5-3b",
+        "qwen2.5-7b"
+      ]
+    },
+    "precision": {
+      "additionalProperties": false,
+      "properties": {
+        "accumulator_bits": {
+          "const": 32
+        },
+        "activation_bits": {
+          "const": 8
+        },
+        "default_mode": {
+          "enum": [
+            "w4a8_scale32"
+          ]
+        },
+        "kv_cache_bits": {
+          "const": 8
+        },
+        "scale_format": {
+          "const": "scale32"
+        },
+        "supported_modes": {
+          "items": {
+            "enum": [
+              "w4a8_scale32"
+            ]
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "weight_bits": {
+          "const": 4
+        }
+      },
+      "required": [
+        "supported_modes",
+        "default_mode",
+        "weight_bits",
+        "activation_bits",
+        "accumulator_bits",
+        "kv_cache_bits",
+        "scale_format"
+      ],
+      "type": "object"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "source": {
+      "additionalProperties": false,
+      "properties": {
+        "config_path": {
+          "const": "config.json"
+        },
+        "config_url": {
+          "format": "uri",
+          "type": "string"
+        },
+        "repository": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "revision": {
+          "pattern": "^[0-9a-f]{40}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "repository",
+        "revision",
+        "config_path",
+        "config_url"
+      ],
+      "type": "object"
+    },
+    "weight_layout": {
+      "additionalProperties": false,
+      "properties": {
+        "embedding_storage": {
+          "const": "bf16"
+        },
+        "lm_head_representation": {
+          "const": "separate_packed_w4_copy"
+        },
+        "matrix_order": {
+          "const": "output_channel_major_row_major"
+        },
+        "packing": {
+          "const": "even_input_low_nibble_odd_input_high_nibble"
+        },
+        "projection_record_bytes": {
+          "const": 16
+        },
+        "signed_encoding": {
+          "const": "twos_complement"
+        },
+        "weight_scale_granularity": {
+          "const": "per_output_channel"
+        }
+      },
+      "required": [
+        "matrix_order",
+        "signed_encoding",
+        "packing",
+        "weight_scale_granularity",
+        "projection_record_bytes",
+        "embedding_storage",
+        "lm_head_representation"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "contract_id",
+    "model_id",
+    "source",
+    "dimensions",
+    "precision",
+    "weight_layout",
+    "hardware",
+    "compatibility",
+    "derived",
+    "estimate_scope"
+  ],
+  "title": "ACE-2 Qwen2.5 Model Hardware Contract",
+  "type": "object"
+}
