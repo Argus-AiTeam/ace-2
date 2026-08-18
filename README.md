@@ -99,6 +99,67 @@ and release-local SKY130 flow scripts. Model weights, proprietary PDK data,
 private benchmarks, build products, and sealed internal run packets are not
 distributed.
 
+### Current RTL organization
+
+ACE-2 implements one reusable Transformer-layer engine rather than physically
+replicating all 24 model layers. The host selects a layer, supplies its weights
+and descriptors, invokes the operators in order, and feeds the resulting hidden
+state into the next layer.
+
+```mermaid
+flowchart TB
+    HOST[Host runtime and model package] --> IFACE[128-bit command/data interface]
+    IFACE --> SHELL
+
+    subgraph SHELL[ace2_shell]
+        CTRL[Command decoder<br/>descriptor, completion, error control]
+        MEM[Banked SRAM, DMA and KV state]
+
+        subgraph PROJ[Shared W4A8 projection path]
+            MAC[Four MAC lanes]
+            PUSE[Q / K / V / O<br/>Gate / Up / Down]
+        end
+
+        subgraph VEC[Vector and special-function cores]
+            NORM[RMSNorm]
+            ROPE[RoPE]
+            SM[Softmax]
+            SILU[SiLU / SwiGLU]
+            RES[Residual and requantization]
+        end
+
+        subgraph ATTN[Attention and state]
+            KV[KV cache read/write]
+            SCORE[Attention score]
+            VALUE[Attention value/compose]
+        end
+
+        CTRL --> NORM --> PROJ --> ROPE --> KV --> SCORE --> SM --> VALUE
+        VALUE --> PROJ --> RES --> NORM --> PROJ --> SILU --> PROJ --> RES
+        MEM <--> PROJ
+        MEM <--> ATTN
+        MEM <--> VEC
+    end
+
+    SHELL --> NEXT[Layer output / next-layer input]
+```
+
+The current design is command-driven and resource-shared:
+
+- the same layer engine is reused across all model layers and token positions;
+- seven major projections share one W4A8 MAC path;
+- RMSNorm, RoPE, Softmax and SiLU are separate reusable cores;
+- KV state persists across token steps;
+- operators execute in sequence rather than as a fully autonomous layer
+  pipeline;
+- Q, K and V projections are not yet three-way parallel;
+- larger Qwen and other decoder-only model shapes still require the planned
+  parameterized model/hardware contract.
+
+This organization keeps area controlled and makes the individual cores
+reusable, while leaving clear optimization opportunities in MAC parallelism,
+QKV fusion, command coalescing, operator fusion and Prefill/Decode scheduling.
+
 ## Open IP Library
 
 The [ACE-2 Open IP Library](IP_LIBRARY.md) organizes the canonical RTL into
