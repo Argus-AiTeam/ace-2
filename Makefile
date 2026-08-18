@@ -24,7 +24,10 @@ IP_PACKAGES := w4a8_projection rmsnorm rope kv_cache attention softmax \
 
 model-hardware-contract-check:
 	$(PYTHON) tools/model_hardware_contract.py --check
-	$(PYTHON) -m unittest verification.test_model_hardware_contract
+	$(PYTHON) tools/quantization_policy.py --check
+	$(PYTHON) -m unittest \
+		verification.test_model_hardware_contract \
+		verification.test_quantization_policy
 
 demo: certified-rtl-check env-check lint oracle-check sim local-challenge challenge-sim negative-control operator-suite demo-report
 	@echo "ACE2_LOCAL_RTL_DEMO_PASS"

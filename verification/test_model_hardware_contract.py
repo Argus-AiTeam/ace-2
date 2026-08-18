@@ -75,6 +75,11 @@ class ModelHardwareContractTest(unittest.TestCase):
             kv_bytes_per_token_per_layer=272,
         )
         self.assertEqual(result["status"], "PASS_MODEL_HARDWARE_CONTRACT")
+        self.assertEqual(
+            result["quantization_policy"]["status"],
+            "PASS_CURRENT_RTL_QUANTIZATION_POLICY",
+        )
+        self.assertEqual(result["quantization_policy"]["policy_id"], "w4a8")
         self.assertTrue(result["claims"]["package_runtime_compatibility"])
         self.assertFalse(result["claims"]["full_model_rtl_execution"])
         with self.assertRaisesRegex(contract.ContractError, "embedding shape"):

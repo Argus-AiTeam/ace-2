@@ -169,6 +169,21 @@ make model-hardware-contract-check
 大模型描述证明的是机器可检查的结构契约，**不代表** 1.5B、3B 或 7B 已经在 RTL
 中实际运行。最大容量使用各模型声明的最大上下文计算，是规划上界而不是板卡实测分配。
 
+### 混合精度规划
+
+同一条检查命令还会为四种模型契约生成确定性的精度方案：
+
+| 策略 | 目标用途 | 当前状态 |
+|---|---|---|
+| `w4a8` | W4 Projection 与 A8 Activation/KV 路径 | 当前 RTL 格式 |
+| `w8a8` | 更高精度的 Projection 候选 | 仅结构候选，无 RTL 执行声明 |
+| `mixed_w4a8_a16_bf16` | W4 Projection 与局部 A16/BF16 敏感算子 | 仅结构候选，无 RTL 执行声明 |
+
+每份方案记录逐算子精度、权重/KV 容量估算、最大上下文 Decode 流量、描述符哈希和明确
+的硬件支持状态。Validator 会对 schema 或类型不一致 fail-closed，并包含 signed-int4
+ties-to-even 打包参考。在对应 RTL 完成并通过验证前，W8A8 和混合 BF16 仍属于软硬件
+协同设计方案。
+
 ## 开放 IP 库
 
 [ACE-2 开放 IP 库](IP_LIBRARY.zh-CN.md)将规范 RTL 整理为 9 个带机器可读 manifest
