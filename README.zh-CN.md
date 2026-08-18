@@ -92,6 +92,63 @@ flowchart LR
 - 本地构建产物与运行日志；
 - 受保护或已封存的内部执行证据。
 
+### 当前 RTL 组织结构
+
+ACE-2 实现的是一套可重复使用的 Transformer Layer 引擎，而不是在芯片中物理复制
+24 份 Layer。Host 选择当前层、提供权重与描述符，按顺序调用各算子，再将输出隐藏状态
+作为下一层输入。
+
+```mermaid
+flowchart TB
+    HOST[Host Runtime 与模型包] --> IFACE[128-bit 命令/数据接口]
+    IFACE --> SHELL
+
+    subgraph SHELL[ace2_shell]
+        CTRL[命令解码<br/>描述符、完成与错误控制]
+        MEM[Banked SRAM、DMA 与 KV 状态]
+
+        subgraph PROJ[共享 W4A8 Projection 路径]
+            MAC[四条 MAC lanes]
+            PUSE[Q / K / V / O<br/>Gate / Up / Down]
+        end
+
+        subgraph VEC[向量与特殊函数 Core]
+            NORM[RMSNorm]
+            ROPE[RoPE]
+            SM[Softmax]
+            SILU[SiLU / SwiGLU]
+            RES[Residual 与 Requantization]
+        end
+
+        subgraph ATTN[Attention 与状态]
+            KV[KV Cache 读写]
+            SCORE[Attention Score]
+            VALUE[Attention Value/Compose]
+        end
+
+        CTRL --> NORM --> PROJ --> ROPE --> KV --> SCORE --> SM --> VALUE
+        VALUE --> PROJ --> RES --> NORM --> PROJ --> SILU --> PROJ --> RES
+        MEM <--> PROJ
+        MEM <--> ATTN
+        MEM <--> VEC
+    end
+
+    SHELL --> NEXT[Layer 输出 / 下一层输入]
+```
+
+当前架构采用命令驱动和资源复用方式：
+
+- 同一套 Layer 引擎重复执行所有模型层和 token 位置；
+- 七个主要 Projection 共享一条 W4A8 MAC 路径；
+- RMSNorm、RoPE、Softmax 和 SiLU 是相对独立、可复用的 Core；
+- KV 状态跨 token 保存；
+- 各算子按顺序执行，目前还不是整层自主流水线；
+- Q、K、V Projection 尚未实现三路并行；
+- 更大的 Qwen 和其他 Decoder-only 模型仍需要计划中的参数化模型硬件契约。
+
+这种结构能够控制面积并提高 IP 复用性，同时也明确了后续优化方向：增加 MAC 并行度、
+融合 QKV、合并命令、进行算子融合，以及分别优化 Prefill 和 Decode 调度。
+
 ## 开放 IP 库
 
 [ACE-2 开放 IP 库](IP_LIBRARY.zh-CN.md)将规范 RTL 整理为 9 个带机器可读 manifest
