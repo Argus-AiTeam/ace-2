@@ -160,6 +160,28 @@ This organization keeps area controlled and makes the individual cores
 reusable, while leaving clear optimization opportunities in MAC parallelism,
 QKV fusion, command coalescing, operator fusion and Prefill/Decode scheduling.
 
+### Parameterized Qwen2.5 model contracts
+
+ACE-2 now includes executable model/hardware descriptors for Qwen2.5 0.5B,
+1.5B, 3B and 7B. The shared schema validates model dimensions, GQA geometry,
+precision choices, memory-layout requirements and estimated weight/KV capacity.
+
+```sh
+make model-hardware-contract-check
+```
+
+| Model | Contract scope | Estimated packed weights | Maximum weight + KV estimate |
+|---|---|---:|---:|
+| Qwen2.5-0.5B | Existing package/runtime preflight | 526.7 MB | 740.6 MB |
+| Qwen2.5-1.5B | Structural only | 1.25 GB | 3.19 GB |
+| Qwen2.5-3B | Structural only | 2.18 GB | 2.81 GB |
+| Qwen2.5-7B | Structural only | 4.65 GB | 8.53 GB |
+
+The larger-model descriptors establish machine-checked structural contracts;
+they do **not** claim that 1.5B, 3B or 7B has executed in RTL. The maximum
+capacity figures use each model's declared maximum context and therefore are
+planning bounds rather than measured board allocation.
+
 ## Open IP Library
 
 The [ACE-2 Open IP Library](IP_LIBRARY.md) organizes the canonical RTL into
