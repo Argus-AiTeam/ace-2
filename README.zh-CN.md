@@ -92,6 +92,25 @@ flowchart LR
 - 本地构建产物与运行日志；
 - 受保护或已封存的内部执行证据。
 
+## 开放 IP 库
+
+[ACE-2 开放 IP 库](IP_LIBRARY.zh-CN.md)将规范 RTL 整理为 9 个带机器可读 manifest
+的复用包。它明确区分独立 core（`rmsnorm`、`rope`、`softmax`、投影与
+SiLU/SwiGLU）、带共享 shell 集成的 Attention core、由 shell 实现的 KV 写入路径，
+以及 MLP/Transformer Layer 集成包。
+
+```sh
+make ip-list
+make ip-validate
+make ip-demo IP=rmsnorm
+make ip-softmax
+```
+
+功能包结果写入 `build/ip_library/`。现有 18 个算子 Demo 证明了列出的 ACE-2 路径，
+但并非每个算子名称都对应完全独立的 standalone core。每个 manifest 都记录规范源码、
+Qwen2.5-0.5B 参数、接口、依赖、证明映射和限制。该整理不声明任意 Transformer 支持、
+完整模型对话或 FPGA 部署。
+
 ## 运行可视化 Demo
 
 安装 Python 3、GNU Make、Verilator 和 Icarus Verilog，然后运行：

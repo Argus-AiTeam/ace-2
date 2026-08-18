@@ -22,6 +22,14 @@ baseline:
 | OpenSTA WNS / TNS | 0.00 ns / 0.00 ns |
 | Formal product certificate | `CERTIFIED` for the demonstrated scope |
 
+## Public IP packaging
+
+The [Open IP Library](IP_LIBRARY.md) exposes nine cataloged reuse packages
+without changing or copying the certified RTL. Standalone cores, shared shell
+paths, and integration bundles are labeled separately. `make ip-validate`
+checks package metadata and `make ip-demo IP=<name>` writes proof results under
+`build/ip_library/`.
+
 ## Productization status
 
 | Area | Status at Alpha 3 cut |

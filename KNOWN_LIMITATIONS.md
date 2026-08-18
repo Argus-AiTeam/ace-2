@@ -24,3 +24,7 @@ rescored, or represented as a qualified model.
 The distributed repository excludes model weights, private benchmark inputs,
 raw proprietary PDK data, build products, local session state, and the sealed
 exactly-once evidence archive.
+
+The Open IP Library is a packaging and discovery layer over canonical RTL.
+Its MLP, KV-cache, and Transformer-layer entries include shared shell paths or
+integration bundles and must not be represented as isolated standalone cores.

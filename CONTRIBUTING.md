@@ -3,7 +3,12 @@
 Contributions should preserve the distinction between structural RTL coverage
 and numerically accepted support.
 
-- Do not claim support beyond `layer_0.v_proj` without reproducible evidence.
+- Preserve the package classification in `ip/catalog.json`: a verified
+  operator name is not automatically a standalone core.
+- Run `make ip-validate` after changing the Open IP Library and add a focused
+  proof mapping for new public packages.
+- Do not claim dimensions, quantization formats, models, full-model behavior,
+  or deployment targets beyond reproducible evidence.
 - Add deterministic, redistribution-safe vectors and an independent oracle for
   numerical changes.
 - Run `make demo` before submitting changes.

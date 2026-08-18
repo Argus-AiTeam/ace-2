@@ -7,6 +7,8 @@
 - release-local SDC and SKY130 synthesis/STA scripts;
 - deterministic synthetic vectors and RTL testbenches;
 - fixed-point operator references and vector generators;
+- the Open IP Library catalog, per-package manifests, reuse documentation, and
+  proof-command mappings that reference canonical RTL without copying it;
 - packed-image and two-token runtime utilities without model weights;
 - Verilator runtime harness sources;
 - architecture, status, limitations, changelog, certification, and Alpha 3

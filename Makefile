@@ -17,8 +17,10 @@ RTL_INCLUDE_FLAGS := -Irtl -Irtl/generated
 OPERATOR_DEMOS := input-rmsnorm q-proj k-proj v-proj rope-q rope-k kv-write \
 	attention-score softmax attention-value o-proj attention-residual \
 	post-attention-rmsnorm mlp-gate mlp-up silu mlp-down mlp-residual
+IP_PACKAGES := w4a8_projection rmsnorm rope kv_cache attention softmax \
+	silu_swiglu mlp qwen25_transformer_layer
 
-.PHONY: demo demo-extended demo-operator demo-operators $(addprefix demo-,$(OPERATOR_DEMOS)) visuals schematic certified-rtl-check env-check oracle-check lint sim local-challenge challenge-sim negative-control operator-suite full-shell-sim demo-report synth manifest clean
+.PHONY: demo demo-extended demo-operator demo-operators $(addprefix demo-,$(OPERATOR_DEMOS)) ip-list ip-validate ip-docs ip-demo ip-demo-all $(addprefix ip-,$(IP_PACKAGES)) visuals schematic certified-rtl-check env-check oracle-check lint sim local-challenge challenge-sim negative-control operator-suite full-shell-sim demo-report synth manifest clean
 
 demo: certified-rtl-check env-check lint oracle-check sim local-challenge challenge-sim negative-control operator-suite demo-report
 	@echo "ACE2_LOCAL_RTL_DEMO_PASS"
@@ -43,6 +45,25 @@ demo-operators:
 
 $(addprefix demo-,$(OPERATOR_DEMOS)):
 	@$(PYTHON) scripts/run_single_operator_demo.py "$(@:demo-%=%)"
+
+ip-list:
+	@$(PYTHON) scripts/run_ip_demo.py --list
+
+ip-validate:
+	@$(PYTHON) scripts/validate_ip_catalog.py
+
+ip-docs:
+	@$(PYTHON) scripts/generate_ip_package_docs.py
+
+ip-demo:
+	@test -n "$(IP)" || { echo "Usage: make ip-demo IP=<package>"; exit 2; }
+	@$(PYTHON) scripts/run_ip_demo.py "$(IP)"
+
+ip-demo-all:
+	@$(PYTHON) scripts/run_ip_demo.py --all
+
+$(addprefix ip-,$(IP_PACKAGES)):
+	@$(PYTHON) scripts/run_ip_demo.py "$(@:ip-%=%)"
 
 visuals: demo schematic
 	@echo

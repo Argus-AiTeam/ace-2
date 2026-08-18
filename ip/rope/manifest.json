@@ -1,0 +1,49 @@
+{
+  "canonical_rtl": [
+    "rtl/ace2_rope_core.sv"
+  ],
+  "classification": "standalone_core",
+  "dependencies": {
+    "shared_paths": [
+      "rtl/ace2_shell.sv",
+      "verification/tb/ace2_shell_tb.sv"
+    ]
+  },
+  "interfaces": [
+    "start ready/valid",
+    "paired activation beat ready/valid",
+    "per-lane scales",
+    "cos/sin inputs",
+    "first/second-half selector",
+    "output ready/valid and saturation status"
+  ],
+  "known_limitations": [
+    "Position/scaling data is supplied externally.",
+    "The package does not provide a tokenizer, sequence scheduler, or arbitrary RoPE variant adapter."
+  ],
+  "license": {
+    "inheritance": "Apache-2.0",
+    "source": "LICENSE"
+  },
+  "maturity": "verified RTL core with a paired Q/K shared shell proof",
+  "name": "rope",
+  "summary": "Reusable fixed-point rotary position embedding datapath for paired Q/K activation slices.",
+  "supported_parameters": {
+    "ACT_WIDTH": 8,
+    "LANES_core_default": 16,
+    "LANES_shell": 2,
+    "SCALE_WIDTH": 16,
+    "TRIG_WIDTH": 16,
+    "head_dim": 64
+  },
+  "title": "RoPE Core",
+  "verification": {
+    "command": "make ip-demo IP=rope",
+    "operators": [
+      "rope-q"
+    ],
+    "proof_kind": "paired shared shell proof",
+    "proof_note": "The +ROPE_ONLY proof executes both Q and K roles; rope-q and rope-k are names for the same paired run.",
+    "slow": false
+  }
+}

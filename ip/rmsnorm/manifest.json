@@ -1,0 +1,49 @@
+{
+  "canonical_rtl": [
+    "rtl/ace2_rmsnorm_core.sv"
+  ],
+  "classification": "standalone_core",
+  "dependencies": {
+    "shared_paths": [
+      "verification/tb/ace2_rmsnorm_tb.sv",
+      "verification/generated/rmsnorm_vectors.svh"
+    ]
+  },
+  "interfaces": [
+    "start ready/valid",
+    "activation stream ready/valid",
+    "gain stream ready/valid",
+    "scale-activation stream ready/valid",
+    "output stream ready/valid",
+    "done handshake and numerical status"
+  ],
+  "known_limitations": [
+    "The public proof is parameterized around the Qwen2.5-0.5B hidden size and fixed-point formats; other dimensions/formats are not certified."
+  ],
+  "license": {
+    "inheritance": "Apache-2.0",
+    "source": "LICENSE"
+  },
+  "maturity": "independently simulated RTL core with deterministic oracle vectors; the broader demo also provides a fresh challenge path",
+  "name": "rmsnorm",
+  "summary": "Reusable streaming fixed-point RMSNorm for the ACE-2 896-element hidden vector.",
+  "supported_parameters": {
+    "ACC_WIDTH": 48,
+    "ACT_WIDTH": 8,
+    "GAIN_FRAC": 8,
+    "GAIN_WIDTH": 16,
+    "HIDDEN_SIZE": 896,
+    "INV_RMS_FRAC": 30,
+    "LANES": 16
+  },
+  "title": "RMSNorm Core",
+  "verification": {
+    "command": "make ip-demo IP=rmsnorm",
+    "operators": [
+      "input-rmsnorm"
+    ],
+    "proof_kind": "isolated core testbench",
+    "proof_note": "Runs ace2_rmsnorm_tb.sv against checked-in independent oracle vectors.",
+    "slow": false
+  }
+}
