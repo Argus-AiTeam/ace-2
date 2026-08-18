@@ -1,0 +1,447 @@
+{
+  "$id": "https://argus-ai-team.github.io/ace-2/schemas/immutable-ppa-manifest-v1.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "attempt_policy": {
+      "additionalProperties": false,
+      "properties": {
+        "max_official_attempts": {
+          "const": 1
+        },
+        "overwrite_allowed": {
+          "const": false
+        },
+        "retry_allowed": {
+          "const": false
+        }
+      },
+      "required": [
+        "max_official_attempts",
+        "overwrite_allowed",
+        "retry_allowed"
+      ],
+      "type": "object"
+    },
+    "benchmark_interface": {
+      "additionalProperties": false,
+      "properties": {
+        "base_commit": {
+          "$ref": "#/$defs/sha1"
+        },
+        "candidate_compatibility_validated": {
+          "const": true
+        },
+        "module": {
+          "const": "ace2_shell"
+        },
+        "parameter_count": {
+          "const": 12
+        },
+        "port_count": {
+          "const": 64
+        },
+        "schema_path": {
+          "const": "design/benchmark_interface.schema.json"
+        },
+        "schema_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "sidecar_path": {
+          "const": "design/BENCHMARK_INTERFACE.json"
+        },
+        "sidecar_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "validator_path": {
+          "const": "flow/immutable_ppa/benchmark_interface.py"
+        },
+        "validator_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "required": [
+        "base_commit",
+        "candidate_compatibility_validated",
+        "module",
+        "parameter_count",
+        "port_count",
+        "schema_path",
+        "schema_sha256",
+        "sidecar_path",
+        "sidecar_sha256",
+        "validator_path",
+        "validator_sha256"
+      ],
+      "type": "object"
+    },
+    "claim_policy": {
+      "additionalProperties": false,
+      "properties": {
+        "ppa_execution_permitted": {
+          "const": false
+        },
+        "preflight_only": {
+          "const": true
+        },
+        "timing_claim_permitted": {
+          "const": false
+        }
+      },
+      "required": [
+        "ppa_execution_permitted",
+        "preflight_only",
+        "timing_claim_permitted"
+      ],
+      "type": "object"
+    },
+    "commands": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "role": {
+            "enum": [
+              "base",
+              "candidate"
+            ]
+          },
+          "steps": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "argv": {
+                  "items": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "minItems": 1,
+                  "type": "array"
+                },
+                "name": {
+                  "enum": [
+                    "synthesis",
+                    "netlist_transform",
+                    "sta"
+                  ]
+                }
+              },
+              "required": [
+                "argv",
+                "name"
+              ],
+              "type": "object"
+            },
+            "maxItems": 3,
+            "minItems": 3,
+            "type": "array"
+          }
+        },
+        "required": [
+          "role",
+          "steps"
+        ],
+        "type": "object"
+      },
+      "maxItems": 2,
+      "minItems": 2,
+      "type": "array"
+    },
+    "flow_id": {
+      "const": "ace2-sky130hd-yosys-opensta-immutable-v1"
+    },
+    "namespace": {
+      "additionalProperties": false,
+      "properties": {
+        "create_mode": {
+          "const": "0o750"
+        },
+        "exclusive_create": {
+          "const": true
+        },
+        "leaf_pattern": {
+          "type": "string"
+        },
+        "overwrite_allowed": {
+          "const": false
+        },
+        "path": {
+          "pattern": "^/",
+          "type": "string"
+        },
+        "retry_allowed": {
+          "const": false
+        },
+        "root": {
+          "pattern": "^/",
+          "type": "string"
+        },
+        "source_layout": {
+          "const": "<namespace>/<role>/source"
+        }
+      },
+      "required": [
+        "create_mode",
+        "exclusive_create",
+        "leaf_pattern",
+        "overwrite_allowed",
+        "path",
+        "retry_allowed",
+        "root",
+        "source_layout"
+      ],
+      "type": "object"
+    },
+    "netlist_transform": {
+      "additionalProperties": false,
+      "properties": {
+        "executable": {
+          "const": "/usr/bin/sed"
+        },
+        "expression": {
+          "type": "string"
+        },
+        "input": {
+          "type": "string"
+        },
+        "kind": {
+          "const": "gnu_sed_ere"
+        },
+        "output": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "executable",
+        "expression",
+        "input",
+        "kind",
+        "output"
+      ],
+      "type": "object"
+    },
+    "package": {
+      "additionalProperties": false,
+      "properties": {
+        "base_commit": {
+          "$ref": "#/$defs/sha1"
+        },
+        "config_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "implementation_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "schema_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "required": [
+        "base_commit",
+        "config_sha256",
+        "implementation_sha256",
+        "schema_sha256"
+      ],
+      "type": "object"
+    },
+    "revisions": {
+      "items": {
+        "$ref": "#/$defs/revision"
+      },
+      "maxItems": 2,
+      "minItems": 2,
+      "type": "array"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "target": {
+      "additionalProperties": false,
+      "properties": {
+        "clock_period_ns": {
+          "const": 10.0
+        },
+        "frequency_floor_mhz": {
+          "const": 100.0
+        },
+        "non_sram_area_cap_mm2": {
+          "const": 2.0
+        },
+        "top_module": {
+          "const": "ace2_shell"
+        }
+      },
+      "required": [
+        "clock_period_ns",
+        "frequency_floor_mhz",
+        "non_sram_area_cap_mm2",
+        "top_module"
+      ],
+      "type": "object"
+    },
+    "toolchain": {
+      "additionalProperties": false,
+      "properties": {
+        "docker_executable": {
+          "pattern": "^/",
+          "type": "string"
+        },
+        "environment_script": {
+          "pattern": "^/",
+          "type": "string"
+        },
+        "image": {
+          "pattern": "@sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "image_id": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "liberty": {
+          "pattern": "^/",
+          "type": "string"
+        },
+        "opensta": {
+          "pattern": "^/",
+          "type": "string"
+        },
+        "repo_digest": {
+          "pattern": "@sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "tee": {
+          "pattern": "^/",
+          "type": "string"
+        },
+        "yosys": {
+          "pattern": "^/",
+          "type": "string"
+        }
+      },
+      "required": [
+        "docker_executable",
+        "environment_script",
+        "image",
+        "image_id",
+        "liberty",
+        "opensta",
+        "repo_digest",
+        "tee",
+        "yosys"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "attempt_policy",
+    "benchmark_interface",
+    "claim_policy",
+    "commands",
+    "flow_id",
+    "namespace",
+    "netlist_transform",
+    "package",
+    "revisions",
+    "schema_version",
+    "target",
+    "toolchain"
+  ],
+  "title": "ACE-2 immutable PPA comparison manifest",
+  "type": "object",
+  "$defs": {
+    "input": {
+      "additionalProperties": false,
+      "properties": {
+        "git_blob": {
+          "$ref": "#/$defs/sha1"
+        },
+        "path": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "required": [
+        "git_blob",
+        "path",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "revision": {
+      "additionalProperties": false,
+      "properties": {
+        "commit": {
+          "$ref": "#/$defs/sha1"
+        },
+        "constraints": {
+          "items": {
+            "$ref": "#/$defs/input"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "constraints_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "flow": {
+          "items": {
+            "$ref": "#/$defs/input"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        "flow_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "requested_ref": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "base",
+            "candidate"
+          ]
+        },
+        "rtl": {
+          "items": {
+            "$ref": "#/$defs/input"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "rtl_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "tree": {
+          "$ref": "#/$defs/sha1"
+        }
+      },
+      "required": [
+        "commit",
+        "constraints",
+        "constraints_sha256",
+        "flow",
+        "flow_sha256",
+        "requested_ref",
+        "role",
+        "rtl",
+        "rtl_sha256",
+        "tree"
+      ],
+      "type": "object"
+    },
+    "sha1": {
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    }
+  }
+}

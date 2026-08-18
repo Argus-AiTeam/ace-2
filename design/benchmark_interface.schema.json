@@ -1,0 +1,344 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://argus-ai-team.github.io/ace-2/schemas/benchmark-interface-v1.json",
+  "title": "ACE-2 strict benchmark interface",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kind",
+    "base_commit",
+    "module",
+    "clock",
+    "reset",
+    "constraints",
+    "protocols",
+    "fused_qkv",
+    "immutable_ppa"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "kind": {"const": "ace2_strict_benchmark_interface"},
+    "base_commit": {"$ref": "#/$defs/sha1"},
+    "module": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "source", "package_source", "parameters", "ports"],
+      "properties": {
+        "name": {"const": "ace2_shell"},
+        "source": {"$ref": "#/$defs/git_file"},
+        "package_source": {"$ref": "#/$defs/git_file"},
+        "parameters": {
+          "type": "array",
+          "minItems": 12,
+          "maxItems": 12,
+          "items": {"$ref": "#/$defs/parameter"}
+        },
+        "ports": {
+          "type": "array",
+          "minItems": 64,
+          "maxItems": 64,
+          "items": {"$ref": "#/$defs/port"}
+        }
+      }
+    },
+    "clock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["port", "edge", "period_ns"],
+      "properties": {
+        "port": {"const": "clk_i"},
+        "edge": {"const": "rising"},
+        "period_ns": {"const": 10.0}
+      }
+    },
+    "reset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["port", "polarity", "assertion", "deassertion"],
+      "properties": {
+        "port": {"const": "rst_ni"},
+        "polarity": {"const": "active_low"},
+        "assertion": {"const": "asynchronous"},
+        "deassertion": {"const": "observed_on_rising_edge"}
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source",
+        "clock_name",
+        "clock_port",
+        "period_ns",
+        "input_delay_ns",
+        "output_delay_ns",
+        "clock_uncertainty_ns"
+      ],
+      "properties": {
+        "source": {"$ref": "#/$defs/git_file"},
+        "clock_name": {"const": "clk_i"},
+        "clock_port": {"const": "clk_i"},
+        "period_ns": {"const": 10.0},
+        "input_delay_ns": {"const": 0.2},
+        "output_delay_ns": {"const": 0.2},
+        "clock_uncertainty_ns": {"const": 0.1}
+      }
+    },
+    "protocols": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "transfer_edge",
+        "transfer_rule",
+        "source_hold_rule",
+        "channels",
+        "sram"
+      ],
+      "properties": {
+        "transfer_edge": {"const": "rising"},
+        "transfer_rule": {"const": "transfer_when_valid_and_ready_are_both_high"},
+        "source_hold_rule": {
+          "const": "valid_and_payload_remain_stable_while_valid_is_high_and_ready_is_low"
+        },
+        "channels": {
+          "type": "array",
+          "minItems": 8,
+          "maxItems": 8,
+          "items": {"$ref": "#/$defs/channel"}
+        },
+        "sram": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["request", "read_response", "read_backpressure"],
+          "properties": {
+            "request": {"type": "string", "minLength": 1},
+            "read_response": {"type": "string", "minLength": 1},
+            "read_backpressure": {"const": false}
+          }
+        }
+      }
+    },
+    "fused_qkv": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["opcode", "execution_kind", "descriptor", "memory_layout"],
+      "properties": {
+        "opcode": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["symbol", "value", "width"],
+          "properties": {
+            "symbol": {"const": "ACE2_OPCODE_FUSED_QKV"},
+            "value": {"const": 11},
+            "width": {"const": 8}
+          }
+        },
+        "execution_kind": {"const": "projection"},
+        "descriptor": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "cmd_flags_i",
+            "cmd_layer_id_i",
+            "cmd_m_i",
+            "cmd_n_i",
+            "cmd_k_i",
+            "aligned_address_ports",
+            "address_alignment_bytes",
+            "cmd_scratch_addr_i",
+            "cmd_sequence_position_i",
+            "cmd_completion_tag_i"
+          ],
+          "properties": {
+            "cmd_flags_i": {"const": 0},
+            "cmd_layer_id_i": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["minimum", "maximum"],
+              "properties": {
+                "minimum": {"const": 0},
+                "maximum": {"const": 23}
+              }
+            },
+            "cmd_m_i": {"const": 1},
+            "cmd_n_i": {"const": "HIDDEN_SIZE"},
+            "cmd_k_i": {"const": "HIDDEN_SIZE"},
+            "aligned_address_ports": {
+              "type": "array",
+              "minItems": 4,
+              "maxItems": 4,
+              "items": {"type": "string", "pattern": "^cmd_[a-z0-9_]+_i$"}
+            },
+            "address_alignment_bytes": {"const": 16},
+            "cmd_scratch_addr_i": {"const": 0},
+            "cmd_sequence_position_i": {"const": "not_constrained_by_descriptor"},
+            "cmd_completion_tag_i": {"const": "returned_on_cmd_done_tag_o"}
+          }
+        },
+        "memory_layout": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "activation_source",
+            "weight_source",
+            "metadata_source",
+            "destination_base",
+            "activation_read_beats",
+            "output_order",
+            "output_elements",
+            "destination_byte_offsets",
+            "weight_byte_offsets",
+            "metadata_byte_offsets"
+          ],
+          "properties": {
+            "activation_source": {"const": "cmd_src0_addr_i"},
+            "weight_source": {"const": "cmd_src1_addr_i"},
+            "metadata_source": {"const": "cmd_scale_addr_i"},
+            "destination_base": {"const": "cmd_dst_addr_i"},
+            "activation_read_beats": {"const": 56},
+            "output_order": {
+              "type": "array",
+              "prefixItems": [{"const": "q"}, {"const": "k"}, {"const": "v"}],
+              "items": false
+            },
+            "output_elements": {
+              "type": "array",
+              "prefixItems": [{"const": 896}, {"const": 128}, {"const": 128}],
+              "items": false
+            },
+            "destination_byte_offsets": {
+              "type": "array",
+              "prefixItems": [{"const": 0}, {"const": 896}, {"const": 1024}],
+              "items": false
+            },
+            "weight_byte_offsets": {
+              "type": "array",
+              "prefixItems": [{"const": 0}, {"const": 401408}, {"const": 458752}],
+              "items": false
+            },
+            "metadata_byte_offsets": {
+              "type": "array",
+              "prefixItems": [{"const": 0}, {"const": 14336}, {"const": 16384}],
+              "items": false
+            }
+          }
+        }
+      }
+    },
+    "immutable_ppa": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "flow_id",
+        "top_module",
+        "clock_period_ns",
+        "frequency_floor_mhz",
+        "non_sram_area_cap_mm2",
+        "candidate_interface_must_match",
+        "candidate_constraints_must_match",
+        "sidecar_required_before_execution",
+        "preflight_executes_synthesis_or_sta"
+      ],
+      "properties": {
+        "flow_id": {"const": "ace2-sky130hd-yosys-opensta-immutable-v1"},
+        "top_module": {"const": "ace2_shell"},
+        "clock_period_ns": {"const": 10.0},
+        "frequency_floor_mhz": {"const": 100.0},
+        "non_sram_area_cap_mm2": {"const": 2.0},
+        "candidate_interface_must_match": {"const": true},
+        "candidate_constraints_must_match": {"const": true},
+        "sidecar_required_before_execution": {"const": true},
+        "preflight_executes_synthesis_or_sta": {"const": false}
+      }
+    }
+  },
+  "$defs": {
+    "sha1": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "repo_path": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[A-Za-z0-9._/-]+$"
+    },
+    "git_file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "git_blob", "sha256"],
+      "properties": {
+        "path": {"$ref": "#/$defs/repo_path"},
+        "git_blob": {"$ref": "#/$defs/sha1"},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "parameter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "data_type",
+        "signed",
+        "default_expression",
+        "resolved_default"
+      ],
+      "properties": {
+        "name": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]*$"},
+        "data_type": {"const": "integer"},
+        "signed": {"type": "boolean"},
+        "default_expression": {
+          "type": "string",
+          "pattern": "^(?:[A-Z][A-Z0-9_]*|[0-9]+)$"
+        },
+        "resolved_default": {"type": "integer", "minimum": 1}
+      }
+    },
+    "port": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "direction", "net_type", "signed", "packed_range", "width"],
+      "properties": {
+        "name": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+        "direction": {"enum": ["input", "output", "inout"]},
+        "net_type": {"enum": ["wire", "reg", "logic"]},
+        "signed": {"type": "boolean"},
+        "packed_range": {
+          "oneOf": [
+            {"type": "null"},
+            {
+              "type": "string",
+              "pattern": "^\\[[A-Z0-9_+*()-]+:[A-Z0-9_+*()-]+\\]$"
+            }
+          ]
+        },
+        "width": {"type": "integer", "minimum": 1}
+      }
+    },
+    "channel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "source", "valid", "ready", "payload"],
+      "properties": {
+        "name": {
+          "enum": [
+            "csr_request",
+            "csr_response",
+            "command",
+            "memory_request",
+            "memory_write",
+            "memory_read",
+            "memory_write_response",
+            "completion"
+          ]
+        },
+        "source": {"enum": ["external", "ace2_shell"]},
+        "valid": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+        "ready": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+        "payload": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"}
+        }
+      }
+    }
+  }
+}

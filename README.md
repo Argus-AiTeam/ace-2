@@ -185,6 +185,24 @@ make fused-qkv-freeze
 make fused-qkv-check
 ```
 
+### Immutable PPA preflight
+
+`flow/immutable_ppa/` provides a non-consuming preflight for future
+base/candidate SKY130 comparisons. It freezes the exact 12 shell parameters,
+64 public ports, fused-QKV contract, RTL/SDC/flow hashes, container digest and
+absolute Yosys/OpenSTA/library paths. The preflight validates and renders
+commands but deliberately cannot run synthesis or STA.
+
+```sh
+python3 flow/immutable_ppa/benchmark_interface.py --repo "$PWD"
+python3 -m unittest \
+  flow/immutable_ppa/test_benchmark_interface.py \
+  flow/immutable_ppa/test_immutable_ppa.py
+```
+
+Official comparison namespaces use exclusive creation and reject overwrite or
+retry. This package itself contains no PPA, timing-closure or FPGA claim.
+
 ### Parameterized Qwen2.5 model contracts
 
 ACE-2 now includes executable model/hardware descriptors for Qwen2.5 0.5B,
