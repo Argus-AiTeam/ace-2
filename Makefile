@@ -20,7 +20,7 @@ OPERATOR_DEMOS := input-rmsnorm q-proj k-proj v-proj rope-q rope-k kv-write \
 IP_PACKAGES := w4a8_projection rmsnorm rope kv_cache attention softmax \
 	silu_swiglu mlp qwen25_transformer_layer
 
-.PHONY: model-hardware-contract-check demo demo-extended demo-operator demo-operators $(addprefix demo-,$(OPERATOR_DEMOS)) ip-list ip-validate ip-docs ip-demo ip-demo-all $(addprefix ip-,$(IP_PACKAGES)) visuals schematic certified-rtl-check env-check oracle-check lint sim local-challenge challenge-sim negative-control operator-suite full-shell-sim demo-report synth manifest clean
+.PHONY: model-hardware-contract-check fused-qkv-freeze fused-qkv-check demo demo-extended demo-operator demo-operators $(addprefix demo-,$(OPERATOR_DEMOS)) ip-list ip-validate ip-docs ip-demo ip-demo-all $(addprefix ip-,$(IP_PACKAGES)) visuals schematic certified-rtl-check env-check oracle-check lint sim local-challenge challenge-sim negative-control operator-suite full-shell-sim demo-report synth manifest clean
 
 model-hardware-contract-check:
 	$(PYTHON) tools/model_hardware_contract.py --check
@@ -28,6 +28,13 @@ model-hardware-contract-check:
 	$(PYTHON) -m unittest \
 		verification.test_model_hardware_contract \
 		verification.test_quantization_policy
+
+fused-qkv-freeze:
+	$(PYTHON) tools/run_fused_qkv_benchmark.py freeze
+
+fused-qkv-check:
+	rm -rf build/fused-qkv-v1/public-check evidence/verification/fused-qkv-v1/public-check
+	$(PYTHON) tools/run_fused_qkv_benchmark.py run --attempt public-check
 
 demo: certified-rtl-check env-check lint oracle-check sim local-challenge challenge-sim negative-control operator-suite demo-report
 	@echo "ACE2_LOCAL_RTL_DEMO_PASS"

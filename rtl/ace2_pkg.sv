@@ -26,6 +26,7 @@ package ace2_pkg;
     localparam [7:0] ACE2_OPCODE_RESIDUAL_ADD = 8'h08;
     localparam [7:0] ACE2_OPCODE_ATTN_COMPOSE = 8'h09;
     localparam [7:0] ACE2_OPCODE_KV_WRITE  = 8'h0a;
+    localparam [7:0] ACE2_OPCODE_FUSED_QKV = 8'h0b;
 
     localparam [7:0] ACE2_ATTN_COMPOSE_MAX_FIRST = 8'h00;
     localparam [7:0] ACE2_ATTN_COMPOSE_MAX_MORE = 8'h01;

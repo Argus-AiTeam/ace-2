@@ -17,13 +17,13 @@
       "title": "W4A8 Projection Core",
       "summary": "Reusable signed INT8 activation x signed INT4 weight projection MAC, requantization, bias, saturation, and overflow reporting.",
       "classification": "standalone_core",
-      "maturity": "verified RTL core; Q/K/V/O, MLP gate/up/down, and LM-head roles are scheduled by the shared shell",
+      "maturity": "verified RTL core; Q/K/V may use legacy descriptors or the shell's ordered fused-QKV descriptor, while O, MLP gate/up/down, and LM-head roles remain separately scheduled",
       "canonical_rtl": ["rtl/ace2_w4a8_proj_core.sv"],
       "dependencies": {"shared_paths": ["rtl/ace2_shell.sv", "verification/tb/ace2_shell_tb.sv"]},
       "supported_parameters": {"K_SIZE": [896, 4864], "MAC_LANES": 4, "ACT_WIDTH": 8, "WGT_WIDTH": 4, "ACC_WIDTH": 32},
       "interfaces": ["start ready/valid", "packed activation/weight pair ready/valid", "requantization metadata ready/valid", "INT8 output ready/valid", "accumulator/overflow/saturation status"],
       "verification": {"command": "make ip-demo IP=w4a8_projection", "operators": ["q-proj"], "proof_kind": "shared shell proof of canonical standalone core", "proof_note": "The focused Q-projection stride mode instantiates the canonical projection core through ace2_shell; other projection roles share this core but have separate operator demos.", "slow": false},
-      "known_limitations": ["The core computes one output accumulation at a time; matrix traversal, SRAM addressing, weights, scales, and role scheduling belong to ace2_shell.", "The focused package command proves Q projection, not every projection role."],
+      "known_limitations": ["The core computes one output accumulation at a time; matrix traversal, SRAM addressing, weights, scales, activation-tile reuse, and role scheduling belong to ace2_shell.", "Fused QKV reuses this shared core in three ordered phases; it is not three physically parallel projection cores.", "The focused package command proves Q projection, not every projection role."],
       "license": {"inheritance": "Apache-2.0", "source": "LICENSE"}
     },
     {
@@ -131,10 +131,10 @@
       "classification": "integration_bundle",
       "maturity": "selected reusable cores plus shared shell integration; not a single drop-in layer core",
       "canonical_rtl": ["rtl/ace2_pkg.sv", "rtl/ace2_shell.sv", "rtl/ace2_rmsnorm_core.sv", "rtl/ace2_w4a8_proj_core.sv", "rtl/ace2_rope_core.sv", "rtl/ace2_attention_score_core.sv", "rtl/ace2_softmax_core.sv", "rtl/ace2_attention_compose_core.sv", "rtl/ace2_silu_gate_core.sv"],
-      "dependencies": {"shared_paths": ["rtl/generated", "verification/tb/ace2_shell_tb.sv"]},
-      "supported_parameters": {"model": "Qwen2.5-0.5B", "hidden_size": 896, "intermediate_size": 4864, "head_dim": 64, "layers_in_certified_schedule": 24, "activation_width": 8, "weight_width": 4, "shell_attention_context_max": 8},
+      "dependencies": {"shared_paths": ["rtl/generated", "verification/tb/ace2_shell_tb.sv", "verification/tb/ace2_fused_qkv_benchmark_tb.sv"]},
+      "supported_parameters": {"model": "Qwen2.5-0.5B", "hidden_size": 896, "intermediate_size": 4864, "head_dim": 64, "layers_in_certified_schedule": 24, "activation_width": 8, "weight_width": 4, "shell_attention_context_max": 8, "fused_qkv_opcode": "0x0b", "fused_qkv_activation_cache_bytes": 896},
       "interfaces": ["ace2_shell CSR interface", "command descriptor interface", "128-bit tagged memory interface", "interrupt/completion/status interface"],
-      "verification": {"command": "make ip-demo IP=qwen25_transformer_layer", "operators": ["attention-residual", "post-attention-rmsnorm", "mlp-residual"], "proof_kind": "selected shared shell integration proofs", "proof_note": "The package demo checks residual/post-norm and MLP-residual integration slices. It is not a full-layer or full-model replay; use existing extended/certification evidence for those separate scopes.", "slow": false},
+      "verification": {"command": "make ip-demo IP=qwen25_transformer_layer", "operators": ["attention-residual", "post-attention-rmsnorm", "mlp-residual"], "proof_kind": "selected shared shell integration proofs plus separate fused-QKV benchmark", "proof_note": "The package demo checks residual/post-norm and MLP-residual integration slices. Run `make fused-qkv-freeze && make fused-qkv-check` for the ordered Q/K/V activation-reuse proof. Neither command is a full-layer or full-model replay.", "slow": false},
       "known_limitations": ["There is no single ace2_transformer_layer module.", "The package demo is a selected integration proof, not full-model chat completion.", "Host runtime, weights, tokenizer, unrestricted generation, and FPGA deployment are outside this package."],
       "license": {"inheritance": "Apache-2.0", "source": "LICENSE"}
     }

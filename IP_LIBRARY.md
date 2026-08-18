@@ -53,7 +53,10 @@ ace2_w4a8_proj_core #(
 Compile from the repository root with `rtl/ace2_w4a8_proj_core.sv`; do not copy
 the source into an `ip/` package. Matrix traversal, memory addressing, weight
 and scale delivery, and Q/K/V/O/MLP role scheduling remain integration
-responsibilities implemented by `ace2_shell`.
+responsibilities implemented by `ace2_shell`. The shell now also exposes
+fused opcode `0x0b`, which caches one activation tile and executes ordered
+Q/K/V phases through the shared projection engine. It is an integration bundle,
+not a claim of three physically parallel projection cores.
 
 ## Scope and non-claims
 

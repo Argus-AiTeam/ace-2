@@ -4,7 +4,7 @@
 > `python3 scripts/generate_ip_package_docs.py` to keep metadata synchronized.
 
 **Classification:** `standalone_core`  
-**Maturity:** verified RTL core; Q/K/V/O, MLP gate/up/down, and LM-head roles are scheduled by the shared shell
+**Maturity:** verified RTL core; Q/K/V may use legacy descriptors or the shell's ordered fused-QKV descriptor, while O, MLP gate/up/down, and LM-head roles remain separately scheduled
 
 Reusable signed INT8 activation x signed INT4 weight projection MAC, requantization, bias, saturation, and overflow reporting.
 
@@ -46,7 +46,8 @@ reported after every mapped underlying proof passes.
 
 ## Known limitations
 
-- The core computes one output accumulation at a time; matrix traversal, SRAM addressing, weights, scales, and role scheduling belong to ace2_shell.
+- The core computes one output accumulation at a time; matrix traversal, SRAM addressing, weights, scales, activation-tile reuse, and role scheduling belong to ace2_shell.
+- Fused QKV reuses this shared core in three ordered phases; it is not three physically parallel projection cores.
 - The focused package command proves Q projection, not every projection role.
 
 ## License

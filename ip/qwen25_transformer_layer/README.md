@@ -24,6 +24,7 @@ Discoverable bundle of the canonical ACE-2 shell and cores used for the demonstr
 
 - `rtl/generated`
 - `verification/tb/ace2_shell_tb.sv`
+- `verification/tb/ace2_fused_qkv_benchmark_tb.sv`
 
 ## Qwen2.5-0.5B-compatible parameters
 
@@ -35,6 +36,8 @@ Discoverable bundle of the canonical ACE-2 shell and cores used for the demonstr
 - `activation_width`: `8`
 - `weight_width`: `4`
 - `shell_attention_context_max`: `8`
+- `fused_qkv_opcode`: `0x0b`
+- `fused_qkv_activation_cache_bytes`: `896`
 
 ## Interfaces
 
@@ -49,8 +52,8 @@ Discoverable bundle of the canonical ACE-2 shell and cores used for the demonstr
 make ip-demo IP=qwen25_transformer_layer
 ```
 
-Proof type: **selected shared shell integration proofs**.
-The package demo checks residual/post-norm and MLP-residual integration slices. It is not a full-layer or full-model replay; use existing extended/certification evidence for those separate scopes.
+Proof type: **selected shared shell integration proofs plus separate fused-QKV benchmark**.
+The package demo checks residual/post-norm and MLP-residual integration slices. Run `make fused-qkv-freeze && make fused-qkv-check` for the ordered Q/K/V activation-reuse proof. Neither command is a full-layer or full-model replay.
 Results are written under `build/ip_library/qwen25_transformer_layer/`; PASS is only
 reported after every mapped underlying proof passes.
 

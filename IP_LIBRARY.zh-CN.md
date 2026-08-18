@@ -48,7 +48,9 @@ ace2_w4a8_proj_core #(
 
 从仓库根目录编译 `rtl/ace2_w4a8_proj_core.sv`，不要把源码复制到 `ip/` 包内。矩阵遍历、
 存储器寻址、权重与 scale 供给，以及 Q/K/V/O/MLP 角色调度仍属于集成职责，目前由
-`ace2_shell` 实现。
+`ace2_shell` 实现。Shell 现还提供 Fused `0x0b` 指令：缓存一个 Activation Tile，
+并通过共享 Projection Engine 按顺序执行 Q/K/V。它属于集成 Bundle，不代表三套
+物理并行的 Projection Core。
 
 ## 能力边界
 
