@@ -87,6 +87,8 @@ def main() -> None:
     challenge_id = challenge["challenge_id"]
     tools = challenge["tools"]
     operator_results = operator_suite["results"]
+    random_seed = operator_suite["random_seed"]
+    random_oracles = operator_suite["random_oracles"]
     core_results = [
         item for item in operator_results if item["kind"] == "independent_core"
     ]
@@ -102,6 +104,7 @@ def main() -> None:
         (str(len(rtl_rows)), "Certified RTL files checked now"),
         (str(len(cases)), "RMSNorm cases run now"),
         (f"{fast_operator_count}/18", "Layer-0 operators run now"),
+        (str(len(random_oracles)), "Random Python-oracle groups"),
         (str(len(shell_results)), "Shell integration modes"),
         ("PASS", "Corrupted-result rejection"),
     )
@@ -138,6 +141,8 @@ def main() -> None:
 | Transformer operator groups | {len(core_results)} |
 | Selected shell integration modes | {len(shell_results)} |
 | Operator-suite runtime | {operator_suite["elapsed_seconds"]:.2f} seconds |
+| Random operator seed | `{random_seed}` |
+| Random Python-oracle groups | {len(random_oracles)} |
 | Layer-0 operator rows run by fast demo | {fast_operator_count}/18 |
 | Complete shell regression | {"PASS in this workspace" if full_shell_pass else "Run make demo-extended"} |
 
@@ -151,8 +156,11 @@ def main() -> None:
    including the fresh challenge case.
 6. A deliberately corrupted expected beat was rejected by the same checker.
 7. The run produced `build/demo_challenge/rmsnorm-waveform.vcd`.
-8. Six independent Transformer core groups and five selected `ace2_shell`
-   integration modes passed against packaged oracle vectors.
+8. Five independent Transformer core groups passed both packaged edge cases and
+   fresh random cases generated from seed `{random_seed}` by the checked-in
+   bit-accurate Python references.
+9. Six selected `ace2_shell` integration modes passed their packaged
+   bit-accurate oracle vectors.
 
 ![Fresh local RMSNorm challenge waveform](demo_challenge/rmsnorm-waveform.svg)
 
@@ -172,6 +180,12 @@ def main() -> None:
 {case_rows}
 
 ## Transformer operator coverage
+
+### Random Python-oracle challenge
+
+| Operator | Cases compiled into RTL testbench | Oracle JSON SHA-256 |
+|---|---:|---|
+{chr(10).join(f"| {item['name']} | {item['case_count']} | `{item['oracle_sha256']}` |" for item in random_oracles)}
 
 | # | Layer-0 operator | Fast demo | Evidence path |
 |---:|---|---|---|
@@ -210,6 +224,12 @@ not claim arbitrary chat, FPGA execution, routed signoff, tapeout, or silicon.
         <td class="pass-text">PASS</td>
         <td><code>{escape(item["marker"])}</code></td></tr>"""
         for item in operator_results
+    )
+    oracle_cards = "\n".join(
+        f"""<tr><td>{escape(item["name"])}</td>
+        <td>{item["case_count"]}</td>
+        <td><code>{escape(item["oracle_sha256"])}</code></td></tr>"""
+        for item in random_oracles
     )
     layer0_cards = "\n".join(
         f"""<tr><td>{number}</td><td>{escape(name)}</td>
@@ -269,6 +289,7 @@ th{{color:var(--muted);font-size:12px;text-transform:uppercase}} code{{font-fami
 
 <h2>This run happened here</h2>
 <div class="boundary"><strong>Challenge:</strong> <code>{escape(challenge_id)}</code><br>
+<strong>Random operator seed:</strong> <code>{escape(random_seed)}</code><br>
 <strong>Generated:</strong> {escape(challenge["generated_at_utc"])}<br>
 <strong>Source commit:</strong> <code>{escape(challenge["git_commit"])}</code><br>
 <strong>Platform:</strong> {escape(challenge["platform"]["system"])} {escape(challenge["platform"]["release"])} {escape(challenge["platform"]["machine"])}<br>
@@ -308,6 +329,10 @@ th{{color:var(--muted);font-size:12px;text-transform:uppercase}} code{{font-fami
 <table><tr><th>Test</th><th>Path</th><th>Runtime</th><th>Status</th><th>RTL marker</th></tr>
 {operator_cards}</table>
 
+<h2>Random Python-oracle challenge</h2>
+<table><tr><th>Operator</th><th>Cases</th><th>Oracle JSON SHA-256</th></tr>
+{oracle_cards}</table>
+
 <h2>Complete 18-operator Layer-0 matrix</h2>
 <table><tr><th>#</th><th>Operator</th><th>This workspace</th><th>Evidence path</th></tr>
 {layer0_cards}</table>
@@ -332,8 +357,10 @@ th{{color:var(--muted);font-size:12px;text-transform:uppercase}} code{{font-fami
 <h2>Honest boundary</h2>
 <div class="boundary"><strong>Executed now:</strong> certified RTL hash check,
 complete-shell lint, fresh local RMSNorm oracle/RTL comparison, five independent
-Transformer core groups, six selected shell integration modes, corrupted-result
-rejection, and VCD waveform generation.<br><br><strong>Available separately:</strong>
+Transformer core groups with fresh seeded random Python-oracle cases, six selected
+shell integration modes, corrupted-result rejection, and VCD waveform generation.
+The same operator challenge is reproducible with <code>make demo SEED={escape(random_seed)}</code>.
+<br><br><strong>Available separately:</strong>
 <code>make demo-extended</code> runs the complete slow public shell regression.
 It is not claimed as run unless its log contains <code>ACE2_SHELL_TB_PASS</code>.
 <br><br><strong>Historical certification,

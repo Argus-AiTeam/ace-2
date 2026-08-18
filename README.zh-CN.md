@@ -111,10 +111,12 @@ make demo
 6. 在命令启动后生成一个不可预存的本机随机 challenge，并重新编译 RTL；
 7. 为 challenge 执行生成 VCD 波形；
 8. 故意破坏一个期望结果，证明 checker 会真实拒绝错误；
-9. 运行 5 个独立 Transformer 核心测试和 6 个 `ace2_shell` 集成模式；
-10. 展示全部 18 个已认证 Layer-0 算子，并区分快速 Demo 本次执行与慢速完整
+9. 为 5 组 Transformer 核心生成带种子的随机题，用位精确 Python 参考模型计算答案，
+   并逐项对比 RTL 输出；
+10. 运行 6 个 `ace2_shell` 集成模式；
+11. 展示全部 18 个已认证 Layer-0 算子，并区分快速 Demo 本次执行与慢速完整
     shell 覆盖；
-11. 生成包含 challenge、工具版本、源码 commit、日志和输出 hash 的可视化证据面板。
+12. 生成包含 challenge、工具版本、源码 commit、日志和输出 hash 的可视化证据面板。
 
 预期的最终标记为：
 
@@ -137,6 +139,8 @@ build/DEMO_REPORT.html
 ```sh
 make demo-extended
 ```
+
+可用 `make demo SEED=<报告中的种子>` 原样重放同一组随机题。
 
 只有完整 shell 日志真实产生 `ACE2_SHELL_TB_PASS` 后，报告才会把这些慢速算子
 标记为 PASS。两个命令都不会重放封存的完整模型 schedule，也不声称 FPGA 执行。

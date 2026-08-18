@@ -118,11 +118,12 @@ fast, public-safe, machine-local evidence chain:
 6. generates a fresh unpredictable local challenge and recompiles the RTL;
 7. emits a VCD waveform for the challenge run;
 8. proves the checker rejects an intentionally corrupted expected result;
-9. runs five independent Transformer core tests and six selected
-   `ace2_shell` integration modes;
-10. displays all 18 certified Layer-0 operators, distinguishing fast-demo
+9. generates fresh seeded random questions for five Transformer core groups,
+   computes bit-accurate Python answers, and compares them with RTL output;
+10. runs six selected `ace2_shell` integration modes;
+11. displays all 18 certified Layer-0 operators, distinguishing fast-demo
     execution from slow extended-shell coverage;
-11. produces a standalone visual evidence dashboard with the local challenge,
+12. produces a standalone visual evidence dashboard with the local challenge,
    tool versions, source commit, logs, and output hashes.
 
 Expected final marker:
@@ -148,6 +149,8 @@ KV-write, and attention-value paths:
 ```sh
 make demo-extended
 ```
+
+Replay a reported random challenge with `make demo SEED=<seed>`.
 
 The dashboard marks those slow rows PASS only after the complete shell log
 contains `ACE2_SHELL_TB_PASS`. Neither command replays the sealed full-model

@@ -4,9 +4,11 @@
 
 `make demo` gives reviewers a fast, reproducible path from certified source
 identity to real RTL output across the Transformer data path. Every invocation
-creates a new machine-local challenge, recompiles the RTL, runs independent
-operator cores and selected `ace2_shell` integration modes, emits a waveform,
-and proves that the checker rejects a deliberately corrupted expectation.
+creates machine-local RMSNorm and multi-operator challenges, computes expected
+answers with checked-in bit-accurate Python references, recompiles the RTL,
+runs independent operator cores and selected `ace2_shell` integration modes,
+emits a waveform, and proves that the checker rejects a deliberately corrupted
+expectation.
 
 ## Run
 
@@ -26,6 +28,8 @@ The command performs:
 8. VCD waveform generation for the local challenge;
 9. a negative-control run with one intentionally corrupted expected beat,
    which must fail;
+10. fresh seeded random Python-oracle cases for RoPE, attention score, softmax,
+    attention compose, and SiLU, compiled into temporary testbench vectors;
 10. independent RTL tests for RoPE, attention score, softmax, attention
     compose, and SiLU;
 11. selected shell integration runs for attention score/compose, MLP residual,
@@ -79,6 +83,12 @@ The Markdown companion is suitable for CI logs and text-only environments.
 
 ```sh
 make demo-extended
+```
+
+To replay exactly the same random operator questions:
+
+```sh
+make demo SEED=<seed-shown-in-the-report>
 ```
 
 This first runs the fast demo, then executes the complete public
