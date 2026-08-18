@@ -1,0 +1,60 @@
+{
+  "canonical_rtl": [
+    "rtl/ace2_pkg.sv",
+    "rtl/ace2_shell.sv",
+    "rtl/ace2_rmsnorm_core.sv",
+    "rtl/ace2_w4a8_proj_core.sv",
+    "rtl/ace2_rope_core.sv",
+    "rtl/ace2_attention_score_core.sv",
+    "rtl/ace2_softmax_core.sv",
+    "rtl/ace2_attention_compose_core.sv",
+    "rtl/ace2_silu_gate_core.sv"
+  ],
+  "classification": "integration_bundle",
+  "dependencies": {
+    "shared_paths": [
+      "rtl/generated",
+      "verification/tb/ace2_shell_tb.sv"
+    ]
+  },
+  "interfaces": [
+    "ace2_shell CSR interface",
+    "command descriptor interface",
+    "128-bit tagged memory interface",
+    "interrupt/completion/status interface"
+  ],
+  "known_limitations": [
+    "There is no single ace2_transformer_layer module.",
+    "The package demo is a selected integration proof, not full-model chat completion.",
+    "Host runtime, weights, tokenizer, unrestricted generation, and FPGA deployment are outside this package."
+  ],
+  "license": {
+    "inheritance": "Apache-2.0",
+    "source": "LICENSE"
+  },
+  "maturity": "selected reusable cores plus shared shell integration; not a single drop-in layer core",
+  "name": "qwen25_transformer_layer",
+  "summary": "Discoverable bundle of the canonical ACE-2 shell and cores used for the demonstrated Qwen2.5-0.5B W4A8 layer path.",
+  "supported_parameters": {
+    "activation_width": 8,
+    "head_dim": 64,
+    "hidden_size": 896,
+    "intermediate_size": 4864,
+    "layers_in_certified_schedule": 24,
+    "model": "Qwen2.5-0.5B",
+    "shell_attention_context_max": 8,
+    "weight_width": 4
+  },
+  "title": "Qwen2.5-0.5B Transformer Layer Integration Bundle",
+  "verification": {
+    "command": "make ip-demo IP=qwen25_transformer_layer",
+    "operators": [
+      "attention-residual",
+      "post-attention-rmsnorm",
+      "mlp-residual"
+    ],
+    "proof_kind": "selected shared shell integration proofs",
+    "proof_note": "The package demo checks residual/post-norm and MLP-residual integration slices. It is not a full-layer or full-model replay; use existing extended/certification evidence for those separate scopes.",
+    "slow": false
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "canonical_rtl": [
+    "rtl/ace2_w4a8_proj_core.sv",
+    "rtl/ace2_silu_gate_core.sv",
+    "rtl/ace2_shell.sv"
+  ],
+  "classification": "integration_bundle",
+  "dependencies": {
+    "shared_paths": [
+      "rtl/generated/ace2_silu_lut.svh",
+      "verification/tb/ace2_shell_tb.sv"
+    ]
+  },
+  "interfaces": [
+    "ace2_shell command descriptor interface",
+    "128-bit tagged memory interface",
+    "completion/status path"
+  ],
+  "known_limitations": [
+    "No separately instantiable ace2_mlp_core module exists.",
+    "The MLP-up proof is slow under Icarus.",
+    "Weights, scales, memory layout, and command generation are external."
+  ],
+  "license": {
+    "inheritance": "Apache-2.0",
+    "source": "LICENSE"
+  },
+  "maturity": "verified operator and integration paths; not a single isolated MLP core",
+  "name": "mlp",
+  "summary": "Shared-shell composition of gate/up/down W4A8 projections, SiLU/SwiGLU, and residual update.",
+  "supported_parameters": {
+    "activation_width": 8,
+    "hidden_size": 896,
+    "intermediate_size": 4864,
+    "vector_lanes": 16,
+    "weight_width": 4
+  },
+  "title": "Qwen2.5 MLP Integration Bundle",
+  "verification": {
+    "command": "make ip-demo IP=mlp",
+    "operators": [
+      "mlp-gate",
+      "mlp-up",
+      "silu",
+      "mlp-down",
+      "mlp-residual"
+    ],
+    "proof_kind": "multi-command shared shell integration bundle",
+    "proof_note": "Runs every public MLP operator proof, including the slow full 896 x 4864 MLP-up projection.",
+    "slow": true
+  }
+}

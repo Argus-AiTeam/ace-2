@@ -99,6 +99,28 @@ and release-local SKY130 flow scripts. Model weights, proprietary PDK data,
 private benchmarks, build products, and sealed internal run packets are not
 distributed.
 
+## Open IP Library
+
+The [ACE-2 Open IP Library](IP_LIBRARY.md) organizes the canonical RTL into
+nine reusable packages with machine-readable manifests. It distinguishes
+standalone cores (`rmsnorm`, `rope`, `softmax`, projection, and SiLU/SwiGLU),
+standalone attention cores with shared shell integration, the shell-owned KV
+write path, and MLP/Transformer-layer integration bundles.
+
+```sh
+make ip-list
+make ip-validate
+make ip-demo IP=rmsnorm
+make ip-softmax
+```
+
+Package results are emitted under `build/ip_library/`. The existing 18
+operator demos prove the listed ACE-2 paths, but not every operator name is a
+separate standalone core. See each manifest for canonical sources,
+Qwen2.5-0.5B parameters, interfaces, dependencies, proof mapping, and
+limitations. This packaging does not claim arbitrary Transformer support,
+full-model chat completion, or FPGA deployment.
+
 ## Run the visual demo
 
 Install Python 3, GNU Make, Verilator, and Icarus Verilog, then run:

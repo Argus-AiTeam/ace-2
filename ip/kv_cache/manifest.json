@@ -1,0 +1,44 @@
+{
+  "canonical_rtl": [
+    "rtl/ace2_shell.sv",
+    "rtl/ace2_pkg.sv"
+  ],
+  "classification": "shared_shell_path",
+  "dependencies": {
+    "shared_paths": [
+      "verification/tb/ace2_shell_tb.sv"
+    ]
+  },
+  "interfaces": [
+    "ace2_shell command descriptor interface",
+    "128-bit tagged memory request/response interface",
+    "completion/status path"
+  ],
+  "known_limitations": [
+    "KV storage allocation, host policy, long-context management, and cache reuse APIs are not standalone public IP.",
+    "The shell proof covers the demonstrated bounded context path, not arbitrary context lengths."
+  ],
+  "license": {
+    "inheritance": "Apache-2.0",
+    "source": "LICENSE"
+  },
+  "maturity": "verified integration path; not an isolated standalone cache controller core",
+  "name": "kv_cache",
+  "summary": "Descriptor, memory, and state-machine path for verified KV writes in the ACE-2 shell.",
+  "supported_parameters": {
+    "head_dim": 64,
+    "hidden_size": 896,
+    "memory_data_width": 128,
+    "shell_attention_context_max": 8
+  },
+  "title": "KV Cache Path",
+  "verification": {
+    "command": "make ip-demo IP=kv_cache",
+    "operators": [
+      "kv-write"
+    ],
+    "proof_kind": "shared shell path",
+    "proof_note": "Runs the +KV_WRITE_ONLY ace2_shell proof; there is no claim of a separately instantiable KV-cache core.",
+    "slow": false
+  }
+}

@@ -111,6 +111,27 @@ Focused evidence is written to `build/single_operator/<operator>/sim.log` and
 `rope-q`/`rope-k` share the RoPE shell run, while `attention-residual` and
 `post-attention-rmsnorm` share the vector-family shell run.
 
+## Open IP Library demos
+
+The [Open IP Library](IP_LIBRARY.md) groups the same verified capabilities
+into reusable packages instead of duplicating 18 operator directories:
+
+```sh
+make ip-list
+make ip-demo IP=rmsnorm
+make ip-attention
+make ip-demo-all
+```
+
+Each command delegates to the catalog-declared single-operator or shared-shell
+proofs and writes `build/ip_library/<package>/result.json`. The package result
+cannot be PASS unless every underlying proof passes. `make ip-demo-all`
+includes `mlp-up` and can be substantially slower; use a focused package for
+quick evaluation.
+
+`kv_cache`, `mlp`, and `qwen25_transformer_layer` explicitly identify
+themselves as shared paths or integration bundles, not isolated drop-in cores.
+
 This first runs the fast demo, then executes the complete public
 `ace2_shell_tb.sv` regression. It may take substantially longer than the fast
 demo under Icarus. The projection family, KV write, and attention value rows

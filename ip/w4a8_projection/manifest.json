@@ -1,0 +1,50 @@
+{
+  "canonical_rtl": [
+    "rtl/ace2_w4a8_proj_core.sv"
+  ],
+  "classification": "standalone_core",
+  "dependencies": {
+    "shared_paths": [
+      "rtl/ace2_shell.sv",
+      "verification/tb/ace2_shell_tb.sv"
+    ]
+  },
+  "interfaces": [
+    "start ready/valid",
+    "packed activation/weight pair ready/valid",
+    "requantization metadata ready/valid",
+    "INT8 output ready/valid",
+    "accumulator/overflow/saturation status"
+  ],
+  "known_limitations": [
+    "The core computes one output accumulation at a time; matrix traversal, SRAM addressing, weights, scales, and role scheduling belong to ace2_shell.",
+    "The focused package command proves Q projection, not every projection role."
+  ],
+  "license": {
+    "inheritance": "Apache-2.0",
+    "source": "LICENSE"
+  },
+  "maturity": "verified RTL core; Q/K/V/O, MLP gate/up/down, and LM-head roles are scheduled by the shared shell",
+  "name": "w4a8_projection",
+  "summary": "Reusable signed INT8 activation x signed INT4 weight projection MAC, requantization, bias, saturation, and overflow reporting.",
+  "supported_parameters": {
+    "ACC_WIDTH": 32,
+    "ACT_WIDTH": 8,
+    "K_SIZE": [
+      896,
+      4864
+    ],
+    "MAC_LANES": 4,
+    "WGT_WIDTH": 4
+  },
+  "title": "W4A8 Projection Core",
+  "verification": {
+    "command": "make ip-demo IP=w4a8_projection",
+    "operators": [
+      "q-proj"
+    ],
+    "proof_kind": "shared shell proof of canonical standalone core",
+    "proof_note": "The focused Q-projection stride mode instantiates the canonical projection core through ace2_shell; other projection roles share this core but have separate operator demos.",
+    "slow": false
+  }
+}
