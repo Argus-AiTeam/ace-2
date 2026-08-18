@@ -111,7 +111,10 @@ make demo
 6. 在命令启动后生成一个不可预存的本机随机 challenge，并重新编译 RTL；
 7. 为 challenge 执行生成 VCD 波形；
 8. 故意破坏一个期望结果，证明 checker 会真实拒绝错误；
-9. 生成包含 challenge、工具版本、源码 commit、日志和输出 hash 的可视化证据面板。
+9. 运行 5 个独立 Transformer 核心测试和 6 个 `ace2_shell` 集成模式；
+10. 展示全部 18 个已认证 Layer-0 算子，并区分快速 Demo 本次执行与慢速完整
+    shell 覆盖；
+11. 生成包含 challenge、工具版本、源码 commit、日志和输出 hash 的可视化证据面板。
 
 预期的最终标记为：
 
@@ -128,6 +131,15 @@ build/DEMO_REPORT.html
 如果暂时不安装仿真工具链，也可以直接查看
 **[Alpha 2 示例证据报告](docs/DEMO_REPORT.md)**。
 完整操作流程与原始 artifact 映射见 [DEMO.md](DEMO.md)。
+
+如需运行包含慢速投影、KV Write 和 Attention Value 路径的完整公开 shell 回归：
+
+```sh
+make demo-extended
+```
+
+只有完整 shell 日志真实产生 `ACE2_SHELL_TB_PASS` 后，报告才会把这些慢速算子
+标记为 PASS。两个命令都不会重放封存的完整模型 schedule，也不声称 FPGA 执行。
 
 ## 工程演进
 
