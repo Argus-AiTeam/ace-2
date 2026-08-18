@@ -12,6 +12,9 @@
   `BUILD_READY_EXTERNAL_ROOT_REQUIRED`;
 - retain the explicit facts that V8 is not installed, no privileged execution
   occurred, and Stage 1 is not complete;
+- upgrade `make demo` with a fresh machine-local challenge, RTL recompilation,
+  VCD waveform, per-case execution markers, local tool/source provenance, and
+  a fail-closed negative control;
 - preserve all Alpha 2 certification claims and explicitly retain the
   non-claims for arbitrary-text chat, new RTL, XRT, and U280 execution.
 

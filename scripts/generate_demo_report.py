@@ -10,19 +10,24 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 BUILD = ROOT / "build"
-VECTORS = ROOT / "verification" / "generated" / "rmsnorm_vectors.json"
-SIM_LOG = BUILD / "rmsnorm-sim.log"
+CHALLENGE_DIR = BUILD / "demo_challenge"
+VECTORS = CHALLENGE_DIR / "rmsnorm_vectors.json"
+CHALLENGE = CHALLENGE_DIR / "challenge.json"
+SIM_LOG = CHALLENGE_DIR / "challenge-sim.log"
+NEGATIVE_LOG = CHALLENGE_DIR / "negative-control.log"
+WAVEFORM = CHALLENGE_DIR / "rmsnorm-waveform.vcd"
+WAVEFORM_SVG = CHALLENGE_DIR / "rmsnorm-waveform.svg"
 LINT_LOG = BUILD / "verilator-lint.log"
 RTL_MANIFEST = ROOT / "CERTIFIED_RTL.sha256"
 REPORT = BUILD / "DEMO_REPORT.md"
 HTML_REPORT = BUILD / "DEMO_REPORT.html"
 
 METRICS = (
-    ("18 / 18", "Layer-0 operators"),
-    ("13,914", "Runtime commands"),
-    ("62,283", "Mapped cells"),
-    ("0.614 mm2", "Non-SRAM area"),
-    ("+0.6966 ns", "Slack at 100 MHz"),
+    ("23", "Certified RTL files checked now"),
+    ("16", "RMSNorm cases run now"),
+    ("896", "RTL output beats checked now"),
+    ("PASS", "Corrupted-result rejection"),
+    ("SVG + VCD", "Local waveform generated"),
 )
 
 PPA_STEPS = (
@@ -40,7 +45,9 @@ def require_marker(text: str, marker: str, source: Path) -> None:
 
 def main() -> None:
     vectors = json.loads(VECTORS.read_text(encoding="utf-8"))
+    challenge = json.loads(CHALLENGE.read_text(encoding="utf-8"))
     sim_log = SIM_LOG.read_text(encoding="utf-8")
+    negative_log = NEGATIVE_LOG.read_text(encoding="utf-8")
     lint_log = LINT_LOG.read_text(encoding="utf-8")
     rtl_rows = [
         line.split(maxsplit=1)
@@ -48,11 +55,19 @@ def main() -> None:
         if line.strip()
     ]
     require_marker(sim_log, "ACE2_RMSNORM_TB_PASS", SIM_LOG)
+    require_marker(negative_log, "ACE2_NEGATIVE_CONTROL_PASS", NEGATIVE_LOG)
+    if not WAVEFORM.is_file() or WAVEFORM.stat().st_size == 0:
+        raise SystemExit("missing local challenge waveform")
+    if not WAVEFORM_SVG.is_file() or WAVEFORM_SVG.stat().st_size == 0:
+        raise SystemExit("missing local challenge waveform preview")
 
     cases = vectors["cases"]
     beats = int(vectors["beats"])
     hidden = int(vectors["hidden_size"])
     saturated = sum(bool(case["saturation_seen"]) for case in cases)
+    challenge_case = cases[-1]
+    challenge_id = challenge["challenge_id"]
+    tools = challenge["tools"]
 
     case_rows = "\n".join(
         f"| `{case['name']}` | {case['sumsq']:,} | "
@@ -78,13 +93,33 @@ def main() -> None:
 | Hidden size | {hidden} |
 | Cases exercising saturation | {saturated} |
 | Verilator lint log lines | {len(lint_log.splitlines())} |
+| Local challenge ID | `{challenge_id}` |
+| Generated at | `{challenge["generated_at_utc"]}` |
+| Source commit | `{challenge["git_commit"]}` |
+| Local platform | `{challenge["platform"]["system"]} {challenge["platform"]["release"]} {challenge["platform"]["machine"]}` |
+| Fresh challenge output SHA-256 | `{challenge_case["output_sha256"]}` |
 
 ## Evidence chain
 
 1. All {len(rtl_rows)} certified RTL hashes matched.
 2. The complete shell passed Verilator lint with no fatal error.
 3. The independent generator reproduced the packaged vectors byte-for-byte.
-4. Icarus RTL simulation passed {len(cases)} cases x {beats} beats.
+4. This machine generated challenge `{challenge_id}` after the demo started.
+5. Icarus recompiled the RTL and passed {len(cases)} cases x {beats} beats,
+   including the fresh challenge case.
+6. A deliberately corrupted expected beat was rejected by the same checker.
+7. The run produced `build/demo_challenge/rmsnorm-waveform.vcd`.
+
+![Fresh local RMSNorm challenge waveform](demo_challenge/rmsnorm-waveform.svg)
+
+## Local toolchain
+
+| Tool | Version observed by this run |
+|---|---|
+| Python | `{tools["python"]}` |
+| Verilator | `{tools["verilator"]}` |
+| Icarus Verilog | `{tools["iverilog"]}` |
+| VVP | `{tools["vvp"]}` |
 
 ## RMSNorm workload identities
 
@@ -100,11 +135,11 @@ def main() -> None:
 
 ## Certification boundary
 
-Alpha 2 certifies one frozen pre-tokenized input through 24 layers and two
-generated tokens, plus mapped SKY130 synthesis/OpenSTA at 100 MHz. This fast
-demo verifies release identity and a focused arithmetic discriminator; it does
-not replay the sealed full-model run or claim arbitrary chat, FPGA, routed
-signoff, tapeout, or silicon.
+This run directly proves, on the user's machine, certified RTL identity,
+complete-shell lint, fresh RMSNorm oracle/RTL agreement, failure detection, and
+waveform generation. Alpha 2's 24-layer/two-token and mapped SKY130 results are
+historical certification claims and are not rerun by this demo. The demo does
+not claim arbitrary chat, FPGA execution, routed signoff, tapeout, or silicon.
 """
     REPORT.write_text(report, encoding="utf-8")
 
@@ -153,11 +188,19 @@ th{{color:var(--muted);font-size:12px;text-transform:uppercase}} code{{font-fami
 .boundary{{padding:18px 20px;border-left:4px solid var(--amber);background:#241b16;border-radius:8px}}
 .pass-text{{color:var(--cyan)}} @media(max-width:850px){{.metrics,.flow,.ppa-grid{{grid-template-columns:1fr 1fr}}}}
 @media(max-width:520px){{.metrics,.flow,.ppa-grid{{grid-template-columns:1fr}}}}
+.waveform{{width:100%;background:#07111f;border:1px solid var(--line);border-radius:12px}}
 </style></head><body><main>
 <h1>ACE-2 <em>Alpha 2</em></h1>
-<div class="subtitle">Evidence dashboard for an Argus-designed Qwen W4A8 accelerator</div>
-<div class="pill">CERTIFIED FOR DEMONSTRATED TWO-TOKEN SCOPE</div>
+<div class="subtitle">Machine-local execution proof for an Argus-designed Qwen W4A8 accelerator</div>
+<div class="pill">LOCAL CHALLENGE {escape(challenge_id)}</div>
 <div class="metrics">{metric_cards}</div>
+
+<h2>This run happened here</h2>
+<div class="boundary"><strong>Challenge:</strong> <code>{escape(challenge_id)}</code><br>
+<strong>Generated:</strong> {escape(challenge["generated_at_utc"])}<br>
+<strong>Source commit:</strong> <code>{escape(challenge["git_commit"])}</code><br>
+<strong>Platform:</strong> {escape(challenge["platform"]["system"])} {escape(challenge["platform"]["release"])} {escape(challenge["platform"]["machine"])}<br>
+<strong>Fresh output SHA-256:</strong> <code>{escape(challenge_case["output_sha256"])}</code></div>
 
 <h2>Host-to-token architecture</h2>
 <div class="flow">
@@ -173,11 +216,14 @@ th{{color:var(--muted);font-size:12px;text-transform:uppercase}} code{{font-fami
 <div class="flow">
 <div class="stage"><b>HASH</b><span>{len(rtl_rows)} certified RTL files</span></div>
 <div class="stage"><b>LINT</b><span>Complete shell, {len(lint_log.splitlines())} log lines</span></div>
-<div class="stage"><b>ORACLE</b><span>{len(cases)} deterministic cases</span></div>
+<div class="stage"><b>CHALLENGE</b><span>Fresh unpredictable local input</span></div>
 <div class="stage"><b>RTL</b><span>{len(cases)} x {beats} streamed beats</span></div>
-<div class="stage"><b>IDENTITY</b><span>Input/output SHA-256 records</span></div>
-<div class="stage"><b>REPORT</b><span class="pass-text">ACE2_ALPHA2_DEMO_PASS</span></div>
+<div class="stage"><b>NEGATIVE</b><span>Corruption rejected as expected</span></div>
+<div class="stage"><b>WAVEFORM</b><span>rmsnorm-waveform.vcd</span></div>
 </div>
+
+<h2>Waveform generated from this challenge</h2>
+<img class="waveform" src="demo_challenge/rmsnorm-waveform.svg" alt="Fresh local RMSNorm challenge waveform">
 
 <h2>Timing closure was earned, not assumed</h2>
 <div class="ppa-grid">{ppa_cards}</div>
@@ -186,19 +232,26 @@ th{{color:var(--muted);font-size:12px;text-transform:uppercase}} code{{font-fami
 <table><tr><th>Case</th><th>SumSq</th><th>Output scale</th><th>Input SHA</th><th>Output SHA</th></tr>
 {case_cards}</table>
 
+<h2>Toolchain observed locally</h2>
+<table><tr><th>Tool</th><th>Version</th></tr>
+<tr><td>Python</td><td><code>{escape(tools["python"])}</code></td></tr>
+<tr><td>Verilator</td><td><code>{escape(tools["verilator"])}</code></td></tr>
+<tr><td>Icarus Verilog</td><td><code>{escape(tools["iverilog"])}</code></td></tr>
+<tr><td>VVP</td><td><code>{escape(tools["vvp"])}</code></td></tr></table>
+
 <h2>Honest boundary</h2>
-<div class="boundary"><strong>Proven:</strong> 18/18 Layer-0 operators,
-13,914/13,914 runtime commands across 24 layers/two tokens, and mapped SKY130
-100 MHz timing.<br><br><strong>Not claimed:</strong> arbitrary-text chat,
-unrestricted generation, FPGA execution, routed signoff, tapeout, or silicon.
-This fast demo validates the release identity and a focused arithmetic boundary;
-it does not replay the sealed full-model run.</div>
+<div class="boundary"><strong>Executed now:</strong> certified RTL hash check,
+complete-shell lint, fresh local RMSNorm oracle/RTL comparison, corrupted-result
+rejection, and VCD waveform generation.<br><br><strong>Historical certification,
+not rerun here:</strong> 13,914 commands across 24 layers/two tokens and mapped
+SKY130 100 MHz timing.<br><br><strong>Not claimed:</strong> arbitrary-text chat,
+unrestricted generation, FPGA execution, routed signoff, tapeout, or silicon.</div>
 </main></body></html>"""
     HTML_REPORT.write_text(html_report, encoding="utf-8")
 
     print(f"  Certified RTL identity: PASS ({len(rtl_rows)} files)")
     print(f"  RMSNorm oracle/RTL: PASS ({len(cases)} cases x {beats} beats)")
-    print("  Mapped timing: 100 MHz PASS (+0.6966 ns detailed slack)")
+    print("  Historical mapped timing shown for context: 100 MHz (+0.6966 ns); not rerun")
     print(f"ACE2_DEMO_REPORT_WRITTEN {REPORT.relative_to(ROOT)}")
     print(f"ACE2_VISUAL_EVIDENCE_WRITTEN {HTML_REPORT.relative_to(ROOT)}")
 
