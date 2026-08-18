@@ -1,0 +1,64 @@
+{
+  "attempt_policy": {
+    "max_official_attempts": 1,
+    "overwrite_allowed": false,
+    "retry_allowed": false
+  },
+  "docker": {
+    "executable": "/usr/bin/docker",
+    "expected_image_id": "sha256:3bc303869d5e4caac8f72c854f2b1614c726b2961bbb372f54bc8fbc0e725e71",
+    "expected_repo_digest": "openroad/orfs@sha256:3bc303869d5e4caac8f72c854f2b1614c726b2961bbb372f54bc8fbc0e725e71",
+    "image": "openroad/orfs@sha256:3bc303869d5e4caac8f72c854f2b1614c726b2961bbb372f54bc8fbc0e725e71"
+  },
+  "flow_id": "ace2-sky130hd-yosys-opensta-immutable-v1",
+  "benchmark_interface": {
+    "schema": "design/benchmark_interface.schema.json",
+    "sidecar": "design/BENCHMARK_INTERFACE.json",
+    "validator": "flow/immutable_ppa/benchmark_interface.py"
+  },
+  "inputs": {
+    "constraints": [
+      "constraints/ace2_rmsnorm_core.sdc"
+    ],
+    "rtl": [
+      "rtl/ace2_pkg.sv",
+      "rtl/ace2_rmsnorm_core.sv",
+      "rtl/ace2_w4a8_proj_core.sv",
+      "rtl/ace2_rope_core.sv",
+      "rtl/ace2_attention_score_core.sv",
+      "rtl/ace2_softmax_core.sv",
+      "rtl/ace2_attention_compose_core.sv",
+      "rtl/ace2_silu_gate_core.sv",
+      "rtl/ace2_shell.sv"
+    ],
+    "sta_script": "flow/yosys/sky130_sta.tcl",
+    "synthesis_script": "flow/yosys/sky130_rmsnorm.ys"
+  },
+  "namespace": {
+    "create_mode": "0o750",
+    "leaf_pattern": "^comparison-[a-z0-9][a-z0-9._-]{0,63}$",
+    "root": "evidence/immutable_ppa"
+  },
+  "netlist_transform": {
+    "executable": "/usr/bin/sed",
+    "expression": "s/\\b(wire|reg|input|output) signed\\b/\\1/g",
+    "input": "build/sky130_rmsnorm/ace2_shell_mapped.v",
+    "kind": "gnu_sed_ere",
+    "output": "build/sky130_rmsnorm/ace2_shell_mapped_sta.v"
+  },
+  "package_base_commit": "bc0ff4d89341646b948564cd59e2c67307bdea38",
+  "schema_version": 1,
+  "target": {
+    "clock_period_ns": 10.0,
+    "frequency_floor_mhz": 100.0,
+    "non_sram_area_cap_mm2": 2.0,
+    "top_module": "ace2_shell"
+  },
+  "toolchain": {
+    "environment_script": "/OpenROAD-flow-scripts/env.sh",
+    "liberty": "/OpenROAD-flow-scripts/flow/platforms/sky130hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib",
+    "opensta": "/OpenROAD-flow-scripts/tools/install/OpenROAD/bin/sta",
+    "tee": "/usr/bin/tee",
+    "yosys": "/OpenROAD-flow-scripts/tools/install/yosys/bin/yosys"
+  }
+}

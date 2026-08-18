@@ -1,0 +1,185 @@
+{
+  "schema_version": 1,
+  "kind": "ace2_strict_benchmark_interface",
+  "base_commit": "bc0ff4d89341646b948564cd59e2c67307bdea38",
+  "module": {
+    "name": "ace2_shell",
+    "source": {
+      "path": "rtl/ace2_shell.sv",
+      "git_blob": "8ea81496506d018fa8b1193347194226903c19bd",
+      "sha256": "3022fead9cadae344876073921addace9f83c272f75615c42c0421ffa7959663"
+    },
+    "package_source": {
+      "path": "rtl/ace2_pkg.sv",
+      "git_blob": "e9d1c4dd9af22c1821444e820fece2463f0f9e89",
+      "sha256": "de25e2b4ba09f89cee23b56101d808b00a83e310b440d86f27639f554f895ba1"
+    },
+    "parameters": [
+      {"name": "HIDDEN_SIZE", "data_type": "integer", "signed": true, "default_expression": "ACE2_HIDDEN_SIZE", "resolved_default": 896},
+      {"name": "LANES", "data_type": "integer", "signed": true, "default_expression": "ACE2_VECTOR_LANES", "resolved_default": 16},
+      {"name": "ACT_WIDTH", "data_type": "integer", "signed": true, "default_expression": "8", "resolved_default": 8},
+      {"name": "GAIN_WIDTH", "data_type": "integer", "signed": true, "default_expression": "16", "resolved_default": 16},
+      {"name": "ACC_WIDTH", "data_type": "integer", "signed": true, "default_expression": "48", "resolved_default": 48},
+      {"name": "INV_RMS_FRAC", "data_type": "integer", "signed": true, "default_expression": "30", "resolved_default": 30},
+      {"name": "GAIN_FRAC", "data_type": "integer", "signed": true, "default_expression": "8", "resolved_default": 8},
+      {"name": "PROJ_MAC_LANES", "data_type": "integer", "signed": true, "default_expression": "4", "resolved_default": 4},
+      {"name": "PROJ_ACC_WIDTH", "data_type": "integer", "signed": true, "default_expression": "32", "resolved_default": 32},
+      {"name": "PROJ_M_MAX", "data_type": "integer", "signed": true, "default_expression": "16", "resolved_default": 16},
+      {"name": "SRAM_BANKS", "data_type": "integer", "signed": true, "default_expression": "ACE2_SRAM_BANKS", "resolved_default": 8},
+      {"name": "SRAM_ADDR_WIDTH", "data_type": "integer", "signed": true, "default_expression": "ACE2_SRAM_ADDR_WIDTH", "resolved_default": 12}
+    ],
+    "ports": [
+      {"name": "clk_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": null, "width": 1},
+      {"name": "rst_ni", "direction": "input", "net_type": "wire", "signed": false, "packed_range": null, "width": 1},
+      {"name": "csr_valid_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": null, "width": 1},
+      {"name": "csr_ready_o", "direction": "output", "net_type": "wire", "signed": false, "packed_range": null, "width": 1},
+      {"name": "csr_write_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": null, "width": 1},
+      {"name": "csr_addr_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": "[31:0]", "width": 32},
+      {"name": "csr_wdata_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": "[63:0]", "width": 64},
+      {"name": "csr_wstrb_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": "[7:0]", "width": 8},
+      {"name": "csr_rvalid_o", "direction": "output", "net_type": "reg", "signed": false, "packed_range": null, "width": 1},
+      {"name": "csr_rready_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": null, "width": 1},
+      {"name": "csr_rdata_o", "direction": "output", "net_type": "reg", "signed": false, "packed_range": "[63:0]", "width": 64},
+      {"name": "csr_error_o", "direction": "output", "net_type": "reg", "signed": false, "packed_range": null, "width": 1},
+      {"name": "irq_o", "direction": "output", "net_type": "wire", "signed": false, "packed_range": null, "width": 1},
+      {"name": "cmd_valid_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": null, "width": 1},
+      {"name": "cmd_ready_o", "direction": "output", "net_type": "wire", "signed": false, "packed_range": null, "width": 1},
+      {"name": "cmd_opcode_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": "[7:0]", "width": 8},
+      {"name": "cmd_flags_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": "[7:0]", "width": 8},
+      {"name": "cmd_layer_id_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": "[7:0]", "width": 8},
+      {"name": "cmd_m_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": "[15:0]", "width": 16},
+      {"name": "cmd_n_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": "[15:0]", "width": 16},
+      {"name": "cmd_k_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": "[15:0]", "width": 16},
+      {"name": "cmd_sequence_position_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": "[15:0]", "width": 16},
+      {"name": "cmd_completion_tag_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": "[15:0]", "width": 16},
+      {"name": "cmd_src0_addr_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": "[63:0]", "width": 64},
+      {"name": "cmd_src1_addr_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": "[63:0]", "width": 64},
+      {"name": "cmd_dst_addr_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": "[63:0]", "width": 64},
+      {"name": "cmd_scale_addr_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": "[63:0]", "width": 64},
+      {"name": "cmd_scratch_addr_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": "[63:0]", "width": 64},
+      {"name": "mem_req_valid_o", "direction": "output", "net_type": "wire", "signed": false, "packed_range": null, "width": 1},
+      {"name": "mem_req_ready_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": null, "width": 1},
+      {"name": "mem_req_write_o", "direction": "output", "net_type": "wire", "signed": false, "packed_range": null, "width": 1},
+      {"name": "mem_req_addr_o", "direction": "output", "net_type": "wire", "signed": false, "packed_range": "[63:0]", "width": 64},
+      {"name": "mem_req_len_o", "direction": "output", "net_type": "wire", "signed": false, "packed_range": "[15:0]", "width": 16},
+      {"name": "mem_req_tag_o", "direction": "output", "net_type": "wire", "signed": false, "packed_range": "[7:0]", "width": 8},
+      {"name": "mem_wvalid_o", "direction": "output", "net_type": "wire", "signed": false, "packed_range": null, "width": 1},
+      {"name": "mem_wready_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": null, "width": 1},
+      {"name": "mem_wdata_o", "direction": "output", "net_type": "wire", "signed": false, "packed_range": "[LANES*ACT_WIDTH-1:0]", "width": 128},
+      {"name": "mem_wstrb_o", "direction": "output", "net_type": "wire", "signed": false, "packed_range": "[15:0]", "width": 16},
+      {"name": "mem_wtag_o", "direction": "output", "net_type": "wire", "signed": false, "packed_range": "[7:0]", "width": 8},
+      {"name": "mem_rvalid_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": null, "width": 1},
+      {"name": "mem_rready_o", "direction": "output", "net_type": "wire", "signed": false, "packed_range": null, "width": 1},
+      {"name": "mem_rdata_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": "[LANES*ACT_WIDTH-1:0]", "width": 128},
+      {"name": "mem_rtag_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": "[7:0]", "width": 8},
+      {"name": "mem_rerror_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": null, "width": 1},
+      {"name": "mem_bvalid_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": null, "width": 1},
+      {"name": "mem_bready_o", "direction": "output", "net_type": "wire", "signed": false, "packed_range": null, "width": 1},
+      {"name": "mem_btag_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": "[7:0]", "width": 8},
+      {"name": "mem_berror_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": null, "width": 1},
+      {"name": "sram_req_valid_o", "direction": "output", "net_type": "wire", "signed": false, "packed_range": "[SRAM_BANKS-1:0]", "width": 8},
+      {"name": "sram_req_ready_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": "[SRAM_BANKS-1:0]", "width": 8},
+      {"name": "sram_write_o", "direction": "output", "net_type": "wire", "signed": false, "packed_range": "[SRAM_BANKS-1:0]", "width": 8},
+      {"name": "sram_addr_o", "direction": "output", "net_type": "wire", "signed": false, "packed_range": "[SRAM_BANKS*SRAM_ADDR_WIDTH-1:0]", "width": 96},
+      {"name": "sram_wdata_o", "direction": "output", "net_type": "wire", "signed": false, "packed_range": "[SRAM_BANKS*LANES*ACT_WIDTH-1:0]", "width": 1024},
+      {"name": "sram_wstrb_o", "direction": "output", "net_type": "wire", "signed": false, "packed_range": "[SRAM_BANKS*16-1:0]", "width": 128},
+      {"name": "sram_rdata_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": "[SRAM_BANKS*LANES*ACT_WIDTH-1:0]", "width": 1024},
+      {"name": "sram_rvalid_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": "[SRAM_BANKS-1:0]", "width": 8},
+      {"name": "busy_o", "direction": "output", "net_type": "wire", "signed": false, "packed_range": null, "width": 1},
+      {"name": "cmd_done_valid_o", "direction": "output", "net_type": "wire", "signed": false, "packed_range": null, "width": 1},
+      {"name": "cmd_done_ready_i", "direction": "input", "net_type": "wire", "signed": false, "packed_range": null, "width": 1},
+      {"name": "cmd_done_tag_o", "direction": "output", "net_type": "wire", "signed": false, "packed_range": "[15:0]", "width": 16},
+      {"name": "cmd_done_error_o", "direction": "output", "net_type": "wire", "signed": false, "packed_range": null, "width": 1},
+      {"name": "cmd_done_sumsq_o", "direction": "output", "net_type": "wire", "signed": false, "packed_range": "[ACC_WIDTH-1:0]", "width": 48},
+      {"name": "cmd_done_inv_rms_q30_o", "direction": "output", "net_type": "wire", "signed": false, "packed_range": "[INV_RMS_FRAC+1:0]", "width": 32},
+      {"name": "cmd_done_saturation_seen_o", "direction": "output", "net_type": "wire", "signed": false, "packed_range": null, "width": 1}
+    ]
+  },
+  "clock": {
+    "port": "clk_i",
+    "edge": "rising",
+    "period_ns": 10.0
+  },
+  "reset": {
+    "port": "rst_ni",
+    "polarity": "active_low",
+    "assertion": "asynchronous",
+    "deassertion": "observed_on_rising_edge"
+  },
+  "constraints": {
+    "source": {
+      "path": "constraints/ace2_rmsnorm_core.sdc",
+      "git_blob": "29792c9b1836b7628937e28fba91a1ddd5985396",
+      "sha256": "b21f8da39a0bdc5bf4db70b82013efb3d06a686347749c0070f37f37eca9e9ea"
+    },
+    "clock_name": "clk_i",
+    "clock_port": "clk_i",
+    "period_ns": 10.0,
+    "input_delay_ns": 0.2,
+    "output_delay_ns": 0.2,
+    "clock_uncertainty_ns": 0.1
+  },
+  "protocols": {
+    "transfer_edge": "rising",
+    "transfer_rule": "transfer_when_valid_and_ready_are_both_high",
+    "source_hold_rule": "valid_and_payload_remain_stable_while_valid_is_high_and_ready_is_low",
+    "channels": [
+      {"name": "csr_request", "source": "external", "valid": "csr_valid_i", "ready": "csr_ready_o", "payload": ["csr_write_i", "csr_addr_i", "csr_wdata_i", "csr_wstrb_i"]},
+      {"name": "csr_response", "source": "ace2_shell", "valid": "csr_rvalid_o", "ready": "csr_rready_i", "payload": ["csr_rdata_o", "csr_error_o"]},
+      {"name": "command", "source": "external", "valid": "cmd_valid_i", "ready": "cmd_ready_o", "payload": ["cmd_opcode_i", "cmd_flags_i", "cmd_layer_id_i", "cmd_m_i", "cmd_n_i", "cmd_k_i", "cmd_sequence_position_i", "cmd_completion_tag_i", "cmd_src0_addr_i", "cmd_src1_addr_i", "cmd_dst_addr_i", "cmd_scale_addr_i", "cmd_scratch_addr_i"]},
+      {"name": "memory_request", "source": "ace2_shell", "valid": "mem_req_valid_o", "ready": "mem_req_ready_i", "payload": ["mem_req_write_o", "mem_req_addr_o", "mem_req_len_o", "mem_req_tag_o"]},
+      {"name": "memory_write", "source": "ace2_shell", "valid": "mem_wvalid_o", "ready": "mem_wready_i", "payload": ["mem_wdata_o", "mem_wstrb_o", "mem_wtag_o"]},
+      {"name": "memory_read", "source": "external", "valid": "mem_rvalid_i", "ready": "mem_rready_o", "payload": ["mem_rdata_i", "mem_rtag_i", "mem_rerror_i"]},
+      {"name": "memory_write_response", "source": "external", "valid": "mem_bvalid_i", "ready": "mem_bready_o", "payload": ["mem_btag_i", "mem_berror_i"]},
+      {"name": "completion", "source": "ace2_shell", "valid": "cmd_done_valid_o", "ready": "cmd_done_ready_i", "payload": ["cmd_done_tag_o", "cmd_done_error_o", "cmd_done_sumsq_o", "cmd_done_inv_rms_q30_o", "cmd_done_saturation_seen_o"]}
+    ],
+    "sram": {
+      "request": "each_bank_transfers_when_matching_sram_req_valid_o_and_sram_req_ready_i_bits_are_high_on_a_rising_edge",
+      "read_response": "each_sram_rvalid_i_bit_qualifies_the_matching_bank_slice_of_sram_rdata_i_on_a_rising_edge",
+      "read_backpressure": false
+    }
+  },
+  "fused_qkv": {
+    "opcode": {
+      "symbol": "ACE2_OPCODE_FUSED_QKV",
+      "value": 11,
+      "width": 8
+    },
+    "execution_kind": "projection",
+    "descriptor": {
+      "cmd_flags_i": 0,
+      "cmd_layer_id_i": {"minimum": 0, "maximum": 23},
+      "cmd_m_i": 1,
+      "cmd_n_i": "HIDDEN_SIZE",
+      "cmd_k_i": "HIDDEN_SIZE",
+      "aligned_address_ports": ["cmd_src0_addr_i", "cmd_src1_addr_i", "cmd_dst_addr_i", "cmd_scale_addr_i"],
+      "address_alignment_bytes": 16,
+      "cmd_scratch_addr_i": 0,
+      "cmd_sequence_position_i": "not_constrained_by_descriptor",
+      "cmd_completion_tag_i": "returned_on_cmd_done_tag_o"
+    },
+    "memory_layout": {
+      "activation_source": "cmd_src0_addr_i",
+      "weight_source": "cmd_src1_addr_i",
+      "metadata_source": "cmd_scale_addr_i",
+      "destination_base": "cmd_dst_addr_i",
+      "activation_read_beats": 56,
+      "output_order": ["q", "k", "v"],
+      "output_elements": [896, 128, 128],
+      "destination_byte_offsets": [0, 896, 1024],
+      "weight_byte_offsets": [0, 401408, 458752],
+      "metadata_byte_offsets": [0, 14336, 16384]
+    }
+  },
+  "immutable_ppa": {
+    "flow_id": "ace2-sky130hd-yosys-opensta-immutable-v1",
+    "top_module": "ace2_shell",
+    "clock_period_ns": 10.0,
+    "frequency_floor_mhz": 100.0,
+    "non_sram_area_cap_mm2": 2.0,
+    "candidate_interface_must_match": true,
+    "candidate_constraints_must_match": true,
+    "sidecar_required_before_execution": true,
+    "preflight_executes_synthesis_or_sta": false
+  }
+}

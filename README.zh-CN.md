@@ -172,6 +172,23 @@ make fused-qkv-freeze
 make fused-qkv-check
 ```
 
+### 不可变 PPA Preflight
+
+`flow/immutable_ppa/` 为后续 Base/Candidate SKY130 对比提供 non-consuming
+Preflight。它会冻结 12 个 Shell 参数、64 个公开端口、Fused-QKV 契约、
+RTL/SDC/Flow 哈希、Container Digest，以及 Yosys/OpenSTA/Library 的绝对路径。
+Preflight 只验证并渲染命令，设计上无法执行综合或 STA。
+
+```sh
+python3 flow/immutable_ppa/benchmark_interface.py --repo "$PWD"
+python3 -m unittest \
+  flow/immutable_ppa/test_benchmark_interface.py \
+  flow/immutable_ppa/test_immutable_ppa.py
+```
+
+正式对比 Namespace 使用 Exclusive-create，并拒绝覆盖或重试。该 Package 本身不包含
+PPA、时序闭合或 FPGA 声明。
+
 ### 参数化 Qwen2.5 模型契约
 
 ACE-2 现已包含 Qwen2.5 0.5B、1.5B、3B 和 7B 的可执行模型硬件描述。
