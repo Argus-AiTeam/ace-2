@@ -40,6 +40,7 @@ authority.**
 | Timing | **100 MHz PASS, +0.6966 ns setup slack** |
 | BF16 successor | **S6 sealed at probe-gate NO-GO; official dev was not accessed** |
 | Execution admission | **V8 recovery package Fresh-L2 accepted; external root still required** |
+| Recorded generation diagnostic | **Fixed `Hi` input completed and emitted `[529, 529]` (`ertert`); capability evidence only** |
 | Arbitrary-text W4A8 chat | **Not yet accepted** |
 | Alveo U280 deployment | **Not started; external tool/board access required** |
 
@@ -70,6 +71,12 @@ authorization, credential, and publication boundaries.
 This attribution is not a substitute for evidence. The repository keeps
 accepted results, rejected candidates, reproducible demos, and explicit
 non-claims separate. See [Argus design provenance](ARGUS_PROVENANCE.md).
+
+An independently reviewed, fixed-input generation record is available in
+[the public two-token diagnostic evidence bundle](evidence/public/fixed-hi-two-token-diagnostic-v1/).
+It completed 175,855 Verilated commands and emitted token IDs `[529, 529]`,
+which statically decode to `ertert`. This demonstrates recorded token
+generation, not useful language quality or arbitrary-text chat.
 
 ## What ACE-2 contains
 

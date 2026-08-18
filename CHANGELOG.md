@@ -15,6 +15,9 @@
 - upgrade `make demo` with a fresh machine-local challenge, RTL recompilation,
   VCD waveform, per-case execution markers, local tool/source provenance, and
   a fail-closed negative control;
+- publish a separate public-safe fixed-`Hi` two-token diagnostic evidence
+  bundle with exact terminal runtime records, source hashes, and a sanitized
+  Fresh-L2 claim boundary; this bundle is not part of `make demo`;
 - preserve all Alpha 2 certification claims and explicitly retain the
   non-claims for arbitrary-text chat, new RTL, XRT, and U280 execution.
 

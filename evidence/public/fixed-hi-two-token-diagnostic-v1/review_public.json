@@ -1,0 +1,48 @@
+{
+  "acceptance": {
+    "accepted": true,
+    "decision": "ACCEPT_FIXED_DIAGNOSTIC_ONLY",
+    "scope": "Fixed Hi prompt, recorded 14-token chat-template input, and two-token direct-base Qwen2.5-0.5B W4A8 Verilated diagnostic"
+  },
+  "claim_boundaries": {
+    "accepted_claim": "The recorded fixed-input Verilated W4A8 diagnostic completed 175855 of 175855 commands, matched the reviewed quantized-reference boundaries, and recorded generated token IDs [529, 529].",
+    "rejected_claims": [
+      "meaningful chat quality",
+      "arbitrary-text or arbitrary-prompt coverage",
+      "interactive latency or performance",
+      "product completion or acceptance",
+      "FPGA or U280 execution",
+      "pipeline stage advancement"
+    ]
+  },
+  "execution_observations": {
+    "commands_completed": 175855,
+    "commands_total": 175855,
+    "first_failure": null,
+    "generated_token_ids": [
+      529,
+      529
+    ],
+    "runtime_exit_code": 0,
+    "simulator": "Verilator",
+    "simulator_cycles": 14244639094,
+    "terminated": false
+  },
+  "review": {
+    "level": "fresh_independent_l2",
+    "reviewed_at_utc": "2026-08-09T18:40:11Z",
+    "review_only": true,
+    "stage_advancement_authorized": false
+  },
+  "schema_version": 1,
+  "tokenizer_decode": {
+    "decoded_text": "ertert",
+    "generated_token_ids": [
+      529,
+      529
+    ],
+    "model_revision": "060db6499f32faf8b98477b0a26969ef7d8b9987",
+    "repository": "Qwen/Qwen2.5-0.5B",
+    "verification_method": "Read-only static vocabulary inspection; tokenizer code was not executed during review"
+  }
+}

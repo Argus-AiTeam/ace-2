@@ -37,6 +37,7 @@
 | 时序 | **100 MHz 通过，setup slack 为 +0.6966 ns** |
 | BF16 后继模型 | **S6 在 probe gate 处 NO-GO 封存，未访问 official dev** |
 | 执行准入 | **V8 恢复包已获 Fresh-L2 接受；仍需要外部 root** |
+| 已记录的生成诊断 | **固定 `Hi` 输入完成并输出 `[529, 529]`（`ertert`）；仅代表生成能力证据** |
 | 任意文本 W4A8 对话 | **尚未验收** |
 | Alveo U280 部署 | **尚未开始，需要外部工具链和板卡** |
 
@@ -60,6 +61,11 @@ Argus 完成了主要的迭代工程闭环：架构拆解、RTL 与 oracle 实�
 
 “由 Argus 制作”并不替代证据。仓库明确区分已验收结果、失败候选、可复现 Demo
 和非声明边界。完整说明见 [Argus 设计溯源](ARGUS_PROVENANCE.md)。
+
+独立审查过的固定输入生成记录见
+[公开双 token 诊断证据包](evidence/public/fixed-hi-two-token-diagnostic-v1/)。
+该记录完成了 175,855 条 Verilated 命令并输出 token IDs `[529, 529]`，静态解码为
+`ertert`。它只证明记录中的生成执行发生过，不代表输出质量或任意文本对话能力。
 
 ## ACE-2 包含什么
 
