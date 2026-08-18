@@ -46,7 +46,7 @@ be retried, resumed, rescored, or converted into a downstream quality claim.
 Alpha 3 includes only these aggregate facts, not checkpoints, model weights,
 row-level probe outputs, backend logs, or authority records.
 
-## Development update: 2026-08-17
+## Development update: 2026-08-18
 
 Post-Alpha-3 work strengthened the provenance and execution-admission boundary
 needed before any protected Stage 1 action. The activation attempt failed
@@ -54,21 +54,37 @@ closed because the available host account retained root-equivalent local
 service access, so it could not provide a trust root independent of the agent
 being evaluated.
 
-The resulting status is:
+After several rejected intermediate recovery lineages, V8 closed the
+package-self-authentication defect by requiring the first trusted action and
+the accepted package identity to arrive through a channel outside the package
+being authenticated. Fresh-L2 review accepted V8 with:
+
+- 58 verifier checks completed;
+- zero reported issues;
+- content SHA-256
+  `07663099352edfad32eb39919ad9475f1f887328ebb549bdb9cae1c48f5ccad1`;
+- status `BUILD_READY_EXTERNAL_ROOT_REQUIRED`;
+- no installed-tree verification, privileged execution, or Stage 1
+  completion.
+
+The resulting public status is:
 
 - the Alpha 2 certified RTL and all terminal model evidence remain unchanged;
 - no protected Stage 1 execution was accepted or replayed;
 - arbitrary-text chat, new RTL acceptance, XRT integration, and U280 execution
   remain unauthorized and unclaimed;
-- a fresh, non-privileged host-trust recovery package is under independent
-  review for use by an external administrator;
-- that package is build preparation only and cannot establish trust or grant
-  execution authority from the current account.
+- the accepted V8 recovery package is build-ready for an independent external
+  root operator;
+- the current account cannot authenticate, install, or execute V8 as its own
+  trust authority;
+- the sole remaining recovery prerequisite is an external channel that
+  independently supplies the exact accepted package identity and root
+  invocation.
 
-This update intentionally excludes local paths, claims, receipts, runtime logs,
-credentials, protected evidence, and in-progress package contents. A reviewed
-recovery package would still leave one external prerequisite: an administrator
-channel that the evaluated account cannot invoke or impersonate.
+This update intentionally excludes local paths, migration payloads, claims,
+receipts, runtime logs, credentials, protected evidence, and private package
+contents. See [`HOST_TRUST_RECOVERY.md`](HOST_TRUST_RECOVERY.md) for the
+public-safe trust boundary.
 
 ## Ordered remaining gates
 

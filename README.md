@@ -1,4 +1,8 @@
+<div align="center">
+
 # Argus Compute Engine 2 (ACE-2)
+
+### Evidence-first Qwen2.5-0.5B W4A8 accelerator engineering
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
@@ -6,9 +10,15 @@
 [![License](https://img.shields.io/github/license/aHappend/ace-2)](LICENSE)
 [![RTL](https://img.shields.io/badge/RTL-SystemVerilog-5C4EE5)](rtl/)
 [![Target](https://img.shields.io/badge/SKY130-100%20MHz-18A999)](docs/PPA_SUMMARY.md)
+[![Built by](https://img.shields.io/badge/built_by-Argus_AI_Team-7C3AED)](https://github.com/Argus-AiTeam)
+[![Claim boundary](https://img.shields.io/badge/claims-evidence_bound-0F766E)](KNOWN_LIMITATIONS.md)
 
-**An evidence-driven Qwen2.5-0.5B W4A8 accelerator designed and iterated by
-[Argus](https://argusbot.cn/).**
+**ACE means Argus Compute Engine. ACE-2 was designed, implemented, tested,
+reviewed, and iterated primarily by
+[Argus](https://argusbot.cn/) under human-owned objectives and release
+authority.**
+
+</div>
 
 ![ACE-2 certified Alpha 2 baseline](docs/ace2-alpha2-overview.svg)
 
@@ -29,7 +39,7 @@
 | SKY130 mapped result | **62,283 cells, 0.614082704 mm2** |
 | Timing | **100 MHz PASS, +0.6966 ns setup slack** |
 | BF16 successor | **S6 sealed at probe-gate NO-GO; official dev was not accessed** |
-| Execution admission | **Blocked pending an independent host trust root; recovery packaging is under review** |
+| Execution admission | **V8 recovery package Fresh-L2 accepted; external root still required** |
 | Arbitrary-text W4A8 chat | **Not yet accepted** |
 | Alveo U280 deployment | **Not started; external tool/board access required** |
 
@@ -39,11 +49,27 @@ and exact Alpha 2 certification boundary remain summarized in
 [Alpha 3 productization progress](docs/ALPHA3_PROGRESS.md) for the new work and
 its explicit non-claims.
 
-The 2026-08-17 development update does not advance the certified baseline.
-Protected Stage 1 execution remains fail-closed while an independent host trust
-root is unavailable. A non-privileged recovery package is being rebuilt under
-fresh review; it is preparation for an external administrator, not execution
-authority or product completion.
+The latest public-safe productization result does not advance the certified
+RTL baseline. The V8 host-trust recovery package passed 58 verifier checks with
+zero reported issues and received Fresh-L2 acceptance for content SHA-256
+`07663099352edfad32eb39919ad9475f1f887328ebb549bdb9cae1c48f5ccad1`.
+Its status is `BUILD_READY_EXTERNAL_ROOT_REQUIRED`: it has not been installed,
+no privileged execution occurred, and Stage 1 is not complete. See
+[Host-trust recovery status](docs/HOST_TRUST_RECOVERY.md).
+
+## Why ACE-2 is an Argus result
+
+ACE-2 is part of the wider body of work published by the
+[Argus AI Team](https://github.com/Argus-AiTeam). Argus carried out the
+iterative engineering loop: architecture decomposition, RTL and oracle
+implementation, deterministic test generation, long-running verification,
+failure localization, evidence binding, reviewer handoffs, and fail-closed
+rollback decisions. Human control remained at the mission, budget,
+authorization, credential, and publication boundaries.
+
+This attribution is not a substitute for evidence. The repository keeps
+accepted results, rejected candidates, reproducible demos, and explicit
+non-claims separate. See [Argus design provenance](ARGUS_PROVENANCE.md).
 
 ## What ACE-2 contains
 
@@ -138,13 +164,18 @@ See [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md) for the full list.
 
 ## Productization path
 
-- **Current gate:** design and independently review a new BF16 successor after
-  S6 failed closed at probe lock. S6 may not be retried, resumed, or rescored.
-- **After that:** arbitrary-text prefill, KV reuse, readable multi-token
-  decoding, quantized-reference/RTL agreement, and a one-command local chat
-  demo.
-- **Then:** AMD/Xilinx Alveo U280 PCIe/XRT + HBM2 integration and emulation.
-- **Later:** board validation and physical-design signoff.
+- **Current gate:** an independent external-root channel must authenticate and
+  invoke the exact accepted V8 recovery package. The current account cannot
+  self-establish that trust root.
+- **Next:** design and independently review a new BF16 successor after S6
+  failed closed at probe lock. S6 may not be retried, resumed, or rescored.
+- **Stage 1:** arbitrary-text prefill, tokenizer/host integration, KV reuse,
+  readable multi-token decoding, quantized-reference/RTL agreement, and a
+  one-command accelerator-facing chat demo.
+- **Stage 2:** AMD/Xilinx Alveo U280 PCIe/XRT + HBM2 integration, build
+  evidence, and board execution when the external toolchain and hardware are
+  genuinely available.
+- **Later:** board validation expansion and physical-design signoff.
 
 Productization work is not part of the certified baseline until it receives
 reproducible evidence and an independent Fresh Reviewer verdict.
