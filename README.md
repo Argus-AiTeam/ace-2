@@ -118,7 +118,11 @@ fast, public-safe, machine-local evidence chain:
 6. generates a fresh unpredictable local challenge and recompiles the RTL;
 7. emits a VCD waveform for the challenge run;
 8. proves the checker rejects an intentionally corrupted expected result;
-9. produces a standalone visual evidence dashboard with the local challenge,
+9. runs five independent Transformer core tests and six selected
+   `ace2_shell` integration modes;
+10. displays all 18 certified Layer-0 operators, distinguishing fast-demo
+    execution from slow extended-shell coverage;
+11. produces a standalone visual evidence dashboard with the local challenge,
    tool versions, source commit, logs, and output hashes.
 
 Expected final marker:
@@ -137,6 +141,17 @@ build/DEMO_REPORT.html
 installing the simulation toolchain.
 
 See [DEMO.md](DEMO.md) for the complete walkthrough and raw artifact map.
+
+To run the complete public shell regression, including the slower projection,
+KV-write, and attention-value paths:
+
+```sh
+make demo-extended
+```
+
+The dashboard marks those slow rows PASS only after the complete shell log
+contains `ACE2_SHELL_TB_PASS`. Neither command replays the sealed full-model
+schedule or claims FPGA execution.
 
 ## Engineering progression
 

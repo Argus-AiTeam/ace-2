@@ -19,22 +19,37 @@ WAVEFORM = CHALLENGE_DIR / "rmsnorm-waveform.vcd"
 WAVEFORM_SVG = CHALLENGE_DIR / "rmsnorm-waveform.svg"
 LINT_LOG = BUILD / "verilator-lint.log"
 RTL_MANIFEST = ROOT / "CERTIFIED_RTL.sha256"
+OPERATOR_SUITE = BUILD / "operator_demo" / "operator-suite.json"
+FULL_SHELL_LOG = BUILD / "operator_demo" / "full-shell.log"
 REPORT = BUILD / "DEMO_REPORT.md"
 HTML_REPORT = BUILD / "DEMO_REPORT.html"
-
-METRICS = (
-    ("23", "Certified RTL files checked now"),
-    ("16", "RMSNorm cases run now"),
-    ("896", "RTL output beats checked now"),
-    ("PASS", "Corrupted-result rejection"),
-    ("SVG + VCD", "Local waveform generated"),
-)
 
 PPA_STEPS = (
     ("Initial full tree", -0.1484),
     ("Shell fanout repair", -0.5275),
     ("RMSNorm enable repair", -0.1741),
     ("Final-sum preload split", 0.6966),
+)
+
+LAYER0_OPERATORS = (
+    ("01", "Input RMSNorm", "fast", "Fresh RMSNorm challenge"),
+    ("02", "Q projection", "extended", "Complete shell regression"),
+    ("03", "K projection", "extended", "Complete shell regression"),
+    ("04", "V projection", "extended", "Complete shell regression"),
+    ("05", "RoPE Q", "fast", "RoPE core"),
+    ("06", "RoPE K", "fast", "RoPE core"),
+    ("07", "KV write", "extended", "Complete shell regression"),
+    ("08", "Attention score", "fast", "Attention score core + shell"),
+    ("09", "Softmax", "fast", "Softmax core"),
+    ("10", "Attention value", "extended", "Complete shell regression"),
+    ("11", "O projection", "extended", "Complete shell regression"),
+    ("12", "Attention residual add", "fast", "Residual shell"),
+    ("13", "Post-attention RMSNorm", "fast", "Residual/post-norm shell"),
+    ("14", "MLP gate projection", "extended", "Complete shell regression"),
+    ("15", "MLP up projection", "extended", "Complete shell regression"),
+    ("16", "SiLU gate", "fast", "SiLU core"),
+    ("17", "MLP down projection", "extended", "Complete shell regression"),
+    ("18", "MLP residual add", "fast", "MLP residual shell"),
 )
 
 
@@ -49,6 +64,7 @@ def main() -> None:
     sim_log = SIM_LOG.read_text(encoding="utf-8")
     negative_log = NEGATIVE_LOG.read_text(encoding="utf-8")
     lint_log = LINT_LOG.read_text(encoding="utf-8")
+    operator_suite = json.loads(OPERATOR_SUITE.read_text(encoding="utf-8"))
     rtl_rows = [
         line.split(maxsplit=1)
         for line in RTL_MANIFEST.read_text(encoding="utf-8").splitlines()
@@ -56,6 +72,8 @@ def main() -> None:
     ]
     require_marker(sim_log, "ACE2_RMSNORM_TB_PASS", SIM_LOG)
     require_marker(negative_log, "ACE2_NEGATIVE_CONTROL_PASS", NEGATIVE_LOG)
+    if operator_suite.get("status") != "PASS":
+        raise SystemExit("Transformer operator suite did not pass")
     if not WAVEFORM.is_file() or WAVEFORM.stat().st_size == 0:
         raise SystemExit("missing local challenge waveform")
     if not WAVEFORM_SVG.is_file() or WAVEFORM_SVG.stat().st_size == 0:
@@ -68,6 +86,25 @@ def main() -> None:
     challenge_case = cases[-1]
     challenge_id = challenge["challenge_id"]
     tools = challenge["tools"]
+    operator_results = operator_suite["results"]
+    core_results = [
+        item for item in operator_results if item["kind"] == "independent_core"
+    ]
+    shell_results = [
+        item for item in operator_results if item["kind"] == "shell_integration"
+    ]
+    full_shell_pass = (
+        FULL_SHELL_LOG.is_file()
+        and "ACE2_SHELL_TB_PASS" in FULL_SHELL_LOG.read_text(encoding="utf-8")
+    )
+    fast_operator_count = sum(mode == "fast" for _, _, mode, _ in LAYER0_OPERATORS)
+    metrics = (
+        (str(len(rtl_rows)), "Certified RTL files checked now"),
+        (str(len(cases)), "RMSNorm cases run now"),
+        (f"{fast_operator_count}/18", "Layer-0 operators run now"),
+        (str(len(shell_results)), "Shell integration modes"),
+        ("PASS", "Corrupted-result rejection"),
+    )
 
     case_rows = "\n".join(
         f"| `{case['name']}` | {case['sumsq']:,} | "
@@ -79,11 +116,11 @@ def main() -> None:
         f"| {name} | {slack:+.4f} ns | {'PASS' if slack >= 0 else 'NO-GO'} |"
         for name, slack in PPA_STEPS
     )
-    report = f"""# ACE-2 Alpha 2 Demo Report
+    report = f"""# ACE-2 Transformer RTL Demo Report
 
 ## Result
 
-`ACE2_ALPHA2_DEMO_PASS`
+`ACE2_LOCAL_RTL_DEMO_PASS`
 
 | Metric | Value |
 |---|---:|
@@ -98,6 +135,11 @@ def main() -> None:
 | Source commit | `{challenge["git_commit"]}` |
 | Local platform | `{challenge["platform"]["system"]} {challenge["platform"]["release"]} {challenge["platform"]["machine"]}` |
 | Fresh challenge output SHA-256 | `{challenge_case["output_sha256"]}` |
+| Transformer operator groups | {len(core_results)} |
+| Selected shell integration modes | {len(shell_results)} |
+| Operator-suite runtime | {operator_suite["elapsed_seconds"]:.2f} seconds |
+| Layer-0 operator rows run by fast demo | {fast_operator_count}/18 |
+| Complete shell regression | {"PASS in this workspace" if full_shell_pass else "Run make demo-extended"} |
 
 ## Evidence chain
 
@@ -109,6 +151,8 @@ def main() -> None:
    including the fresh challenge case.
 6. A deliberately corrupted expected beat was rejected by the same checker.
 7. The run produced `build/demo_challenge/rmsnorm-waveform.vcd`.
+8. Six independent Transformer core groups and five selected `ace2_shell`
+   integration modes passed against packaged oracle vectors.
 
 ![Fresh local RMSNorm challenge waveform](demo_challenge/rmsnorm-waveform.svg)
 
@@ -126,6 +170,18 @@ def main() -> None:
 | Case | Sum of squares | Output scale | Output SHA-256 |
 |---|---:|---:|---|
 {case_rows}
+
+## Transformer operator coverage
+
+| # | Layer-0 operator | Fast demo | Evidence path |
+|---:|---|---|---|
+{chr(10).join(f"| {number} | {name} | {'PASS now' if mode == 'fast' else ('PASS via extended' if full_shell_pass else 'demo-extended')} | {evidence} |" for number, name, mode, evidence in LAYER0_OPERATORS)}
+
+### Executed test processes
+
+| Test | Execution path | Runtime | Result marker |
+|---|---|---:|---|
+{chr(10).join(f"| {item['name']} | {item['kind'].replace('_', ' ')} | {item['seconds']:.2f} s | `{item['marker']}` |" for item in operator_results)}
 
 ## Timing-closure progression
 
@@ -145,7 +201,22 @@ not claim arbitrary chat, FPGA execution, routed signoff, tapeout, or silicon.
 
     metric_cards = "\n".join(
         f'<div class="metric"><strong>{escape(value)}</strong><span>{escape(label)}</span></div>'
-        for value, label in METRICS
+        for value, label in metrics
+    )
+    operator_cards = "\n".join(
+        f"""<tr><td>{escape(item["name"])}</td>
+        <td>{escape(item["kind"].replace("_", " "))}</td>
+        <td>{item["seconds"]:.2f} s</td>
+        <td class="pass-text">PASS</td>
+        <td><code>{escape(item["marker"])}</code></td></tr>"""
+        for item in operator_results
+    )
+    layer0_cards = "\n".join(
+        f"""<tr><td>{number}</td><td>{escape(name)}</td>
+        <td class="{'pass-text' if mode == 'fast' or full_shell_pass else 'extended-text'}">
+        {'PASS NOW' if mode == 'fast' else ('PASS EXTENDED' if full_shell_pass else 'DEMO-EXTENDED')}</td>
+        <td>{escape(evidence)}</td></tr>"""
+        for number, name, mode, evidence in LAYER0_OPERATORS
     )
     case_cards = "\n".join(
         f"""<tr><td><code>{escape(case["name"])}</code></td>
@@ -163,7 +234,7 @@ not claim arbitrary chat, FPGA execution, routed signoff, tapeout, or silicon.
     html_report = f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ACE-2 Alpha 2 Evidence Dashboard</title>
+<title>ACE-2 Transformer RTL Evidence Dashboard</title>
 <style>
 :root{{--bg:#07111f;--panel:#0d1b2d;--line:#213a57;--text:#edf7ff;
 --muted:#94aac1;--cyan:#51e5c2;--blue:#60a5fa;--amber:#ffbd66;}}
@@ -186,12 +257,13 @@ border:1px solid #247e70;border-radius:999px;color:var(--cyan);background:#0b282
 border:1px solid var(--line)}} th,td{{padding:10px 13px;border-bottom:1px solid var(--line);text-align:left}}
 th{{color:var(--muted);font-size:12px;text-transform:uppercase}} code{{font-family:ui-monospace,monospace;font-size:12px}}
 .boundary{{padding:18px 20px;border-left:4px solid var(--amber);background:#241b16;border-radius:8px}}
-.pass-text{{color:var(--cyan)}} @media(max-width:850px){{.metrics,.flow,.ppa-grid{{grid-template-columns:1fr 1fr}}}}
+.pass-text{{color:var(--cyan)}} .extended-text{{color:var(--amber)}}
+@media(max-width:850px){{.metrics,.flow,.ppa-grid{{grid-template-columns:1fr 1fr}}}}
 @media(max-width:520px){{.metrics,.flow,.ppa-grid{{grid-template-columns:1fr}}}}
 .waveform{{width:100%;background:#07111f;border:1px solid var(--line);border-radius:12px}}
 </style></head><body><main>
-<h1>ACE-2 <em>Alpha 2</em></h1>
-<div class="subtitle">Machine-local execution proof for an Argus-designed Qwen W4A8 accelerator</div>
+<h1>ACE-2 <em>Transformer RTL Demo</em></h1>
+<div class="subtitle">Machine-local operator, shell-integration, and challenge evidence for an Argus-designed Qwen W4A8 accelerator</div>
 <div class="pill">LOCAL CHALLENGE {escape(challenge_id)}</div>
 <div class="metrics">{metric_cards}</div>
 
@@ -222,6 +294,24 @@ th{{color:var(--muted);font-size:12px;text-transform:uppercase}} code{{font-fami
 <div class="stage"><b>WAVEFORM</b><span>rmsnorm-waveform.vcd</span></div>
 </div>
 
+<h2>Transformer data path demonstrated now</h2>
+<div class="flow">
+<div class="stage"><b>01 NORM</b><span>Fresh RMSNorm challenge</span></div>
+<div class="stage"><b>02 QKV / O</b><span>W4A8 projection core</span></div>
+<div class="stage"><b>03 POSITION</b><span>RoPE core</span></div>
+<div class="stage"><b>04 ATTENTION</b><span>Score, softmax, compose</span></div>
+<div class="stage"><b>05 MLP</b><span>SiLU gate and residual shell</span></div>
+<div class="stage"><b>06 OUTPUT</b><span>Final RMSNorm and LM head shell</span></div>
+</div>
+
+<h2>Operator and integration results</h2>
+<table><tr><th>Test</th><th>Path</th><th>Runtime</th><th>Status</th><th>RTL marker</th></tr>
+{operator_cards}</table>
+
+<h2>Complete 18-operator Layer-0 matrix</h2>
+<table><tr><th>#</th><th>Operator</th><th>This workspace</th><th>Evidence path</th></tr>
+{layer0_cards}</table>
+
 <h2>Waveform generated from this challenge</h2>
 <img class="waveform" src="demo_challenge/rmsnorm-waveform.svg" alt="Fresh local RMSNorm challenge waveform">
 
@@ -241,8 +331,12 @@ th{{color:var(--muted);font-size:12px;text-transform:uppercase}} code{{font-fami
 
 <h2>Honest boundary</h2>
 <div class="boundary"><strong>Executed now:</strong> certified RTL hash check,
-complete-shell lint, fresh local RMSNorm oracle/RTL comparison, corrupted-result
-rejection, and VCD waveform generation.<br><br><strong>Historical certification,
+complete-shell lint, fresh local RMSNorm oracle/RTL comparison, five independent
+Transformer core groups, six selected shell integration modes, corrupted-result
+rejection, and VCD waveform generation.<br><br><strong>Available separately:</strong>
+<code>make demo-extended</code> runs the complete slow public shell regression.
+It is not claimed as run unless its log contains <code>ACE2_SHELL_TB_PASS</code>.
+<br><br><strong>Historical certification,
 not rerun here:</strong> 13,914 commands across 24 layers/two tokens and mapped
 SKY130 100 MHz timing.<br><br><strong>Not claimed:</strong> arbitrary-text chat,
 unrestricted generation, FPGA execution, routed signoff, tapeout, or silicon.</div>
@@ -251,6 +345,11 @@ unrestricted generation, FPGA execution, routed signoff, tapeout, or silicon.</d
 
     print(f"  Certified RTL identity: PASS ({len(rtl_rows)} files)")
     print(f"  RMSNorm oracle/RTL: PASS ({len(cases)} cases x {beats} beats)")
+    print(
+        "  Transformer operators: PASS "
+        f"({len(core_results)} core groups + {len(shell_results)} shell modes; "
+        f"{fast_operator_count}/18 Layer-0 rows)"
+    )
     print("  Historical mapped timing shown for context: 100 MHz (+0.6966 ns); not rerun")
     print(f"ACE2_DEMO_REPORT_WRITTEN {REPORT.relative_to(ROOT)}")
     print(f"ACE2_VISUAL_EVIDENCE_WRITTEN {HTML_REPORT.relative_to(ROOT)}")

@@ -15,6 +15,10 @@
 - upgrade `make demo` with a fresh machine-local challenge, RTL recompilation,
   VCD waveform, per-case execution markers, local tool/source provenance, and
   a fail-closed negative control;
+- expand the fast demo with five independent Transformer core tests, six
+  selected shell-integration modes, and an honest 18-operator coverage matrix;
+- add `make demo-extended` for the complete slower public shell regression,
+  without conflating it with the sealed full-model replay;
 - publish a separate public-safe fixed-`Hi` two-token diagnostic evidence
   bundle with exact terminal runtime records, source hashes, and a sanitized
   Fresh-L2 claim boundary; this bundle is not part of `make demo`;

@@ -3,10 +3,10 @@
 ## Purpose
 
 `make demo` gives reviewers a fast, reproducible path from certified source
-identity to real RTL output. Every invocation creates a new machine-local
-challenge after the command starts, recompiles the RTL, emits a VCD waveform,
-and proves that the checker rejects a deliberately corrupted expectation. It
-intentionally avoids replaying the sealed 1,240,410,384-cycle full-model run.
+identity to real RTL output across the Transformer data path. Every invocation
+creates a new machine-local challenge, recompiles the RTL, runs independent
+operator cores and selected `ace2_shell` integration modes, emits a waveform,
+and proves that the checker rejects a deliberately corrupted expectation.
 
 ## Run
 
@@ -26,7 +26,11 @@ The command performs:
 8. VCD waveform generation for the local challenge;
 9. a negative-control run with one intentionally corrupted expected beat,
    which must fail;
-10. generation of `build/DEMO_REPORT.md` and
+10. independent RTL tests for RoPE, attention score, softmax, attention
+    compose, and SiLU;
+11. selected shell integration runs for attention score/compose, MLP residual,
+    attention residual/post-norm, final RMSNorm, and LM head;
+12. generation of `build/DEMO_REPORT.md` and
    `build/DEMO_REPORT.html`.
 
 Expected terminal markers:
@@ -42,6 +46,7 @@ ACE2_LOCAL_CHALLENGE_CREATED <random-id>
 ACE2_RMSNORM_TB_PASS cases=16 beats_per_case=56
 ACE2_LOCAL_CHALLENGE_RTL_PASS
 ACE2_NEGATIVE_CONTROL_PASS expected_corruption_was_rejected
+ACE2_TRANSFORMER_OPERATOR_SUITE_PASS core_groups=5 shell_modes=6
 ACE2_DEMO_REPORT_WRITTEN build/DEMO_REPORT.md
 ACE2_VISUAL_EVIDENCE_WRITTEN build/DEMO_REPORT.html
 ACE2_LOCAL_RTL_DEMO_PASS
@@ -53,6 +58,9 @@ Open `build/DEMO_REPORT.html` in any browser. It is self-contained and
 includes:
 
 - the host-to-token architecture flow;
+- a Transformer operator matrix with per-test runtime and exact PASS markers;
+- all 18 certified Layer-0 operator names, with honest fast-versus-extended
+  execution status;
 - certification metric cards;
 - the 15 generated RMSNorm workloads;
 - the fresh challenge ID, local tool versions, source commit, and output hash;
@@ -66,6 +74,19 @@ includes:
 - a prominent statement of what Alpha 2 does not prove.
 
 The Markdown companion is suitable for CI logs and text-only environments.
+
+## Complete slow shell regression
+
+```sh
+make demo-extended
+```
+
+This first runs the fast demo, then executes the complete public
+`ace2_shell_tb.sv` regression. It may take substantially longer than the fast
+demo under Icarus. The projection family, KV write, and attention value rows
+are only marked PASS by the generated dashboard after this full regression
+emits `ACE2_SHELL_TB_PASS`. It still does not replay the sealed full-model
+command schedule or claim FPGA execution.
 
 ## Optional schematic
 
@@ -91,6 +112,7 @@ open-source structural view, not a proprietary FPGA or ASIC layout.
 
 `ACE2_LOCAL_RTL_DEMO_PASS` means the packaged RTL is hash-identical to the
 certified source, the release-local RMSNorm oracle/RTL discriminator passes, a
-fresh local challenge passes after recompilation, and a corrupted expectation
-is rejected. It does not independently rerun or expand the full two-token
+fresh local challenge passes after recompilation, the listed Transformer core
+and shell-integration tests pass, and a corrupted expectation is rejected. It
+does not independently rerun or expand the sealed 24-layer/two-token
 certification.

@@ -13,15 +13,20 @@ RTL_SOURCES := \
 	rtl/ace2_shell.sv
 RTL_INCLUDE_FLAGS := -Irtl -Irtl/generated
 
-.PHONY: demo visuals schematic certified-rtl-check env-check oracle-check lint sim local-challenge challenge-sim negative-control demo-report synth manifest clean
+.PHONY: demo demo-extended visuals schematic certified-rtl-check env-check oracle-check lint sim local-challenge challenge-sim negative-control operator-suite full-shell-sim demo-report synth manifest clean
 
-demo: certified-rtl-check env-check lint oracle-check sim local-challenge challenge-sim negative-control demo-report
+demo: certified-rtl-check env-check lint oracle-check sim local-challenge challenge-sim negative-control operator-suite demo-report
 	@echo "ACE2_LOCAL_RTL_DEMO_PASS"
-	@echo "Scope: certified RTL identity plus packaged and fresh local RMSNorm RTL demonstrations."
+	@echo "Scope: certified RTL identity, fresh RMSNorm challenge, Transformer operators, and selected shell integration."
 	@echo "Local challenge: build/demo_challenge/challenge.json"
+	@echo "Operator suite: build/operator_demo/operator-suite.json"
 	@echo "Waveform: build/demo_challenge/rmsnorm-waveform.vcd"
 	@echo "Visual report: build/DEMO_REPORT.html"
 	@echo "Text report: build/DEMO_REPORT.md"
+
+demo-extended: demo full-shell-sim
+	@echo "ACE2_EXTENDED_SHELL_DEMO_PASS"
+	@echo "Full shell log: build/operator_demo/full-shell.log"
 
 visuals: demo schematic
 	@echo
@@ -111,6 +116,22 @@ negative-control:
 	@grep -q "OUTPUT_MISMATCH" build/demo_challenge/negative-control.log
 	@echo "ACE2_NEGATIVE_CONTROL_PASS expected_corruption_was_rejected" | tee -a build/demo_challenge/negative-control.log
 
+operator-suite:
+	@echo
+	@echo "== [9/10] Running Transformer operators and shell integration modes =="
+	@$(PYTHON) scripts/run_operator_demo.py
+
+full-shell-sim:
+	@echo
+	@echo "== Running the complete public ace2_shell regression (slow) =="
+	@mkdir -p build/operator_demo
+	$(IVERILOG) -g2012 $(RTL_INCLUDE_FLAGS) -Iverification/tb \
+		-o build/operator_demo/ace2_shell_full.vvp $(RTL_SOURCES) \
+		verification/tb/ace2_shell_tb.sv
+	$(VVP) build/operator_demo/ace2_shell_full.vvp | tee build/operator_demo/full-shell.log
+	@grep -q "ACE2_SHELL_TB_PASS" build/operator_demo/full-shell.log
+	@$(PYTHON) scripts/generate_demo_report.py
+
 schematic:
 	@command -v $(YOSYS) >/dev/null || { echo "Missing Yosys. Install it to render the netlist schematic."; exit 2; }
 	@command -v dot >/dev/null || { echo "Missing Graphviz dot. Install Graphviz to render the netlist schematic."; exit 2; }
@@ -123,7 +144,7 @@ schematic:
 
 demo-report:
 	@echo
-	@echo "== [9/9] Generating the local visual evidence dashboard =="
+	@echo "== [10/10] Generating the local visual evidence dashboard =="
 	@$(PYTHON) scripts/generate_demo_report.py
 
 synth:
