@@ -149,6 +149,26 @@ flowchart TB
 这种结构能够控制面积并提高 IP 复用性，同时也明确了后续优化方向：增加 MAC 并行度、
 融合 QKV、合并命令、进行算子融合，以及分别优化 Prefill 和 Decode 调度。
 
+### 参数化 Qwen2.5 模型契约
+
+ACE-2 现已包含 Qwen2.5 0.5B、1.5B、3B 和 7B 的可执行模型硬件描述。
+统一 schema 会检查模型尺寸、GQA 结构、精度选择、内存布局要求，以及权重和 KV
+容量估算。
+
+```sh
+make model-hardware-contract-check
+```
+
+| 模型 | 契约范围 | 估算打包权重 | 最大权重与 KV 估算 |
+|---|---|---:|---:|
+| Qwen2.5-0.5B | 现有 Package/Runtime Preflight | 526.7 MB | 740.6 MB |
+| Qwen2.5-1.5B | 仅结构契约 | 1.25 GB | 3.19 GB |
+| Qwen2.5-3B | 仅结构契约 | 2.18 GB | 2.81 GB |
+| Qwen2.5-7B | 仅结构契约 | 4.65 GB | 8.53 GB |
+
+大模型描述证明的是机器可检查的结构契约，**不代表** 1.5B、3B 或 7B 已经在 RTL
+中实际运行。最大容量使用各模型声明的最大上下文计算，是规划上界而不是板卡实测分配。
+
 ## 开放 IP 库
 
 [ACE-2 开放 IP 库](IP_LIBRARY.zh-CN.md)将规范 RTL 整理为 9 个带机器可读 manifest
