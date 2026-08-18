@@ -101,19 +101,23 @@ make demo
 ```
 
 The demo does not replay the billion-cycle full-model certification. It runs a
-fast, public-safe evidence chain:
+fast, public-safe, machine-local evidence chain:
 
 1. verifies every certified RTL file hash;
 2. checks the open-source toolchain;
 3. lints the complete accelerator shell;
 4. regenerates deterministic RMSNorm vectors with the independent oracle;
 5. simulates 15 RTL cases x 56 beats against expected results;
-6. produces a standalone visual evidence dashboard.
+6. generates a fresh unpredictable local challenge and recompiles the RTL;
+7. emits a VCD waveform for the challenge run;
+8. proves the checker rejects an intentionally corrupted expected result;
+9. produces a standalone visual evidence dashboard with the local challenge,
+   tool versions, source commit, logs, and output hashes.
 
 Expected final marker:
 
 ```text
-ACE2_ALPHA2_DEMO_PASS
+ACE2_LOCAL_RTL_DEMO_PASS
 ```
 
 Open the generated dashboard:

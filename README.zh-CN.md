@@ -94,19 +94,23 @@ flowchart LR
 make demo
 ```
 
-该 Demo 不会重放十亿周期级的完整模型认证。它执行的是一条快速、适合公开复现的证据链：
+该 Demo 不会重放十亿周期级的完整模型认证。它执行的是一条快速、适合公开复现、
+并且绑定用户本机的证据链：
 
 1. 校验每个已认证 RTL 文件的哈希；
 2. 检查开源工具链；
 3. lint 完整加速器外壳；
 4. 使用独立 oracle 重新生成确定性 RMSNorm 向量；
 5. 对 15 个 RTL 用例、每个 56 个 beat 进行仿真并比对预期结果；
-6. 生成独立的可视化证据面板。
+6. 在命令启动后生成一个不可预存的本机随机 challenge，并重新编译 RTL；
+7. 为 challenge 执行生成 VCD 波形；
+8. 故意破坏一个期望结果，证明 checker 会真实拒绝错误；
+9. 生成包含 challenge、工具版本、源码 commit、日志和输出 hash 的可视化证据面板。
 
 预期的最终标记为：
 
 ```text
-ACE2_ALPHA2_DEMO_PASS
+ACE2_LOCAL_RTL_DEMO_PASS
 ```
 
 生成的报告位于：

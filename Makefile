@@ -13,11 +13,13 @@ RTL_SOURCES := \
 	rtl/ace2_shell.sv
 RTL_INCLUDE_FLAGS := -Irtl -Irtl/generated
 
-.PHONY: demo visuals schematic certified-rtl-check env-check oracle-check lint sim demo-report synth manifest clean
+.PHONY: demo visuals schematic certified-rtl-check env-check oracle-check lint sim local-challenge challenge-sim negative-control demo-report synth manifest clean
 
-demo: certified-rtl-check env-check lint oracle-check sim demo-report
-	@echo "ACE2_ALPHA2_DEMO_PASS"
-	@echo "Scope: certified RTL hash check plus deterministic RMSNorm demonstration."
+demo: certified-rtl-check env-check lint oracle-check sim local-challenge challenge-sim negative-control demo-report
+	@echo "ACE2_LOCAL_RTL_DEMO_PASS"
+	@echo "Scope: certified RTL identity plus packaged and fresh local RMSNorm RTL demonstrations."
+	@echo "Local challenge: build/demo_challenge/challenge.json"
+	@echo "Waveform: build/demo_challenge/rmsnorm-waveform.vcd"
 	@echo "Visual report: build/DEMO_REPORT.html"
 	@echo "Text report: build/DEMO_REPORT.md"
 
@@ -72,6 +74,43 @@ sim:
 	@grep -q "ACE2_RMSNORM_TB_PASS" build/rmsnorm-sim.log
 	@echo "ACE2_RMSNORM_RTL_SIM_PASS"
 
+local-challenge:
+	@echo
+	@echo "== [6/9] Creating a fresh machine-local challenge =="
+	@rm -rf build/demo_challenge
+	@$(PYTHON) scripts/create_demo_challenge.py
+
+challenge-sim:
+	@echo
+	@echo "== [7/9] Compiling and simulating the fresh challenge =="
+	$(IVERILOG) -g2012 -DACE2_DEMO_CHALLENGE $(RTL_INCLUDE_FLAGS) -Iverification/tb \
+		-o build/demo_challenge/ace2_rmsnorm_challenge.vvp $(RTL_SOURCES) \
+		verification/tb/ace2_rmsnorm_tb.sv
+	$(VVP) build/demo_challenge/ace2_rmsnorm_challenge.vvp | tee build/demo_challenge/challenge-sim.log
+	@grep -q "ACE2_RMSNORM_TB_PASS" build/demo_challenge/challenge-sim.log
+	@test -s build/demo_challenge/rmsnorm-waveform.vcd
+	@$(PYTHON) scripts/render_demo_waveform.py
+	@test -s build/demo_challenge/rmsnorm-waveform.svg
+	@echo "ACE2_LOCAL_CHALLENGE_RTL_PASS"
+
+negative-control:
+	@echo
+	@echo "== [8/9] Proving the checker rejects a corrupted expectation =="
+	@$(PYTHON) scripts/create_negative_control.py
+	@$(IVERILOG) -g2012 -DACE2_DEMO_NEGATIVE $(RTL_INCLUDE_FLAGS) -Iverification/tb \
+		-o build/demo_challenge/ace2_rmsnorm_negative.vvp $(RTL_SOURCES) \
+		verification/tb/ace2_rmsnorm_tb.sv
+	@set +e; \
+	$(VVP) build/demo_challenge/ace2_rmsnorm_negative.vvp > build/demo_challenge/negative-control.log 2>&1; \
+	rc=$$?; set -e; \
+	if [[ $$rc -eq 0 ]]; then \
+		echo "Negative control unexpectedly passed"; \
+		cat build/demo_challenge/negative-control.log; \
+		exit 1; \
+	fi
+	@grep -q "OUTPUT_MISMATCH" build/demo_challenge/negative-control.log
+	@echo "ACE2_NEGATIVE_CONTROL_PASS expected_corruption_was_rejected" | tee -a build/demo_challenge/negative-control.log
+
 schematic:
 	@command -v $(YOSYS) >/dev/null || { echo "Missing Yosys. Install it to render the netlist schematic."; exit 2; }
 	@command -v dot >/dev/null || { echo "Missing Graphviz dot. Install Graphviz to render the netlist schematic."; exit 2; }
@@ -84,7 +123,7 @@ schematic:
 
 demo-report:
 	@echo
-	@echo "== [6/6] Generating the visual evidence dashboard =="
+	@echo "== [9/9] Generating the local visual evidence dashboard =="
 	@$(PYTHON) scripts/generate_demo_report.py
 
 synth:

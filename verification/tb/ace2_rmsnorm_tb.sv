@@ -33,8 +33,15 @@ module ace2_rmsnorm_tb;
     integer beat_index;
     integer output_index;
     integer cycle_guard;
+    integer failures_before;
 
+`ifdef ACE2_DEMO_NEGATIVE
+    `include "../../build/demo_challenge/rmsnorm_vectors_negative.svh"
+`elsif ACE2_DEMO_CHALLENGE
+    `include "../../build/demo_challenge/rmsnorm_vectors.svh"
+`else
     `include "../generated/rmsnorm_vectors.svh"
+`endif
 
     ace2_rmsnorm_core dut (
         .clk_i(clk),
@@ -65,6 +72,37 @@ module ace2_rmsnorm_tb;
         clk = 1'b0;
         forever #5 clk = ~clk;
     end
+
+`ifdef ACE2_DEMO_CHALLENGE
+    initial begin
+        $dumpfile("build/demo_challenge/rmsnorm-waveform.vcd");
+        $dumpvars(
+            0,
+            clk,
+            rst_n,
+            start_valid,
+            start_ready,
+            in_valid,
+            in_ready,
+            in_data,
+            gain_valid,
+            gain_ready,
+            gain_data,
+            scale_act_valid,
+            scale_act_ready,
+            scale_act_data,
+            out_valid,
+            out_ready,
+            out_data,
+            done_valid,
+            done_ready,
+            sumsq,
+            inv_rms_q30,
+            saturation_seen
+        );
+        $dumpoff;
+    end
+`endif
 
     task apply_reset;
         begin
@@ -112,6 +150,12 @@ module ace2_rmsnorm_tb;
     task run_case;
         input integer selected_case;
         begin
+            failures_before = failures;
+`ifdef ACE2_DEMO_CHALLENGE
+            if (selected_case == TEST_COUNT - 1) begin
+                $dumpon;
+            end
+`endif
             while (!start_ready) @(posedge clk);
             @(negedge clk);
             start_valid = 1'b1;
@@ -199,6 +243,14 @@ module ace2_rmsnorm_tb;
             @(negedge clk);
             done_ready = 1'b0;
             out_ready = 1'b0;
+            if (failures == failures_before) begin
+                $display("ACE2_RMSNORM_CASE_PASS case=%0d beats=%0d", selected_case, TEST_BEATS);
+            end
+`ifdef ACE2_DEMO_CHALLENGE
+            if (selected_case == TEST_COUNT - 1) begin
+                $dumpoff;
+            end
+`endif
         end
     endtask
 
