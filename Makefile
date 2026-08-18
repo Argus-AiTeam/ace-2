@@ -14,7 +14,11 @@ RTL_SOURCES := \
 	rtl/ace2_shell.sv
 RTL_INCLUDE_FLAGS := -Irtl -Irtl/generated
 
-.PHONY: demo demo-extended visuals schematic certified-rtl-check env-check oracle-check lint sim local-challenge challenge-sim negative-control operator-suite full-shell-sim demo-report synth manifest clean
+OPERATOR_DEMOS := input-rmsnorm q-proj k-proj v-proj rope-q rope-k kv-write \
+	attention-score softmax attention-value o-proj attention-residual \
+	post-attention-rmsnorm mlp-gate mlp-up silu mlp-down mlp-residual
+
+.PHONY: demo demo-extended demo-operator demo-operators $(addprefix demo-,$(OPERATOR_DEMOS)) visuals schematic certified-rtl-check env-check oracle-check lint sim local-challenge challenge-sim negative-control operator-suite full-shell-sim demo-report synth manifest clean
 
 demo: certified-rtl-check env-check lint oracle-check sim local-challenge challenge-sim negative-control operator-suite demo-report
 	@echo "ACE2_LOCAL_RTL_DEMO_PASS"
@@ -28,6 +32,17 @@ demo: certified-rtl-check env-check lint oracle-check sim local-challenge challe
 demo-extended: demo full-shell-sim
 	@echo "ACE2_EXTENDED_SHELL_DEMO_PASS"
 	@echo "Full shell log: build/operator_demo/full-shell.log"
+	@echo "MLP-up proof log: build/operator_demo/mlp-up.log"
+
+demo-operator:
+	@test -n "$(OP)" || { echo "Usage: make demo-operator OP=<operator>"; exit 2; }
+	@$(PYTHON) scripts/run_single_operator_demo.py "$(OP)"
+
+demo-operators:
+	@printf '%s\n' $(OPERATOR_DEMOS)
+
+$(addprefix demo-,$(OPERATOR_DEMOS)):
+	@$(PYTHON) scripts/run_single_operator_demo.py "$(@:demo-%=%)"
 
 visuals: demo schematic
 	@echo
@@ -131,6 +146,10 @@ full-shell-sim:
 		verification/tb/ace2_shell_tb.sv
 	$(VVP) build/operator_demo/ace2_shell_full.vvp | tee build/operator_demo/full-shell.log
 	@grep -q "ACE2_SHELL_TB_PASS" build/operator_demo/full-shell.log
+	@echo
+	@echo "== Proving the MLP-up path omitted by the default shell schedule =="
+	$(VVP) build/operator_demo/ace2_shell_full.vvp +MLP_UP_ONLY | tee build/operator_demo/mlp-up.log
+	@grep -q "ACE2_SHELL_MLP_UP_TB_PASS" build/operator_demo/mlp-up.log
 	@$(PYTHON) scripts/generate_demo_report.py
 
 schematic:

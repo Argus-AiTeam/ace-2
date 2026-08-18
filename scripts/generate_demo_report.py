@@ -21,6 +21,7 @@ LINT_LOG = BUILD / "verilator-lint.log"
 RTL_MANIFEST = ROOT / "CERTIFIED_RTL.sha256"
 OPERATOR_SUITE = BUILD / "operator_demo" / "operator-suite.json"
 FULL_SHELL_LOG = BUILD / "operator_demo" / "full-shell.log"
+MLP_UP_LOG = BUILD / "operator_demo" / "mlp-up.log"
 REPORT = BUILD / "DEMO_REPORT.md"
 HTML_REPORT = BUILD / "DEMO_REPORT.html"
 
@@ -50,6 +51,27 @@ LAYER0_OPERATORS = (
     ("16", "SiLU gate", "fast", "SiLU core"),
     ("17", "MLP down projection", "extended", "Complete shell regression"),
     ("18", "MLP residual add", "fast", "MLP residual shell"),
+)
+
+OPERATOR_TARGETS = (
+    "demo-input-rmsnorm",
+    "demo-q-proj",
+    "demo-k-proj",
+    "demo-v-proj",
+    "demo-rope-q",
+    "demo-rope-k",
+    "demo-kv-write",
+    "demo-attention-score",
+    "demo-softmax",
+    "demo-attention-value",
+    "demo-o-proj",
+    "demo-attention-residual",
+    "demo-post-attention-rmsnorm",
+    "demo-mlp-gate",
+    "demo-mlp-up",
+    "demo-silu",
+    "demo-mlp-down",
+    "demo-mlp-residual",
 )
 
 
@@ -95,10 +117,15 @@ def main() -> None:
     shell_results = [
         item for item in operator_results if item["kind"] == "shell_integration"
     ]
-    full_shell_pass = (
+    default_shell_pass = (
         FULL_SHELL_LOG.is_file()
         and "ACE2_SHELL_TB_PASS" in FULL_SHELL_LOG.read_text(encoding="utf-8")
     )
+    mlp_up_pass = (
+        MLP_UP_LOG.is_file()
+        and "ACE2_SHELL_MLP_UP_TB_PASS" in MLP_UP_LOG.read_text(encoding="utf-8")
+    )
+    full_shell_pass = default_shell_pass and mlp_up_pass
     fast_operator_count = sum(mode == "fast" for _, _, mode, _ in LAYER0_OPERATORS)
     metrics = (
         (str(len(rtl_rows)), "Certified RTL files checked now"),
@@ -145,6 +172,8 @@ def main() -> None:
 | Random Python-oracle groups | {len(random_oracles)} |
 | Layer-0 operator rows run by fast demo | {fast_operator_count}/18 |
 | Complete shell regression | {"PASS in this workspace" if full_shell_pass else "Run make demo-extended"} |
+| Default shell proof | {"PASS" if default_shell_pass else "not run"} |
+| Dedicated MLP-up proof | {"PASS" if mlp_up_pass else "not run"} |
 
 ## Evidence chain
 
@@ -161,6 +190,9 @@ def main() -> None:
    bit-accurate Python references.
 9. Six selected `ace2_shell` integration modes passed their packaged
    bit-accurate oracle vectors.
+10. Extended coverage is marked complete only when both the default shell log
+    contains `ACE2_SHELL_TB_PASS` and the dedicated MLP-up log contains
+    `ACE2_SHELL_MLP_UP_TB_PASS`.
 
 ![Fresh local RMSNorm challenge waveform](demo_challenge/rmsnorm-waveform.svg)
 
@@ -187,9 +219,9 @@ def main() -> None:
 |---|---:|---|
 {chr(10).join(f"| {item['name']} | {item['case_count']} | `{item['oracle_sha256']}` |" for item in random_oracles)}
 
-| # | Layer-0 operator | Fast demo | Evidence path |
-|---:|---|---|---|
-{chr(10).join(f"| {number} | {name} | {'PASS now' if mode == 'fast' else ('PASS via extended' if full_shell_pass else 'demo-extended')} | {evidence} |" for number, name, mode, evidence in LAYER0_OPERATORS)}
+| # | Layer-0 operator | Single demo | This workspace | Evidence path |
+|---:|---|---|---|---|
+{chr(10).join(f"| {number} | {name} | `make {target}` | {'PASS now' if mode == 'fast' else ('PASS via extended' if full_shell_pass else 'demo-extended')} | {evidence} |" for (number, name, mode, evidence), target in zip(LAYER0_OPERATORS, OPERATOR_TARGETS))}
 
 ### Executed test processes
 
@@ -233,10 +265,13 @@ not claim arbitrary chat, FPGA execution, routed signoff, tapeout, or silicon.
     )
     layer0_cards = "\n".join(
         f"""<tr><td>{number}</td><td>{escape(name)}</td>
+        <td><code>make {escape(target)}</code></td>
         <td class="{'pass-text' if mode == 'fast' or full_shell_pass else 'extended-text'}">
         {'PASS NOW' if mode == 'fast' else ('PASS EXTENDED' if full_shell_pass else 'DEMO-EXTENDED')}</td>
         <td>{escape(evidence)}</td></tr>"""
-        for number, name, mode, evidence in LAYER0_OPERATORS
+        for (number, name, mode, evidence), target in zip(
+            LAYER0_OPERATORS, OPERATOR_TARGETS
+        )
     )
     case_cards = "\n".join(
         f"""<tr><td><code>{escape(case["name"])}</code></td>
@@ -334,7 +369,7 @@ th{{color:var(--muted);font-size:12px;text-transform:uppercase}} code{{font-fami
 {oracle_cards}</table>
 
 <h2>Complete 18-operator Layer-0 matrix</h2>
-<table><tr><th>#</th><th>Operator</th><th>This workspace</th><th>Evidence path</th></tr>
+<table><tr><th>#</th><th>Operator</th><th>Single demo</th><th>This workspace</th><th>Evidence path</th></tr>
 {layer0_cards}</table>
 
 <h2>Waveform generated from this challenge</h2>
@@ -362,7 +397,9 @@ shell integration modes, corrupted-result rejection, and VCD waveform generation
 The same operator challenge is reproducible with <code>make demo SEED={escape(random_seed)}</code>.
 <br><br><strong>Available separately:</strong>
 <code>make demo-extended</code> runs the complete slow public shell regression.
-It is not claimed as run unless its log contains <code>ACE2_SHELL_TB_PASS</code>.
+It is not claimed as 18/18 unless the default log contains
+<code>ACE2_SHELL_TB_PASS</code> and the dedicated MLP-up log contains
+<code>ACE2_SHELL_MLP_UP_TB_PASS</code>.
 <br><br><strong>Historical certification,
 not rerun here:</strong> 13,914 commands across 24 layers/two tokens and mapped
 SKY130 100 MHz timing.<br><br><strong>Not claimed:</strong> arbitrary-text chat,

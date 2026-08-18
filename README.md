@@ -152,8 +152,34 @@ make demo-extended
 
 Replay a reported random challenge with `make demo SEED=<seed>`.
 
-The dashboard marks those slow rows PASS only after the complete shell log
-contains `ACE2_SHELL_TB_PASS`. Neither command replays the sealed full-model
+Inspect one Layer-0 operator at a time:
+
+```sh
+make demo-operators              # list all 18 names
+make demo-softmax
+make demo-mlp-up                 # slow: full 896 x 4864 projection
+make demo-operator OP=kv-write   # equivalent generic form
+```
+
+Each command writes a focused log and `result.json` under
+`build/single_operator/<operator>/`. RoPE Q/K and residual/post-norm have
+separate commands but transparently share their paired shell proof path.
+
+| Operator | Command | Operator | Command |
+|---|---|---|---|
+| Input RMSNorm | `make demo-input-rmsnorm` | Q projection | `make demo-q-proj` |
+| K projection | `make demo-k-proj` | V projection | `make demo-v-proj` |
+| RoPE Q | `make demo-rope-q` | RoPE K | `make demo-rope-k` |
+| KV write | `make demo-kv-write` | Attention score | `make demo-attention-score` |
+| Softmax | `make demo-softmax` | Attention value | `make demo-attention-value` |
+| O projection | `make demo-o-proj` | Attention residual | `make demo-attention-residual` |
+| Post-attention RMSNorm | `make demo-post-attention-rmsnorm` | MLP gate | `make demo-mlp-gate` |
+| MLP up | `make demo-mlp-up` | SiLU | `make demo-silu` |
+| MLP down | `make demo-mlp-down` | MLP residual | `make demo-mlp-residual` |
+
+The dashboard marks all 18 rows PASS only after the default shell log contains
+`ACE2_SHELL_TB_PASS` and the dedicated MLP-up replay contains
+`ACE2_SHELL_MLP_UP_TB_PASS`. Neither command replays the sealed full-model
 schedule or claims FPGA execution.
 
 ## Engineering progression

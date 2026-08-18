@@ -85,11 +85,31 @@ The Markdown companion is suitable for CI logs and text-only environments.
 make demo-extended
 ```
 
+The extended target runs the default full-shell schedule and then a dedicated
+`+MLP_UP_ONLY` replay. Both `ACE2_SHELL_TB_PASS` and
+`ACE2_SHELL_MLP_UP_TB_PASS` are required before the report marks all 18
+Layer-0 operator rows PASS.
+
 To replay exactly the same random operator questions:
 
 ```sh
 make demo SEED=<seed-shown-in-the-report>
 ```
+
+## Single-operator demos
+
+Run `make demo-operators` to list all 18 public names. Every name has a direct
+target and a generic equivalent:
+
+```sh
+make demo-attention-score
+make demo-operator OP=attention-score
+```
+
+Focused evidence is written to `build/single_operator/<operator>/sim.log` and
+`result.json`. Paired hardware paths are not misrepresented as isolated:
+`rope-q`/`rope-k` share the RoPE shell run, while `attention-residual` and
+`post-attention-rmsnorm` share the vector-family shell run.
 
 This first runs the fast demo, then executes the complete public
 `ace2_shell_tb.sv` regression. It may take substantially longer than the fast
