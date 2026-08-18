@@ -1,0 +1,219 @@
+{
+  "$id": "https://github.com/Argus-AiTeam/ace-2/design/quantization_policy.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "claims": {
+      "additionalProperties": false,
+      "properties": {
+        "a16_bf16_rtl_execution": {
+          "const": false
+        },
+        "full_model_rtl_execution_validated": {
+          "const": false
+        },
+        "timing_area_or_power": {
+          "const": false
+        },
+        "w8a8_rtl_execution": {
+          "const": false
+        }
+      },
+      "required": [
+        "full_model_rtl_execution_validated",
+        "w8a8_rtl_execution",
+        "a16_bf16_rtl_execution",
+        "timing_area_or_power"
+      ],
+      "type": "object"
+    },
+    "deployment_status": {
+      "enum": [
+        "current_rtl_format",
+        "structural_candidate_no_full_rtl_execution"
+      ]
+    },
+    "estimates": {
+      "additionalProperties": false,
+      "properties": {
+        "bandwidth_per_decode_token_at_max_context": {
+          "additionalProperties": false,
+          "properties": {
+            "embedding_lookup_bytes": {
+              "minimum": 1,
+              "type": "integer"
+            },
+            "kv_read_bytes": {
+              "minimum": 1,
+              "type": "integer"
+            },
+            "kv_write_bytes": {
+              "minimum": 1,
+              "type": "integer"
+            },
+            "total_stream_bytes": {
+              "minimum": 1,
+              "type": "integer"
+            },
+            "weight_stream_bytes": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "weight_stream_bytes",
+            "embedding_lookup_bytes",
+            "kv_write_bytes",
+            "kv_read_bytes",
+            "total_stream_bytes"
+          ],
+          "type": "object"
+        },
+        "kv_cache_bytes_per_token_per_layer": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "maximum_kv_cache_bytes": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "maximum_weight_plus_kv_bytes": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "units": {
+          "const": "bytes"
+        },
+        "weight_memory_bytes": {
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "units",
+        "weight_memory_bytes",
+        "kv_cache_bytes_per_token_per_layer",
+        "maximum_kv_cache_bytes",
+        "maximum_weight_plus_kv_bytes",
+        "bandwidth_per_decode_token_at_max_context"
+      ],
+      "type": "object"
+    },
+    "model_contract": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "contract_id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "model_id": {
+          "enum": [
+            "qwen2.5-0.5b",
+            "qwen2.5-1.5b",
+            "qwen2.5-3b",
+            "qwen2.5-7b"
+          ]
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "model_id",
+        "contract_id",
+        "artifact",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "operators": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "accumulator_format": {
+            "enum": [
+              "none",
+              "int32",
+              "bf16"
+            ]
+          },
+          "activation_format": {
+            "enum": [
+              "int8_scale32",
+              "int16",
+              "bf16"
+            ]
+          },
+          "hardware_support": {
+            "enum": [
+              "implemented_rtl_format",
+              "structural_candidate_no_rtl_execution"
+            ]
+          },
+          "operator_class": {
+            "enum": [
+              "attention_projection",
+              "mlp_projection",
+              "rmsnorm",
+              "softmax",
+              "residual_accumulation",
+              "kv_cache",
+              "lm_head"
+            ]
+          },
+          "weight_format": {
+            "enum": [
+              "none",
+              "int4_twos_complement",
+              "int8_twos_complement",
+              "bf16",
+              "bf16_parameter"
+            ]
+          }
+        },
+        "required": [
+          "operator_class",
+          "weight_format",
+          "activation_format",
+          "accumulator_format",
+          "hardware_support"
+        ],
+        "type": "object"
+      },
+      "maxItems": 7,
+      "minItems": 7,
+      "type": "array"
+    },
+    "plan_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "policy_id": {
+      "enum": [
+        "w4a8",
+        "w8a8",
+        "mixed_w4a8_a16_bf16"
+      ]
+    },
+    "schema_version": {
+      "const": 1
+    }
+  },
+  "required": [
+    "schema_version",
+    "plan_id",
+    "policy_id",
+    "model_contract",
+    "deployment_status",
+    "operators",
+    "estimates",
+    "claims"
+  ],
+  "title": "ACE-2 Quantization Policy Plan",
+  "type": "object"
+}

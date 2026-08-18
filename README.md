@@ -182,6 +182,24 @@ they do **not** claim that 1.5B, 3B or 7B has executed in RTL. The maximum
 capacity figures use each model's declared maximum context and therefore are
 planning bounds rather than measured board allocation.
 
+### Mixed-precision planning
+
+The same validation command also generates deterministic precision plans for
+all four model contracts:
+
+| Policy | Intended use | Current status |
+|---|---|---|
+| `w4a8` | W4 projections with A8 activation/KV paths | Current RTL format |
+| `w8a8` | Higher-precision projection candidate | Structural candidate; no RTL execution claim |
+| `mixed_w4a8_a16_bf16` | W4 projections with A16/BF16-sensitive operator classes | Structural candidate; no RTL execution claim |
+
+Each plan records per-operator precision, estimated weight/KV capacity,
+maximum-context decode traffic, descriptor hashes and explicit hardware-support
+status. The validator fails closed on schema/type mismatches and includes a
+signed-int4 ties-to-even packing reference. W8A8 and mixed BF16 support remain
+software/hardware co-design plans until corresponding RTL is implemented and
+verified.
+
 ## Open IP Library
 
 The [ACE-2 Open IP Library](IP_LIBRARY.md) organizes the canonical RTL into

@@ -570,6 +570,11 @@ def runtime_preflight(
     max_sequence_positions: int,
     kv_bytes_per_token_per_layer: int,
 ) -> dict[str, Any]:
+    if __package__:
+        from tools.quantization_policy import runtime_preflight as policy_preflight
+    else:
+        from quantization_policy import runtime_preflight as policy_preflight
+
     descriptor = load_descriptor(model_id)
     dimensions = descriptor["dimensions"]
     derived = descriptor["derived"]
@@ -599,6 +604,11 @@ def runtime_preflight(
         kv_bytes_per_token_per_layer == derived["kv_bytes_per_token_per_layer"],
         "runtime KV stride differs from model hardware contract",
     )
+    quantization_policy = policy_preflight(
+        model_id=model_id,
+        policy_id="w4a8",
+        require_current_rtl=True,
+    )
     path = descriptor_path(model_id)
     return {
         "status": "PASS_MODEL_HARDWARE_CONTRACT",
@@ -618,6 +628,7 @@ def runtime_preflight(
             ],
         },
         "precision_mode": descriptor["precision"]["default_mode"],
+        "quantization_policy": quantization_policy,
         "validation_scope": compatibility["validation_scope"],
         "claims": {
             "package_runtime_compatibility": True,
