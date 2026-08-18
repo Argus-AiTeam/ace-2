@@ -53,6 +53,27 @@ LAYER0_OPERATORS = (
     ("18", "MLP residual add", "fast", "MLP residual shell"),
 )
 
+OPERATOR_TARGETS = (
+    "demo-input-rmsnorm",
+    "demo-q-proj",
+    "demo-k-proj",
+    "demo-v-proj",
+    "demo-rope-q",
+    "demo-rope-k",
+    "demo-kv-write",
+    "demo-attention-score",
+    "demo-softmax",
+    "demo-attention-value",
+    "demo-o-proj",
+    "demo-attention-residual",
+    "demo-post-attention-rmsnorm",
+    "demo-mlp-gate",
+    "demo-mlp-up",
+    "demo-silu",
+    "demo-mlp-down",
+    "demo-mlp-residual",
+)
+
 
 def require_marker(text: str, marker: str, source: Path) -> None:
     if marker not in text:
@@ -198,9 +219,9 @@ def main() -> None:
 |---|---:|---|
 {chr(10).join(f"| {item['name']} | {item['case_count']} | `{item['oracle_sha256']}` |" for item in random_oracles)}
 
-| # | Layer-0 operator | Fast demo | Evidence path |
-|---:|---|---|---|
-{chr(10).join(f"| {number} | {name} | {'PASS now' if mode == 'fast' else ('PASS via extended' if full_shell_pass else 'demo-extended')} | {evidence} |" for number, name, mode, evidence in LAYER0_OPERATORS)}
+| # | Layer-0 operator | Single demo | This workspace | Evidence path |
+|---:|---|---|---|---|
+{chr(10).join(f"| {number} | {name} | `make {target}` | {'PASS now' if mode == 'fast' else ('PASS via extended' if full_shell_pass else 'demo-extended')} | {evidence} |" for (number, name, mode, evidence), target in zip(LAYER0_OPERATORS, OPERATOR_TARGETS))}
 
 ### Executed test processes
 
@@ -244,10 +265,13 @@ not claim arbitrary chat, FPGA execution, routed signoff, tapeout, or silicon.
     )
     layer0_cards = "\n".join(
         f"""<tr><td>{number}</td><td>{escape(name)}</td>
+        <td><code>make {escape(target)}</code></td>
         <td class="{'pass-text' if mode == 'fast' or full_shell_pass else 'extended-text'}">
         {'PASS NOW' if mode == 'fast' else ('PASS EXTENDED' if full_shell_pass else 'DEMO-EXTENDED')}</td>
         <td>{escape(evidence)}</td></tr>"""
-        for number, name, mode, evidence in LAYER0_OPERATORS
+        for (number, name, mode, evidence), target in zip(
+            LAYER0_OPERATORS, OPERATOR_TARGETS
+        )
     )
     case_cards = "\n".join(
         f"""<tr><td><code>{escape(case["name"])}</code></td>
@@ -345,7 +369,7 @@ th{{color:var(--muted);font-size:12px;text-transform:uppercase}} code{{font-fami
 {oracle_cards}</table>
 
 <h2>Complete 18-operator Layer-0 matrix</h2>
-<table><tr><th>#</th><th>Operator</th><th>This workspace</th><th>Evidence path</th></tr>
+<table><tr><th>#</th><th>Operator</th><th>Single demo</th><th>This workspace</th><th>Evidence path</th></tr>
 {layer0_cards}</table>
 
 <h2>Waveform generated from this challenge</h2>

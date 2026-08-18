@@ -142,6 +142,31 @@ make demo-extended
 
 可用 `make demo SEED=<报告中的种子>` 原样重放同一组随机题。
 
+可以逐个查看 18 个 Layer-0 算子的支持情况：
+
+```sh
+make demo-operators              # 列出全部 18 个名字
+make demo-softmax
+make demo-mlp-up                 # 较慢：完整 896 x 4864 投影
+make demo-operator OP=kv-write   # 等价的通用写法
+```
+
+每条命令都会在 `build/single_operator/<operator>/` 下生成独立日志和
+`result.json`。RoPE Q/K、Residual/Post-Norm 虽各有独立命令，但会诚实标注它们
+复用了成对的 shell 证明路径。
+
+| 算子 | 命令 | 算子 | 命令 |
+|---|---|---|---|
+| Input RMSNorm | `make demo-input-rmsnorm` | Q Projection | `make demo-q-proj` |
+| K Projection | `make demo-k-proj` | V Projection | `make demo-v-proj` |
+| RoPE Q | `make demo-rope-q` | RoPE K | `make demo-rope-k` |
+| KV Write | `make demo-kv-write` | Attention Score | `make demo-attention-score` |
+| Softmax | `make demo-softmax` | Attention Value | `make demo-attention-value` |
+| O Projection | `make demo-o-proj` | Attention Residual | `make demo-attention-residual` |
+| Post-Attention RMSNorm | `make demo-post-attention-rmsnorm` | MLP Gate | `make demo-mlp-gate` |
+| MLP Up | `make demo-mlp-up` | SiLU | `make demo-silu` |
+| MLP Down | `make demo-mlp-down` | MLP Residual | `make demo-mlp-residual` |
+
 只有默认完整 shell 日志产生 `ACE2_SHELL_TB_PASS`，并且专用 MLP-Up 重放产生
 `ACE2_SHELL_MLP_UP_TB_PASS` 后，报告才会把全部 18 个算子标记为 PASS。两个命令
 都不会重放封存的完整模型 schedule，也不声称 FPGA 执行。

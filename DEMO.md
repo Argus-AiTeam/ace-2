@@ -96,6 +96,21 @@ To replay exactly the same random operator questions:
 make demo SEED=<seed-shown-in-the-report>
 ```
 
+## Single-operator demos
+
+Run `make demo-operators` to list all 18 public names. Every name has a direct
+target and a generic equivalent:
+
+```sh
+make demo-attention-score
+make demo-operator OP=attention-score
+```
+
+Focused evidence is written to `build/single_operator/<operator>/sim.log` and
+`result.json`. Paired hardware paths are not misrepresented as isolated:
+`rope-q`/`rope-k` share the RoPE shell run, while `attention-residual` and
+`post-attention-rmsnorm` share the vector-family shell run.
+
 This first runs the fast demo, then executes the complete public
 `ace2_shell_tb.sv` regression. It may take substantially longer than the fast
 demo under Icarus. The projection family, KV write, and attention value rows

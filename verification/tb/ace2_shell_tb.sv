@@ -209,6 +209,12 @@ module ace2_shell_tb;
     integer post_rms_cases_seen;
     integer smoke_opcode;
     integer qproj_stride_only_mode;
+    integer kproj_only_mode;
+    integer vproj_only_mode;
+    integer kv_write_only_mode;
+    integer softmax_only_mode;
+    integer attn_value_only_mode;
+    integer mlp_gate_only_mode;
     integer mlp_up_only_mode;
     integer mlp_down_only_mode;
     integer mlp_residual_only_mode;
@@ -3354,6 +3360,12 @@ module ace2_shell_tb;
         oproj_active = 1'b0;
         smoke_opcode = 0;
         qproj_stride_only_mode = $test$plusargs("QPROJ_STRIDE_ONLY");
+        kproj_only_mode = $test$plusargs("KPROJ_ONLY");
+        vproj_only_mode = $test$plusargs("VPROJ_ONLY");
+        kv_write_only_mode = $test$plusargs("KV_WRITE_ONLY");
+        softmax_only_mode = $test$plusargs("SOFTMAX_ONLY");
+        attn_value_only_mode = $test$plusargs("ATTN_VALUE_ONLY");
+        mlp_gate_only_mode = $test$plusargs("MLP_GATE_ONLY");
         mlp_up_only_mode = $test$plusargs("MLP_UP_ONLY");
         mlp_down_only_mode = $test$plusargs("MLP_DOWN_ONLY");
         mlp_residual_only_mode = $test$plusargs("MLP_RESIDUAL_ONLY");
@@ -3405,6 +3417,89 @@ module ace2_shell_tb;
             $display("ACE2_SHELL_QPROJ_STRIDE_TB_PASS cases=%0d rows=%0d input_beats_per_row=%0d writes=%0d cycles=%0d c4_bias_channel=30 c4_output=127",
                      qproj_cases_seen, proj_case_rows[PROJ_CASE_BALANCED],
                      proj_case_input_beats[PROJ_CASE_BALANCED], observed_count,
+                     last_command_cycles);
+            $finish;
+        end
+
+        if (kproj_only_mode || vproj_only_mode) begin
+            send_qproj_cmd_full(
+                PROJ_CASE_BALANCED, 0, proj_case_rows[PROJ_CASE_BALANCED],
+                16'd128, 16'd896, PROJ_ACT_BASE, PROJ_WEIGHT_BASE,
+                PROJ_OUT_BASE, PROJ_META_BASE,
+                kproj_only_mode ? 16'h3200 : 16'h3300
+            );
+            wait_qproj_done_and_compare(
+                PROJ_CASE_BALANCED, 0,
+                kproj_only_mode ? 16'h3200 : 16'h3300
+            );
+            if (failures != 0) begin
+                $fatal(1, "ACE2_SHELL_KV_PROJECTION_ONLY_TB_FAIL");
+            end
+            if (kproj_only_mode)
+                $display("ACE2_SHELL_KPROJ_TB_PASS cases=1 writes=%0d cycles=%0d",
+                         observed_count, last_command_cycles);
+            else
+                $display("ACE2_SHELL_VPROJ_TB_PASS cases=1 writes=%0d cycles=%0d",
+                         observed_count, last_command_cycles);
+            $finish;
+        end
+
+        if (kv_write_only_mode) begin
+            for (case_index = 0; case_index < 3; case_index = case_index + 1) begin
+                send_kv_write_cmd(
+                    case_index, 0, 16'(case_index * 257 + 3),
+                    16'h3800 + case_index
+                );
+                wait_kv_write_done_and_compare(
+                    case_index, 0, 16'h3800 + case_index
+                );
+            end
+            if (failures != 0)
+                $fatal(1, "ACE2_SHELL_KV_WRITE_ONLY_TB_FAIL");
+            $display("ACE2_SHELL_KV_WRITE_TB_PASS cases=%0d", kv_write_cases_seen);
+            $finish;
+        end
+
+        if (softmax_only_mode) begin
+            for (case_index = 0; case_index < SOFTMAX_CASE_COUNT;
+                 case_index = case_index + 1) begin
+                send_softmax_cmd(case_index, 0, 16'h3c00 + case_index);
+                wait_softmax_done_and_compare(
+                    case_index, 0, 16'h3c00 + case_index
+                );
+            end
+            if (failures != 0)
+                $fatal(1, "ACE2_SHELL_SOFTMAX_ONLY_TB_FAIL");
+            $display("ACE2_SHELL_SOFTMAX_TB_PASS cases=%0d", softmax_cases_seen);
+            $finish;
+        end
+
+        if (attn_value_only_mode) begin
+            for (case_index = 0; case_index < ATTN_VALUE_CASE_COUNT;
+                 case_index = case_index + 1) begin
+                send_attn_value_cmd(case_index, 0, 16'h3e00 + case_index);
+                wait_attn_value_done_and_compare(
+                    case_index, attn_value_expected_saturation[case_index],
+                    16'h3e00 + case_index
+                );
+                if (attn_value_expected_saturation[case_index])
+                    csr_write64(
+                        ACE2_CSR_ERROR_STATUS, 64'hffff_ffff_ffff_ffff
+                    );
+            end
+            if (failures != 0)
+                $fatal(1, "ACE2_SHELL_ATTN_VALUE_ONLY_TB_FAIL");
+            $display("ACE2_SHELL_ATTN_VALUE_TB_PASS cases=%0d",
+                     attn_value_cases_seen);
+            $finish;
+        end
+
+        if (mlp_gate_only_mode) begin
+            run_mlp_projection_cases();
+            if (failures != 0)
+                $fatal(1, "ACE2_SHELL_MLP_GATE_ONLY_TB_FAIL");
+            $display("ACE2_SHELL_MLP_GATE_TB_PASS cases=%0d writes=%0d cycles=%0d",
+                     mlp_gate_proj_cases_seen, observed_count,
                      last_command_cycles);
             $finish;
         end
