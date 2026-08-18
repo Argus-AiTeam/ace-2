@@ -4,7 +4,9 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
+import sys
 import time
 from pathlib import Path
 
@@ -13,6 +15,8 @@ ROOT = Path(__file__).resolve().parents[1]
 BUILD = ROOT / "build" / "operator_demo"
 RTL = ROOT / "rtl"
 TB = ROOT / "verification" / "tb"
+RANDOM_CHALLENGE = BUILD / "random_challenge"
+RANDOM_TB = RANDOM_CHALLENGE / "verification" / "tb"
 
 CORE_TESTS = (
     ("RoPE", "ace2_rope_core.sv", "ace2_rope_tb.sv", "ACE2_ROPE_TB_PASS"),
@@ -71,7 +75,7 @@ def compile_core(core: str, testbench: str, output: Path) -> None:
             "-o",
             str(output),
             str(RTL / core),
-            str(TB / testbench),
+            str(RANDOM_TB / testbench),
         ],
         compile_log,
     )
@@ -103,6 +107,22 @@ def compile_shell(output: Path) -> None:
 def main() -> None:
     BUILD.mkdir(parents=True, exist_ok=True)
     results: list[dict[str, object]] = []
+    seed = os.environ.get("SEED")
+    challenge_command = [sys.executable, str(ROOT / "scripts" / "create_operator_challenge.py")]
+    if seed:
+        challenge_command.extend(("--seed", seed))
+    challenge_output, _ = run(
+        challenge_command,
+        BUILD / "random-challenge.log",
+    )
+    challenge = json.loads(
+        (RANDOM_CHALLENGE / "challenge.json").read_text(encoding="utf-8")
+    )
+    print(require_marker(
+        challenge_output,
+        "ACE2_RANDOM_OPERATOR_CHALLENGE_CREATED",
+        BUILD / "random-challenge.log",
+    ))
 
     for index, (name, core, testbench, marker) in enumerate(CORE_TESTS, start=1):
         binary = BUILD / f"core-{index}.vvp"
@@ -118,6 +138,7 @@ def main() -> None:
                 "seconds": round(elapsed, 3),
                 "marker": marker_line,
                 "log": str(log.relative_to(ROOT)),
+                "oracle": "bit-accurate Python reference plus random seeded case",
             }
         )
         print(f"ACE2_OPERATOR_PASS kind=core name={name!r} seconds={elapsed:.2f}")
@@ -141,14 +162,20 @@ def main() -> None:
         print(f"ACE2_OPERATOR_PASS kind=shell name={name!r} seconds={elapsed:.2f}")
 
     summary = {
-        "schema_version": 1,
+        "schema_version": 2,
         "status": "PASS",
+        "random_seed": challenge["seed"],
+        "random_challenge": str(
+            (RANDOM_CHALLENGE / "challenge.json").relative_to(ROOT)
+        ),
+        "random_oracles": challenge["operators"],
         "operator_groups": len(CORE_TESTS),
         "shell_modes": len(SHELL_MODES),
         "elapsed_seconds": round(sum(float(item["seconds"]) for item in results), 3),
         "results": results,
         "boundary": (
-            "Independent core tests and selected ace2_shell integration modes ran now. "
+            "Independent core tests included fresh seeded random Python-oracle cases; "
+            "selected ace2_shell integration modes used packaged bit-accurate vectors. "
             "Projection-family, KV-write, and attention-value coverage remains in "
             "make demo-extended. This fast suite is not the sealed 24-layer/two-token replay."
         ),

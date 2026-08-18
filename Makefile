@@ -1,4 +1,5 @@
 PYTHON ?= python3
+SEED ?=
 IVERILOG ?= iverilog
 VVP ?= vvp
 VERILATOR ?= verilator
@@ -118,8 +119,8 @@ negative-control:
 
 operator-suite:
 	@echo
-	@echo "== [9/10] Running Transformer operators and shell integration modes =="
-	@$(PYTHON) scripts/run_operator_demo.py
+	@echo "== [9/10] Generating random Python oracles and running Transformer operators =="
+	@SEED="$(SEED)" $(PYTHON) scripts/run_operator_demo.py
 
 full-shell-sim:
 	@echo
