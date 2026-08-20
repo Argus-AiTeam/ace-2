@@ -1,0 +1,88 @@
+{
+  "claim_boundary": {
+    "establishes": "Exact bound RTL versus bound W4A8 integer-reference agreement for one immutable four-token execution.",
+    "does_not_establish": [
+      "BF16-equivalent model quality",
+      "readable or useful chat output",
+      "synthesis, timing, area, or power",
+      "FPGA or board execution",
+      "Stage 1 completion"
+    ]
+  },
+  "execution": {
+    "all_icarus_children_observed": true,
+    "decoded_text": "TI tariffs(ang ArgumentOutOfRangeException",
+    "full_vocabulary_per_step": true,
+    "generated_token_ids": [
+      26614,
+      43895,
+      92464,
+      76521
+    ],
+    "layer_executions": 888,
+    "lm_head_steps": 4,
+    "peak_rss_kib": 5493408,
+    "process_start_count": 1,
+    "recorded_component_mismatch_counters": 7992,
+    "recorded_simulations": 7112,
+    "simulator_cycles": 13703170650,
+    "software_transformer_or_logits_fallback": false,
+    "status": "PASS_OFFICIAL_RTL_ARBITRARY_TEXT_GENERATION_UNCHECKED_AWAITING_FRESH_L2",
+    "total_wall_seconds": 50875.10838294102,
+    "vocabulary_outputs_per_step": 151936
+  },
+  "package_files": {
+    "LM_HEAD_STEPS.json": "7696ec3e3a0cb8ef3f5bee07827849dabb83e9145d83648dd040980e71877c0e",
+    "SOURCE_BINDINGS.json": "fe92be4813ee0200e6397eb6bca62b5e798aad62065c2dae7f3c1623beab76b7",
+    "run.started.json": "2996b4286b05e6ffb589bdacd19c29e2b14cfcbaf3ae75c7d20a00fb0dc614a0",
+    "status.json": "e10b562911f0ca93b309e7641aecb9e8ac0da5a0630d59e76177ce4b1d572707"
+  },
+  "prompt_binding": {
+    "prompt_sha256": "90eaeeb4312de67b46fda2c43a80f3bfeb0ac20d0dc222a65f390c9407607c36",
+    "prompt_token_count": 34,
+    "prompt_token_ids_sha256": "dbdff6c533c804f645b0a76b8a44cf85e9b61f52bcce053e81189bd82f009e0d"
+  },
+  "raw_archive": {
+    "bytes": 87775958624,
+    "directories": 6281,
+    "files": 85368,
+    "sha256sum_members": 85367,
+    "terminal_files": {
+      "SHA256SUMS": {
+        "bytes": 10520766,
+        "sha256": "62642110239e6407042fceff78d02269d1719aca8eadcf6bf109b51d87d71234"
+      },
+      "authorization.json": {
+        "bytes": 2927,
+        "sha256": "9668c96a657015ea7c6937d0baf2e20c5730ac9c7de38c8991bae351f86d3387"
+      },
+      "manifest.json": {
+        "bytes": 22537849,
+        "sha256": "0259039f54ecc224a785ada1d4567b34158746fc06b3d3f3e316f5d277ddb470"
+      },
+      "run.started.json": {
+        "bytes": 108,
+        "sha256": "2996b4286b05e6ffb589bdacd19c29e2b14cfcbaf3ae75c7d20a00fb0dc614a0"
+      },
+      "run_summary.json": {
+        "bytes": 23646652,
+        "sha256": "c496921d5b93f4840ec67c38c1c4d0afab034a8798a9a760c36a639ee80d4159"
+      },
+      "status.json": {
+        "bytes": 108,
+        "sha256": "e10b562911f0ca93b309e7641aecb9e8ac0da5a0630d59e76177ce4b1d572707"
+      }
+    }
+  },
+  "review": {
+    "fresh_l2_handoff_sha256": "8ff83f9382bdd8c948c20af466c240449001c7aaa35646f08e4a373cee75df6f",
+    "stage1_quality_diagnosis_sha256": "9ec27ee399eeaa6780ce7ab0c6f28250f9771d437c1a3953d6994a55fc7c59df",
+    "status": "accepted_bounded_execution_evidence_stage1_incomplete"
+  },
+  "schema_version": 1,
+  "source_bindings": {
+    "count": 66,
+    "current_worktree_identical_count": 66,
+    "current_worktree_mismatch_count": 0
+  }
+}
