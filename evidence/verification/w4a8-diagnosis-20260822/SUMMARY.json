@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "status": "stage1_software_diagnosis_in_progress",
+  "derived_summary_only": true,
+  "stage1_complete": false,
+  "production_repair_published": false,
+  "experiments": [
+    {
+      "identity": "stage1-w4a8-perchannel-rmsnorm-semantics-cf06-20260822t052200z",
+      "classification": "RMSNORM_NOT_PRIMARY",
+      "lane_report_sha256": "8f65ebba46afcdc984c5c138b9ee14130ed0f0b29906f2f5a375451851d5083b",
+      "component_a_nrmse_reduction": {
+        "common_grid_scale32": 0.18770414560740015,
+        "physical_pc_float_oracle": 0.16475983195619678
+      }
+    },
+    {
+      "identity": "stage1-w4a8-layer2-postattention-carrier-decomp-20260822t053400z",
+      "classification": "UPSTREAM_RESIDUAL_PRIMARY",
+      "lane_report_sha256": "e41968813d5566b8e69d729458447dd3dbe3e854fa21eee5fd1fb423d7c5b64f",
+      "component_a_nrmse_reduction": {
+        "bf16_residual_w4_attention": 0.5259595558686724,
+        "w4_residual_bf16_attention": -0.15076014984492964,
+        "bf16_both_production_merge": 0.8155565895907166,
+        "physical_sum_then_single_quantize": 0.8342033956147769
+      },
+      "destination_saturation_fraction": 0.0
+    },
+    {
+      "identity": "stage1-w4a8-layer2-source-domain-residual-fusion-cf01-20260822t061000z",
+      "classification": "SOURCE_DOMAIN_FUSION_INSUFFICIENT",
+      "lane_report_sha256": "07716a73501a41d890afc64381db4d22e46b1525293c4608482b74e9f70fcb30",
+      "component_a_nrmse_reduction": 0.00189101284186319,
+      "source_code_round_trip_exact": true,
+      "independent_reference_bit_exact": true,
+      "runtime_attention_bit_exact": true,
+      "destination_saturation_fraction": 0.0
+    },
+    {
+      "identity": "stage1-w4a8-layer1-real-downstream-attention-cf04-20260822t074600z",
+      "classification": "MIXED_LAYER1_DEFECT",
+      "lane_report_sha256": "5056dbeb5c618c4d683b6f0be9ca05a33f2acd2b8cfa0376db192e086ce0f380",
+      "actual_lane_specific_layer2_execution": true,
+      "baseline_layer2_attention_reused": false,
+      "component_a_nrmse_reduction": {
+        "bf16_postattention_residual_w4_down": 0.29903402656677736,
+        "w4_postattention_residual_bf16_down": 0.1902977305018042,
+        "bf16_both_production_merge": 0.5076829627357042,
+        "physical_sum_then_single_quantize": 0.513812534049408
+      },
+      "destination_saturation_fraction": 0.0
+    }
+  ],
+  "current_repair_surface": [
+    "layer1_postattention_carrier",
+    "layer1_mlp_down_carrier"
+  ],
+  "non_claims": [
+    "readable_multi_token_w4a8_generation",
+    "stage1_certification",
+    "rtl_agreement",
+    "u280_deployment"
+  ]
+}
