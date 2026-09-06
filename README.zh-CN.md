@@ -20,6 +20,23 @@
 
 ![ACE-2 已认证的 Alpha 2 基线](docs/ace2-alpha2-overview.svg)
 
+## 2026-09-06：仅发布证据摘要的进展更新
+
+详见[完整里程碑说明](docs/results/ACE2_PROGRESS_20260906.md)及
+[机器可读溯源](evidence/public/ace2-progress-20260906/provenance.json)。
+**现有公开源码不变；本次不是较新本地实现的可运行发布。**
+
+V74 记录了 35 个位置、840 次 RTL 层调用，输出 ` aside crystal`，不代表有用对话。
+regression 0006 是历史证据审计加新的 shell smoke，不是重跑 840 层。
+同一 LoRA176 的六个冻结短问题中，BF16 为 **6/6**，当前 Stage-1 W4A8+rank1
+为 **0/6**；这不是通用准确率，完整[十二条回答和限制](docs/results/CURRENT_LORA176_SOFTWARE_QUALITY_20260906.md)
+一并公开。三次递增诊断对照没有修复代表性回答；新的 S16 residual 局部合并 MAE
+降低 99.30%，但普通通道归一化输出仍有 839/887 为零，也尚未接入 runtime/RTL。
+
+**当前只做本地仿真和软件诊断；硬件 Stage 2、FPGA、综合、PPA、U280 已取消。**
+下方 Alpha 2/3 结果与旧计划作为历史记录保留，不代表新路径成果或当前执行授权。
+本次边界见[发布说明](docs/results/PUBLICATION_BOUNDARY.md)。
+
 > **Alpha 3 的范围：**这是建立在 Alpha 2 已认证 RTL 基线之上的公开产品化进展快照。
 > Alpha 2 基线保持不变；Alpha 3 记录了后续 BF16 模型质量工作，以及目前仍阻止任意文本
 > W4A8 对话和 U280 部署的具体门禁。Alpha 3 不声明新的已认证模型、通用对话能力、

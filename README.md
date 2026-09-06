@@ -22,6 +22,30 @@ authority.**
 
 ![ACE-2 certified Alpha 2 baseline](docs/ace2-alpha2-overview.svg)
 
+## September 6, 2026: evidence-only progress update
+
+**[Read the complete milestone summary](docs/results/ACE2_PROGRESS_20260906.md)**
+and [machine-readable provenance](evidence/public/ace2-progress-20260906/provenance.json).
+The existing public source baseline is unchanged; this is **not a runnable
+release of the newer local implementation**.
+
+V74 recorded 840 RTL layer invocations across 35 positions and the two-token
+output ` aside crystal`, not useful chat. Regression 0006 audited that
+historical evidence plus a fresh shell smoke, not another 840-layer replay.
+Current same-LoRA176 software comparison passed **BF16 6/6 versus Stage-1
+W4A8-plus-rank1 0/6 on six frozen examples**; see
+[all twelve answers and limits](docs/results/CURRENT_LORA176_SOFTWARE_QUALITY_20260906.md).
+Three incremental contrasts did not fix the representative answer. A new
+S16 residual profile improved one local merge MAE by 99.30%, but retained
+839/887 ordinary normalized zeros and is not runtime/RTL-integrated or
+validated for chat.
+
+**Current scope is local simulation/software diagnosis. Hardware Stage 2,
+FPGA, synthesis, PPA and U280 work is cancelled.** The Alpha 2/3 results and
+productization plan below are preserved historical records, not current
+authorization or results for these newer paths. See
+[publication boundaries](docs/results/PUBLICATION_BOUNDARY.md).
+
 > **Alpha 3 scope:** a public productization-progress snapshot built on the
 > unchanged Alpha 2 certified RTL baseline. It documents the post-Alpha-2 BF16
 > model-quality program and the exact gates that still block arbitrary-text
@@ -383,7 +407,10 @@ sum-of-squares carry from dividend loading. The exact final tree is bound by
 
 See [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md) for the full list.
 
-## Productization path
+## Historical Alpha 3 productization path
+
+This preserved plan is superseded by the September 6 scope above; its
+hardware stages are not current work.
 
 - **Current gate:** an independent external-root channel must authenticate and
   invoke the exact accepted V8 recovery package. The current account cannot

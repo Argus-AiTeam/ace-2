@@ -1,0 +1,476 @@
+{
+  "schema": "ace2-public-progress-evidence-summary-v1",
+  "publication_date": "2026-09-06",
+  "starting_public_bases": {
+    "aHappend/ace-2": "0fd5cdeaec1416777b7dd21a66839099d85a4a4b",
+    "Argus-AiTeam/ace-2": "d9c1abefd03a76636266aa75ede3fe3a42753f37"
+  },
+  "scope": "Sanitized documentation and derived evidence summary only; not a self-contained runnable implementation release.",
+  "source_release": false,
+  "runtime_or_rtl_modified": false,
+  "new_experiments_run_for_publication": false,
+  "original_reports_modified": false,
+  "hardware_scope": "Local simulation only; hardware Stage2, FPGA, synthesis, PPA and U280 work cancelled.",
+  "later_unreviewed_reports_included": false,
+  "hash_semantics": {
+    "original_sources": "SHA256 binds original external bytes. These records are not reconstructed or redacted acceptance receipts.",
+    "SHA256SUMS": "The public package checksum file binds only the derived published files, not original archive completeness."
+  },
+  "model_and_execution_identities": {
+    "parent": {
+      "repository": "Qwen/Qwen2.5-0.5B-Instruct",
+      "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+      "file": "model.safetensors",
+      "sha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe",
+      "bytes": 988097824
+    },
+    "adapter": {
+      "name": "ACE-2 LoRA v4 checkpoint-176",
+      "file": "adapter_model.safetensors",
+      "sha256": "c9476d6ccc687a4d68de1951eb889b689daaf9c5d3822b4c5acfc26a1cd38a28",
+      "bytes": 35237104
+    },
+    "tokenizer": {
+      "repository": "Qwen/Qwen2.5-0.5B-Instruct-AWQ",
+      "revision": "db09cd27ead7fee40cdee309693cf83601b9c899",
+      "file_sha256": {
+        "tokenizer.json": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+        "tokenizer_config.json": "5b5d4f65d0acd3b2d56a35b56d374a36cbc1c8fa5cf3b3febbbfabf22f359583"
+      },
+      "does_not_imply_awq_w4a16_weight_execution": true
+    },
+    "v74_accepted_source_and_rtl_aggregate": {
+      "sha256": "9d991fbf5ef7e07e3a6d1b73265641466d15b27f1db21bd2c95b2092c609e3a8",
+      "source": "reports/rtl-chat-independent-oracle-regression-0006/result.json",
+      "scope": "Historical execution binding, not the public repository code or current mutable runtime."
+    }
+  },
+  "v74": {
+    "original_attempt": "reports/ace2-stage1-chat-attempt-0002",
+    "original_status": "PASS",
+    "prompt": "Gr\u00fc\u00dfe,\u4e16\u754c",
+    "generated_token_ids": [
+      15663,
+      25055
+    ],
+    "decoded_text": " aside crystal",
+    "prompt_tokens": 34,
+    "causal_positions": 35,
+    "rtl_layer_invocations": 840,
+    "reported_integer_mismatches": 0,
+    "useful_chat_quality": false,
+    "original_receipt_sha256_recorded_by_regression": {
+      "attempt-result.json": "5ec4b355a2fd3ad69c45ecc6accedd26da1528a383cde13f8b558e3f4f13e8d8",
+      "independent-reference-comparison.json": "40803354b455534bc099913a8531a8552621645d1846c4921733b49ca6d90e9e",
+      "worker-result.json": "c6891d42e24ded0935ac6be7306e0e47bb38aa676c824d79ba6e07e7693709e4"
+    },
+    "original_seal_sha256_recorded_by_regression": "82f56d1a23429ce72a7f387b658d6f25113db2afd41dbec7a0bc9d4c4fbbfdbc",
+    "historical_oracle_erratum": {
+      "local_expectations_derived_before_corresponding_comparison": true,
+      "causal_rtl_kv_feedback_to_host_cache": true,
+      "end_to_end_independent_reference_cache": false,
+      "original_immutable_metadata_rewritten": false
+    }
+  },
+  "regression0006": {
+    "original_artifact": "reports/rtl-chat-independent-oracle-regression-0006/result.json",
+    "original_status": "PASS",
+    "historical_seal_entries_audited": 43056,
+    "retained_layer_records_audited": 840,
+    "retained_kv_files_audited": 1680,
+    "fresh_shell_smoke_status": "PASS",
+    "fresh_shell_smoke_scope": "Icarus W4A8 shell projection opcode 01; not a full-model chat run.",
+    "fresh_840_layer_replay": false,
+    "full_logits_freshly_replayed": false,
+    "historical_oracle_wording_requires_v74_erratum": true
+  },
+  "software_quality0950": {
+    "original_status": "completed_bounded_context_limited",
+    "same_lora176_bf16_pass": 6,
+    "stage1_w4a8_plus_rank1_pass": 0,
+    "fixed_cases": 6,
+    "representative_accuracy_claim": false,
+    "parent_semantic_verdict": "CURRENT_STAGE1_PATH_FAILS_ALL_SIX_BOUNDED_DIALOGUE_CASES",
+    "parent_review_scope": "This artifact assesses answer semantics and disclosed limitations. It is not an independent rerun, full source audit, RTL acceptance, hardware measurement or deployment certification.",
+    "parent_review_is_separate_from_immutable_pending_fields": true,
+    "context_limit": 43,
+    "samples": [
+      {
+        "arm": "bf16",
+        "case_id": "factual",
+        "prompt": "Capital of France?",
+        "decoded_text": "The capital of France is Paris.",
+        "effective_max_new_tokens": 10,
+        "stop_reason": "eos",
+        "truncated": false,
+        "deterministic_screening_pass": true
+      },
+      {
+        "arm": "bf16",
+        "case_id": "arithmetic",
+        "prompt": "7+5=? Answer only.",
+        "decoded_text": "12",
+        "effective_max_new_tokens": 7,
+        "stop_reason": "eos",
+        "truncated": false,
+        "deterministic_screening_pass": true
+      },
+      {
+        "arm": "bf16",
+        "case_id": "instruction",
+        "prompt": "Reply exactly: BLUE",
+        "decoded_text": "BLUE",
+        "effective_max_new_tokens": 10,
+        "stop_reason": "eos",
+        "truncated": false,
+        "deterministic_screening_pass": true
+      },
+      {
+        "arm": "bf16",
+        "case_id": "extraction",
+        "prompt": "Name: Ada. Return name only.",
+        "decoded_text": "Ada",
+        "effective_max_new_tokens": 6,
+        "stop_reason": "eos",
+        "truncated": false,
+        "deterministic_screening_pass": true
+      },
+      {
+        "arm": "bf16",
+        "case_id": "translation",
+        "prompt": "French for hello? One word.",
+        "decoded_text": "Bonjour!",
+        "effective_max_new_tokens": 7,
+        "stop_reason": "eos",
+        "truncated": false,
+        "deterministic_screening_pass": true
+      },
+      {
+        "arm": "bf16",
+        "case_id": "greeting",
+        "prompt": "Hello!",
+        "decoded_text": "Hello! How can I help you today?",
+        "effective_max_new_tokens": 12,
+        "stop_reason": "eos",
+        "truncated": false,
+        "deterministic_screening_pass": true
+      },
+      {
+        "arm": "current_w4a8",
+        "case_id": "factual",
+        "prompt": "Capital of France?",
+        "decoded_text": "\u4f53\u5236\u6539\u9769\u00a0bsiteptscolm').\"]bool.Comparatoriciesoodles",
+        "effective_max_new_tokens": 10,
+        "stop_reason": "context_budget",
+        "truncated": true,
+        "deterministic_screening_pass": false
+      },
+      {
+        "arm": "current_w4a8",
+        "case_id": "arithmetic",
+        "prompt": "7+5=? Answer only.",
+        "decoded_text": "symbolsallah/by.navigateByUrl TauToDevice\ufffd",
+        "effective_max_new_tokens": 7,
+        "stop_reason": "context_budget",
+        "truncated": true,
+        "deterministic_screening_pass": false
+      },
+      {
+        "arm": "current_w4a8",
+        "case_id": "instruction",
+        "prompt": "Reply exactly: BLUE",
+        "decoded_text": "illionerateachtjamMinMaxynn Bannon\u51fa\u884c\u578b\u53f7 \ufffd",
+        "effective_max_new_tokens": 10,
+        "stop_reason": "context_budget",
+        "truncated": true,
+        "deterministic_screening_pass": false
+      },
+      {
+        "arm": "current_w4a8",
+        "case_id": "extraction",
+        "prompt": "Name: Ada. Return name only.",
+        "decoded_text": " URLWithString\u7ff0antdendereco t\u00fabenh",
+        "effective_max_new_tokens": 6,
+        "stop_reason": "context_budget",
+        "truncated": true,
+        "deterministic_screening_pass": false
+      },
+      {
+        "arm": "current_w4a8",
+        "case_id": "translation",
+        "prompt": "French for hello? One word.",
+        "decoded_text": ".getElementsByNamebenhcontribiloguePJ.*/\negra",
+        "effective_max_new_tokens": 7,
+        "stop_reason": "context_budget",
+        "truncated": true,
+        "deterministic_screening_pass": false
+      },
+      {
+        "arm": "current_w4a8",
+        "case_id": "greeting",
+        "prompt": "Hello!",
+        "decoded_text": "\u4e3a\u57fa\u7840m\u00eameolumes\u5199\u7684(history\u95ed\u73af nhuliascalarppardfections.isNotBlank",
+        "effective_max_new_tokens": 12,
+        "stop_reason": "context_budget",
+        "truncated": true,
+        "deterministic_screening_pass": false
+      }
+    ],
+    "all_bf16_reached_eos": true,
+    "all_stage1_context_truncated": true,
+    "truncation_interpretation": "Both arms used the same per-case context-derived limits of 10, 7, 10, 6, 7, and 12 new tokens. BF16 reached EOS in every case. W4A8 was already irrelevant or violated the requested output before truncation. No conclusion about unobserved longer continuations is made.",
+    "public_four_token_wrapper_and_post_argmax_guards_bypassed_for_diagnostic": true,
+    "first_factual_public_guard_rejection": {
+      "generated_index_zero_based": 1,
+      "token_id": 4102,
+      "reason": "Nonbreaking-space-only token; public product would abort, not return the diagnostic continuation."
+    },
+    "software_kv_lineage": "SOFTWARE_KV_STATE_INDEPENDENT_OF_RTL_OBSERVATIONS",
+    "retained_prefix_kv_hash_matches": 1152,
+    "prefix_positions": 24,
+    "layers_per_prefix_position": 24,
+    "kv_components": 2,
+    "fresh_six_case_rtl_answer_trajectories": false,
+    "numerical_path": "Per-row W4/A8 main path, static-first-token QKV, Q9_ONE RoPE, int8-factor rank1, floating scale-selection shadow and zero/omitted parent QKV biases.",
+    "newer_quality_config_dynamic_head_scale32": false,
+    "quantization_only_causal_experiment": false,
+    "historical_august_g32_is_distinct": true
+  },
+  "diagnosis1021": {
+    "original_status": "COMPLETED_DIAGNOSIS_NO_VALIDATED_QUALITY_REPAIR",
+    "representative_prompt": "7+5=? Answer only.",
+    "first_material_divergence": {
+      "position": 0,
+      "layer": 0,
+      "boundary": "Q projection",
+      "relative_l2": 1.0241341372436477,
+      "rmse": 7.8473254877795,
+      "parent_q_bias_rms": 7.854114055633545,
+      "parent_k_bias_rms": 32.44931411743164,
+      "observed_k_projection_rmse": 32.4376,
+      "preceding_input_norm_cosine": 0.9997,
+      "interpretation": "The floating shadow has nearly identical bias-shaped Q/K error: parent biases are omitted before quantization, not merely damaged by rounding.",
+      "causal_caution": "Q is the first boundary exceeding the frozen descriptive threshold, not proof that Q alone causes the first-position hidden error. With one causal key, Q/K do not affect softmax. V shadow error also matches omitted V bias (RMSE0.014921 versus bias RMS0.014946), and small attention/residual error is amplified by post-attention normalization."
+    },
+    "head_vs_earlier_hidden": {
+      "same_stage1_hidden": "Clipped int8, unclipped RNE integer, real-scaled W4 accumulators, original-embedding same-int8-hidden float head and float-normalization head all select67426 ('symbols').",
+      "stage1_head_saturated_logits": 0,
+      "stage1_head_top_ties": 1,
+      "correct_token_rank": 99231,
+      "same_bf16_normalized_hidden": "Every head control selects correct first token16 ('1').",
+      "conclusion": "Earlier hidden degradation, not final-head clipping/tie selection, dominates this representative failure. Float heads were diagnostics only, not current W4A8 or RTL-backed generation."
+    },
+    "incremental_contrasts": [
+      {
+        "contrast": 1,
+        "control": "current stage1",
+        "single_change": "Restore parent QKV biases, including matching shadow and signed-int32 bias-accumulator metadata",
+        "cumulative_changes_vs_current": 1,
+        "result": "FAIL_TARGETED_SHORT_ANSWER",
+        "decoded_text": " in \n 7. 7",
+        "first_token": 304,
+        "stop": "7-token context-budget truncation"
+      },
+      {
+        "contrast": 2,
+        "control": "Measured bias-restored candidate",
+        "single_change": "Preserve wide attention scores through row-max subtraction before signed16 clipping",
+        "cumulative_changes_vs_current": 2,
+        "result": "FAIL_TARGETED_SHORT_ANSWER",
+        "decoded_text": "'?'?'?'\n'?'A",
+        "first_token": 69990,
+        "stop": "7-token context-budget truncation"
+      },
+      {
+        "contrast": 3,
+        "control": "Measured bias-restored and score-centered candidate",
+        "single_change": "Signed16 SiLU output format Q3.12 to Q6.9, expanded LUT range and compensated output multiplier",
+        "cumulative_changes_vs_current": 3,
+        "result": "FAIL_TARGETED_SHORT_ANSWER",
+        "decoded_text": " \\/'0,000",
+        "first_token": 36815,
+        "stop": "7-token context-budget truncation"
+      }
+    ],
+    "independent_single_changes_against_original_baseline": false,
+    "six_case_candidate_confirmation_run": false,
+    "quality_repair_validated": false,
+    "no_candidate_adopted": true
+  },
+  "requantization1100": {
+    "original_status": "COMPLETE_SAME_ACCUMULATOR_BOUNDARY_DIAGNOSIS",
+    "attribution_status": "COMPLETE_EXACT_BOUNDARY_ATTRIBUTION_NO_REPAIR_PROMOTED",
+    "control": "bias-restored plus centered score, original SiLU format",
+    "position": 0,
+    "layer": 2,
+    "original_baseline_all_input_generalization": false,
+    "total_channels": 896,
+    "preexisting_s32_accumulator_zeros": 453,
+    "nonzero_outputs_newly_zeroed_by_requantization": 424,
+    "total_a8_down_zeros": 877,
+    "nonzero_residual_contributions_lost_in_alignment": 848,
+    "zeroed_outputs_match_exact_ideal_grid": true,
+    "down_saturation_count": 0,
+    "same_grid_arithmetic_fusion_restores_residual": false,
+    "tight_scalar_policy": {
+      "decision": "REJECT_LOCAL_SCALAR_ONLY_REPAIR: ordinary MAE reduction9.727 percent fails frozen25 percent criterion; outlier normalization RMSE worsens.",
+      "ordinary_merge_mae_relative_reduction": 0.09727169441903982,
+      "frozen_required_reduction": 0.25,
+      "outlier_normalization_rmse_worsened": true
+    },
+    "quality_repair_promoted": false
+  },
+  "wide_residual1128": {
+    "original_status": "PASS_LOCAL_COMPONENT_FEASIBILITY",
+    "scope": "One held position0 layer2 boundary of the bias-restored plus centered-score candidate; 887 ordinary and 9 outlier channels.",
+    "profile": "New S16 residual merge / S16 RMSNorm input / S8 normalized output",
+    "ordinary_channels": 887,
+    "ordinary_merge_mae_a8": 0.30670037793118443,
+    "ordinary_merge_mae_s16": 0.0021521923961854354,
+    "ordinary_merge_mae_relative_reduction": 0.9929827527090027,
+    "ordinary_normalized_output_zeros": 839,
+    "normalized_s8_saturation_count": 1,
+    "s16_merge_saturation_count": 0,
+    "runtime_scale32_descriptor_packing_and_rtl_implemented": false,
+    "offline_packing_checks_are_not_runtime_implementation": true,
+    "upstream_453_accumulator_zeros_recovered": false,
+    "current_strict_a8_path": false,
+    "full_model_chat_quality_demonstrated": false,
+    "production_adoption_authorized": false
+  },
+  "original_sources": [
+    {
+      "artifact": "reports/verification/current-lora176-software-quality-20260906-0950/result.json",
+      "sha256": "db18eb36181c3f421636b455bebcf9362c0058598010ad46f50d149e71f6c472",
+      "bytes": 17903,
+      "hash_scope": "original_file_bytes_not_this_derived_summary",
+      "bundled": false
+    },
+    {
+      "artifact": "reports/verification/current-lora176-software-quality-20260906-0950/REPORT_SHA256SUMS",
+      "sha256": "5ef3e61f316d9cac24acf3e6b1509e17e6115b9f9fa6e5ee78c780a4e321ac37",
+      "bytes": 5241,
+      "hash_scope": "original_file_bytes_not_this_derived_summary",
+      "bundled": false
+    },
+    {
+      "artifact": "reports/verification/current-lora176-software-quality-20260906-0950/scope-and-timing.json",
+      "sha256": "09a984a787538226e9369a4095a8a11face130f2aaa4d467341fa5615517bbf0",
+      "bytes": 3150,
+      "hash_scope": "original_file_bytes_not_this_derived_summary",
+      "bundled": false
+    },
+    {
+      "artifact": "reports/verification/current-lora176-software-quality-20260906-0950/verification.json",
+      "sha256": "6970c98b1a8c9171bc26da3c1458623b334efb99c41ce0540181e511d69c6f99",
+      "bytes": 8440,
+      "hash_scope": "original_file_bytes_not_this_derived_summary",
+      "bundled": false
+    },
+    {
+      "artifact": "reports/verification/current-lora176-software-quality-20260906-0950/kv-lineage-audit.json",
+      "sha256": "c86cc49ae02467c06ed84869ff841d7d96838d91184d9d43c55ceec8072173a1",
+      "bytes": 3139,
+      "hash_scope": "original_file_bytes_not_this_derived_summary",
+      "bundled": false
+    },
+    {
+      "artifact": "reports/verification/current-lora176-software-quality-review-20260906-0950/assessment.json",
+      "sha256": "52e8d0ea8a038924f519f419e26cc2354c38d7ca033ed592850d53a3ee001806",
+      "bytes": 4391,
+      "hash_scope": "original_file_bytes_not_this_derived_summary",
+      "bundled": false
+    },
+    {
+      "artifact": "reports/rtl-chat-independent-oracle-regression-0006/result.json",
+      "sha256": "11194c095303e6e228ee6262dba7d231de9d8e73fa57695a3815e31c3b6a12a4",
+      "bytes": 9733,
+      "hash_scope": "original_file_bytes_not_this_derived_summary",
+      "bundled": false
+    },
+    {
+      "artifact": "reports/rtl-chat-independent-oracle-regression-0006/SHA256SUMS",
+      "sha256": "708d1f44eba5fb6076c3ac42143436f22f1889fc774e2c396c6dff45a01efc4a",
+      "bytes": 507,
+      "hash_scope": "original_file_bytes_not_this_derived_summary",
+      "bundled": false
+    },
+    {
+      "artifact": "reports/verification/current-lora176-software-diagnosis-20260906-1021/REPORT.json",
+      "sha256": "adb89d98301b5c87ccea1281ba6b0a82102b83407cf70b02f33bf32fb3cb9b58",
+      "bytes": 8638,
+      "hash_scope": "original_file_bytes_not_this_derived_summary",
+      "bundled": false
+    },
+    {
+      "artifact": "reports/verification/current-lora176-software-diagnosis-20260906-1021/VERIFICATION.json",
+      "sha256": "145b1ae337d0000d94cf4e95dbdeea82ad4d0d0129da78b40589923f26112281",
+      "bytes": 4194,
+      "hash_scope": "original_file_bytes_not_this_derived_summary",
+      "bundled": false
+    },
+    {
+      "artifact": "reports/verification/current-lora176-software-diagnosis-20260906-1021/REPORT_SHA256SUMS",
+      "sha256": "1b63c855df640584e854ab887db9499a21616bbe4a874e7e234feb632774da1a",
+      "bytes": 26678,
+      "hash_scope": "original_file_bytes_not_this_derived_summary",
+      "bundled": false
+    },
+    {
+      "artifact": "reports/verification/current-lora176-layer2-requantization-20260906-1100/REPORT.json",
+      "sha256": "3841c9b7478558ea490129868ba54677cd3284301c706570a332316c75248013",
+      "bytes": 12966,
+      "hash_scope": "original_file_bytes_not_this_derived_summary",
+      "bundled": false
+    },
+    {
+      "artifact": "reports/verification/current-lora176-layer2-requantization-20260906-1100/FINDINGS.json",
+      "sha256": "7901e03e471a7db9147e07b4c30b33e90671bc1b9acd5f4b3ff4a2577b66d6f4",
+      "bytes": 5325,
+      "hash_scope": "original_file_bytes_not_this_derived_summary",
+      "bundled": false
+    },
+    {
+      "artifact": "reports/verification/current-lora176-layer2-requantization-20260906-1100/VERIFICATION.json",
+      "sha256": "bbdbd22ad43975f48b2e7453c9772f76422ec4273babe36965b0634c6cf5412b",
+      "bytes": 489,
+      "hash_scope": "original_file_bytes_not_this_derived_summary",
+      "bundled": false
+    },
+    {
+      "artifact": "reports/verification/current-lora176-layer2-requantization-20260906-1100/REPORT_SHA256SUMS",
+      "sha256": "61591756e5702b41fc257862a17ee4ef6d7d289c2d98411676f73eb097dae107",
+      "bytes": 5566,
+      "hash_scope": "original_file_bytes_not_this_derived_summary",
+      "bundled": false
+    },
+    {
+      "artifact": "reports/verification/current-lora176-layer2-wide-residual-20260906-1128/REPORT.json",
+      "sha256": "61bc339b5882c66f0d973a74c01adf448d99cf454c5ce45c298af0fcd22ff2a6",
+      "bytes": 7216,
+      "hash_scope": "original_file_bytes_not_this_derived_summary",
+      "bundled": false
+    },
+    {
+      "artifact": "reports/verification/current-lora176-layer2-wide-residual-20260906-1128/PROFILE.json",
+      "sha256": "3dcd8574d1d9319b461aaccdb44f1a4613250c962b9e6d14ebda0fd3549bcd40",
+      "bytes": 4940,
+      "hash_scope": "original_file_bytes_not_this_derived_summary",
+      "bundled": false
+    },
+    {
+      "artifact": "reports/verification/current-lora176-layer2-wide-residual-20260906-1128/VERIFICATION.json",
+      "sha256": "b90c014329ea7d72b06ea639b1d926cedc8cd183ccca36935c07b0de9cce1736",
+      "bytes": 960,
+      "hash_scope": "original_file_bytes_not_this_derived_summary",
+      "bundled": false
+    },
+    {
+      "artifact": "reports/verification/current-lora176-layer2-wide-residual-20260906-1128/REPORT_SHA256SUMS",
+      "sha256": "e053ca963e423d4b49e55e8d4245e57db21ccdf85f50ddda631366c58ea864e0",
+      "bytes": 1733,
+      "hash_scope": "original_file_bytes_not_this_derived_summary",
+      "bundled": false
+    }
+  ]
+}
