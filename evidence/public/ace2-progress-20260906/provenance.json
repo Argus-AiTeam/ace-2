@@ -338,6 +338,40 @@
     "full_model_chat_quality_demonstrated": false,
     "production_adoption_authorized": false
   },
+  "normalized_a8_loss1200": {
+    "original_status": "COMPLETED_FIXED_GRID_ATTRIBUTION",
+    "findings_status": "COMPLETED_FIXED_GRID_ATTRIBUTION_NO_CANDIDATE",
+    "handoff_status": "DIAGNOSTIC_HANDOFF_ONLY_NO_IMPLEMENTATION_OR_PROMOTION",
+    "publication_review": "Parent confirmed final report review and archive authentication before inclusion.",
+    "scope": "One frozen position0 layer2 boundary of the bias-restored plus centered-score control, before the SiLU contrast, using the unaccepted offline 1128 S16 profile.",
+    "all_output_channels": 896,
+    "all_outputs_match_same_s16_input_raw_gain_bf16_epsilon_then_fixed_s8_grid": true,
+    "ordinary_channels": 887,
+    "ordinary_zero_partition": {
+      "actual_zero": 839,
+      "already_zero_in_original_reference": 28,
+      "merge_induced_true_zero": 3,
+      "nonzero_target_erased_by_fixed_grid": 808,
+      "additional_arithmetic_zero_loss": 0
+    },
+    "outlier_channels": 9,
+    "ideal_and_actual_outlier_clipping_count": 1,
+    "ordinary_clipping_count": 0,
+    "fixture_range_bound": {
+      "positive_no_clipping_scale_lower_strict": 0.22941176470588234,
+      "positive_no_clipping_exact_fraction": "39/170",
+      "preserve_every_nonzero_scale_upper_strict": 0.00139617919921875,
+      "preserve_every_nonzero_exact_fraction": "183/131072",
+      "single_scale_conditions_compatible": false,
+      "scope": "This held normalized target only, not a universal W4A8 impossibility result."
+    },
+    "all_channels_semantically_necessary_claim": false,
+    "individual_rms_or_gain_approximations_separately_swept": false,
+    "individual_approximations_have_zero_error_claim": false,
+    "alternative_calibration_or_next_candidate_executed": false,
+    "runtime_or_rtl_integration": false,
+    "quality_repair_or_architecture_acceptance": false
+  },
   "original_sources": [
     {
       "artifact": "reports/verification/current-lora176-software-quality-20260906-0950/result.json",
@@ -469,6 +503,34 @@
       "artifact": "reports/verification/current-lora176-layer2-wide-residual-20260906-1128/REPORT_SHA256SUMS",
       "sha256": "e053ca963e423d4b49e55e8d4245e57db21ccdf85f50ddda631366c58ea864e0",
       "bytes": 1733,
+      "hash_scope": "original_file_bytes_not_this_derived_summary",
+      "bundled": false
+    },
+    {
+      "artifact": "reports/verification/current-lora176-normalized-a8-loss-20260906-1200/REPORT.json",
+      "sha256": "fb682bf784ad0c6b7a53d860ae5d3615cd44412abfbfadf8fc5a101286ac351c",
+      "bytes": 6970,
+      "hash_scope": "original_file_bytes_not_this_derived_summary",
+      "bundled": false
+    },
+    {
+      "artifact": "reports/verification/current-lora176-normalized-a8-loss-20260906-1200/FINDINGS.json",
+      "sha256": "34abe8b9541018af1189a8e2f2632c5e0636b67b13aec35fa34906457a499f3b",
+      "bytes": 5079,
+      "hash_scope": "original_file_bytes_not_this_derived_summary",
+      "bundled": false
+    },
+    {
+      "artifact": "reports/verification/current-lora176-normalized-a8-loss-20260906-1200/HANDOFF.json",
+      "sha256": "2068a533905fcd8bef1a30ac677469d3af5aeccdad65f531191f532691719080",
+      "bytes": 4057,
+      "hash_scope": "original_file_bytes_not_this_derived_summary",
+      "bundled": false
+    },
+    {
+      "artifact": "reports/verification/current-lora176-normalized-a8-loss-20260906-1200/REPORT_SHA256SUMS",
+      "sha256": "fa9f1f96d0189420d7144235ccd0144943a7d7fcac2efd5012ebd3e83362c0e9",
+      "bytes": 1627,
       "hash_scope": "original_file_bytes_not_this_derived_summary",
       "bundled": false
     }

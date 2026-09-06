@@ -153,6 +153,38 @@ the current strict-A8 path, a full-model quality repair, or production
 adoption. No model layers or generation were executed for this held-array
 component experiment.
 
+## 7. 1200: normalized S8 grid attribution, no next candidate
+
+The parent-reviewed completed
+`current-lora176-normalized-a8-loss-20260906-1200` report records
+`COMPLETED_FIXED_GRID_ATTRIBUTION`, with findings status
+`COMPLETED_FIXED_GRID_ATTRIBUTION_NO_CANDIDATE`. It uses the same held
+position-0/layer-2 corrected control and offline S16 profile described above,
+not original-baseline inputs generally or the current strict-A8 product.
+
+**All 896 outputs exactly match** original-raw-gain BF16/epsilon normalization
+of the **same S16 input**, followed by the unchanged S8 grid. The **839
+ordinary zeros** partition into **28 preexisting real-reference zeros + 3
+S16-merge-induced zeros + 808 nonzero targets erased by the fixed grid + 0
+additional zeros from combined integer RMS/gain approximation**.
+Replacing the whole approximate normalization with this ideal same-input
+reference recovers no additional outputs on that grid. This does not mean
+each approximation has zero numerical error; individual arithmetic changes
+were not separately swept. One outlier clips in both ideal and actual output.
+
+For **this held normalized target only**, avoiding positive post-rounding
+clipping requires scale **S > 39/170 (0.22941176...)**, while preserving
+**every** nonzero requires **S < 183/131072 (0.00139618...)**. These
+single-S8-scale conditions are incompatible. This is **not a proof W4A8 is
+impossible**, nor proof that every erased channel is semantically necessary
+or that preserving all of them would repair dialogue.
+
+There was no next candidate, alternative scale/calibration sweep, generation,
+runtime/RTL integration or quality promotion. The local path remains
+unchanged. Original report SHA256:
+`fb682bf784ad0c6b7a53d860ae5d3615cd44412abfbfadf8fc5a101286ac351c`;
+the complete original-file identities are in the linked public provenance.
+
 ## Evidence and release limits
 
 The underlying completed reports retain their original names, hashes and
@@ -163,5 +195,6 @@ execution source is included in this public baseline.
 No weights, tensor values, raw logs, private filesystem locations, broad
 private source snapshot, or private Git ancestry is exported. Original
 archives remain external; checksums of this derived package do not validate
-archive availability or replay completeness. The separate normalized-A8-loss
-report was not included without final parent-review confirmation.
+archive availability or replay completeness. The final normalized-A8-loss
+diagnosis is included following parent-review confirmation; no later
+experiment or unreviewed candidate is implied.
