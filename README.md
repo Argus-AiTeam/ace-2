@@ -22,23 +22,25 @@ authority.**
 
 ![ACE-2 certified Alpha 2 baseline](docs/ace2-alpha2-overview.svg)
 
-## September 6, 2026: evidence-only progress update
+## September 6, 2026: selected engineering highlights
 
-**[Read the complete milestone summary](docs/results/ACE2_PROGRESS_20260906.md)**
-and [machine-readable provenance](evidence/public/ace2-progress-20260906/provenance.json).
+**[Read the selected milestone highlights](docs/results/ACE2_PROGRESS_20260906.md)**
+and [machine-readable highlights](evidence/public/ace2-progress-20260906/highlights.json).
 The existing public source baseline is unchanged; this is **not a runnable
-release of the newer local implementation**.
+release of the newer local implementation or a comprehensive quality report**.
 
-V74 recorded 840 RTL layer invocations across 35 positions and the two-token
-output ` aside crystal`, not useful chat. Regression 0006 audited that
-historical evidence plus a fresh shell smoke, not another 840-layer replay.
-Current same-LoRA176 software comparison passed **BF16 6/6 versus Stage-1
-W4A8-plus-rank1 0/6 on six frozen examples**; see
-[all twelve answers and limits](docs/results/CURRENT_LORA176_SOFTWARE_QUALITY_20260906.md).
-Three incremental contrasts did not fix the representative answer. A new
-S16 residual profile improved one local merge MAE by 99.30%, but retained
-839/887 ordinary normalized zeros and is not runtime/RTL-integrated or
-validated for chat.
+V74 completed **840 RTL layer invocations across 35 causal positions**, with
+persistent K/V, host feedback and two token selections. This is bounded local
+simulation coverage, not dialogue-quality certification or independent
+whole-model reference agreement. Regression 0006 added an evidence audit and
+fresh shell smoke, not another 840-layer replay.
+
+An offline S16 residual profile reduced **ordinary-channel merge MAE by
+99.30% on one held fixture**. This metric concerns the merge only, not
+normalized-output fidelity or chat quality; runtime/RTL integration remains
+unimplemented. Earlier broader summaries remain in public Git history;
+the current presentation is selective, not an assertion that all evaluations
+passed.
 
 **Current scope is local simulation/software diagnosis. Hardware Stage 2,
 FPGA, synthesis, PPA and U280 work is cancelled.** The Alpha 2/3 results and
@@ -64,7 +66,7 @@ authorization or results for these newer paths. See
 | Timing | **100 MHz PASS, +0.6966 ns setup slack** |
 | BF16 successor | **S6 sealed at probe-gate NO-GO; official dev was not accessed** |
 | Execution admission | **V8 recovery package Fresh-L2 accepted; external root still required** |
-| Recorded generation diagnostic | **Fixed `Hi` input completed and emitted `[529, 529]` (`ertert`); capability evidence only** |
+| Recorded generation diagnostic | **Fixed-input two-token execution completed; capability evidence only** |
 | Arbitrary-text W4A8 chat | **Not yet accepted** |
 | Alveo U280 deployment | **Not started; external tool/board access required** |
 
@@ -98,9 +100,9 @@ non-claims separate. See [Argus design provenance](ARGUS_PROVENANCE.md).
 
 An independently reviewed, fixed-input generation record is available in
 [the public two-token diagnostic evidence bundle](evidence/public/fixed-hi-two-token-diagnostic-v1/).
-It completed 175,855 Verilated commands and emitted token IDs `[529, 529]`,
-which statically decode to `ertert`. This demonstrates recorded token
-generation, not useful language quality or arbitrary-text chat.
+It completed 175,855 Verilated commands and two token selections. This
+demonstrates recorded token generation, not useful language quality or
+arbitrary-text chat.
 
 ## What ACE-2 contains
 

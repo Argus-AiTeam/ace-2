@@ -1,0 +1,113 @@
+{
+  "schema": "ace2-selected-engineering-highlights-v1",
+  "publication_date": "2026-09-06",
+  "presentation_scope": "Selected favorable engineering highlights, not a comprehensive diagnostic report or model-quality assessment.",
+  "unreported_evaluations_assumed_passed": false,
+  "earlier_public_history_remains_accessible": true,
+  "original_scientific_reports_modified": false,
+  "new_runtime_or_rtl_source_release": false,
+  "new_experiments_run_for_presentation": false,
+  "hardware_scope": "Local simulation/software research only; hardware Stage2, FPGA, synthesis, PPA and U280 work cancelled.",
+  "model_and_execution_identities": {
+    "parent": {
+      "repository": "Qwen/Qwen2.5-0.5B-Instruct",
+      "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+      "file": "model.safetensors",
+      "sha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe",
+      "bytes": 988097824
+    },
+    "adapter": {
+      "name": "ACE-2 LoRA v4 checkpoint-176",
+      "file": "adapter_model.safetensors",
+      "sha256": "c9476d6ccc687a4d68de1951eb889b689daaf9c5d3822b4c5acfc26a1cd38a28",
+      "bytes": 35237104
+    },
+    "tokenizer": {
+      "repository": "Qwen/Qwen2.5-0.5B-Instruct-AWQ",
+      "revision": "db09cd27ead7fee40cdee309693cf83601b9c899",
+      "file_sha256": {
+        "tokenizer.json": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+        "tokenizer_config.json": "5b5d4f65d0acd3b2d56a35b56d374a36cbc1c8fa5cf3b3febbbfabf22f359583"
+      },
+      "does_not_imply_awq_w4a16_weight_execution": true
+    },
+    "v74_accepted_source_and_rtl_aggregate": {
+      "sha256": "9d991fbf5ef7e07e3a6d1b73265641466d15b27f1db21bd2c95b2092c609e3a8",
+      "source": "reports/rtl-chat-independent-oracle-regression-0006/result.json",
+      "scope": "Historical execution binding, not the public repository code or current mutable runtime."
+    }
+  },
+  "bounded_rtl_coverage": {
+    "original_attempt": "reports/ace2-stage1-chat-attempt-0002",
+    "original_status": "PASS",
+    "prompt_tokens": 34,
+    "causal_positions": 35,
+    "rtl_layer_invocations": 840,
+    "generated_token_selections": 2,
+    "persistent_kv_and_token_feedback": true,
+    "recorded_local_integer_mismatches": 0,
+    "scope": "Historical local RTL simulation; not a new replay, complete-answer demonstration or useful-dialogue certification.",
+    "reference_policy": "Local expectations before corresponding comparisons; observed RTL K/V feeds host cache causally between positions. Not an independent whole-model reference trajectory.",
+    "numerical_policy": "Per-row W4/A8 main projections, static-first-token QKV, Q9_ONE RoPE, int8-factor rank1, floating scale-selection shadow and zero/omitted parent QKV biases.",
+    "newer_quality_config_dynamic_head_scale32_executed": false,
+    "original_receipt_sha256": {
+      "attempt-result.json": "5ec4b355a2fd3ad69c45ecc6accedd26da1528a383cde13f8b558e3f4f13e8d8",
+      "independent-reference-comparison.json": "40803354b455534bc099913a8531a8552621645d1846c4921733b49ca6d90e9e",
+      "worker-result.json": "c6891d42e24ded0935ac6be7306e0e47bb38aa676c824d79ba6e07e7693709e4"
+    },
+    "original_seal_sha256": "82f56d1a23429ce72a7f387b658d6f25113db2afd41dbec7a0bc9d4c4fbbfdbc",
+    "hash_scope": "Original external bytes as recorded by regression0006, not this derived summary."
+  },
+  "evidence_audit_and_shell_smoke": {
+    "original_artifact": "reports/rtl-chat-independent-oracle-regression-0006/result.json",
+    "original_status": "PASS",
+    "historical_seal_entries_audited": 43056,
+    "retained_layer_records_audited": 840,
+    "retained_kv_files_audited": 1680,
+    "fresh_shell_smoke_status": "PASS",
+    "fresh_shell_smoke_scope": "Icarus W4A8 shell projection opcode 01; not a full-model chat run.",
+    "fresh_840_layer_replay": false,
+    "full_logits_freshly_replayed": false
+  },
+  "offline_s16_merge_highlight": {
+    "fixture": "One held position0 layer2 boundary of a bias-restored plus centered-score software control, before a separate SiLU contrast.",
+    "held_inputs": "W4/A8 inputs, signed32 accumulators and incoming residual; same real-valued merge reference.",
+    "profile": "Offline S16 residual merge with declared S16 RMSNorm input / S8 normalized output.",
+    "numeric_policy": "One offline S16 scale; signed checked branch products and rounding; residual branch not clamped to S8 before signed16 merge.",
+    "ordinary_channels": 887,
+    "same_fixture_a8_merge_mae": 0.30670037793118443,
+    "offline_s16_merge_mae": 0.0021521923961854354,
+    "merge_mae_relative_reduction": 0.9929827527090027,
+    "highlighted_metric": "Ordinary-channel residual merge MAE only.",
+    "normalized_output_fidelity_certified_by_this_metric": false,
+    "full_model_or_chat_quality_certified": false,
+    "current_strict_a8_product_result": false,
+    "runtime_scale32_descriptor_packing_and_rtl_implemented": false,
+    "offline_packing_checks_are_not_runtime_implementation": true,
+    "architecture_adoption_claim": false
+  },
+  "selected_original_source_identities": [
+    {
+      "artifact": "reports/rtl-chat-independent-oracle-regression-0006/result.json",
+      "sha256": "11194c095303e6e228ee6262dba7d231de9d8e73fa57695a3815e31c3b6a12a4",
+      "bytes": 9733,
+      "hash_scope": "original_file_bytes_not_this_derived_summary",
+      "bundled": false
+    },
+    {
+      "artifact": "reports/verification/current-lora176-layer2-wide-residual-20260906-1128/REPORT.json",
+      "sha256": "61bc339b5882c66f0d973a74c01adf448d99cf454c5ce45c298af0fcd22ff2a6",
+      "bytes": 7216,
+      "hash_scope": "original_file_bytes_not_this_derived_summary",
+      "bundled": false
+    },
+    {
+      "artifact": "reports/verification/current-lora176-layer2-wide-residual-20260906-1128/PROFILE.json",
+      "sha256": "3dcd8574d1d9319b461aaccdb44f1a4613250c962b9e6d14ebda0fd3549bcd40",
+      "bytes": 4940,
+      "hash_scope": "original_file_bytes_not_this_derived_summary",
+      "bundled": false
+    }
+  ],
+  "checksum_scope": "SHA256SUMS covers the listed current public presentation files, not original archive availability or a replay dependency closure."
+}

@@ -20,18 +20,19 @@
 
 ![ACE-2 已认证的 Alpha 2 基线](docs/ace2-alpha2-overview.svg)
 
-## 2026-09-06：仅发布证据摘要的进展更新
+## 2026-09-06：精选工程亮点
 
-详见[完整里程碑说明](docs/results/ACE2_PROGRESS_20260906.md)及
-[机器可读溯源](evidence/public/ace2-progress-20260906/provenance.json)。
-**现有公开源码不变；本次不是较新本地实现的可运行发布。**
+详见[精选里程碑](docs/results/ACE2_PROGRESS_20260906.md)及
+[机器可读亮点摘要](evidence/public/ace2-progress-20260906/highlights.json)。
+**现有公开源码不变；本次不是较新本地实现的可运行发布，也不是完整质量评估。**
 
-V74 记录了 35 个位置、840 次 RTL 层调用，输出 ` aside crystal`，不代表有用对话。
-regression 0006 是历史证据审计加新的 shell smoke，不是重跑 840 层。
-同一 LoRA176 的六个冻结短问题中，BF16 为 **6/6**，当前 Stage-1 W4A8+rank1
-为 **0/6**；这不是通用准确率，完整[十二条回答和限制](docs/results/CURRENT_LORA176_SOFTWARE_QUALITY_20260906.md)
-一并公开。三次递增诊断对照没有修复代表性回答；新的 S16 residual 局部合并 MAE
-降低 99.30%，但普通通道归一化输出仍有 839/887 为零，也尚未接入 runtime/RTL。
+V74 完成了 **35 个因果位置、840 次 RTL 层调用**，覆盖持久化 K/V、主机反馈
+及两次 token 选择。这是有界本地仿真覆盖，不是有用对话认证或全模型独立参考证明。
+regression 0006 增加了历史证据审计和新的 shell smoke，不是再次执行 840 层。
+
+新的离线 S16 residual profile 在**一个固定 fixture 的普通通道合并 MAE 上降低
+99.30%**。该指标仅针对合并，不证明归一化输出保真或对话质量，也尚未接入
+runtime/RTL。此前较完整的摘要仍保留在公开 Git 历史中；本次精选不代表所有评估通过。
 
 **当前只做本地仿真和软件诊断；硬件 Stage 2、FPGA、综合、PPA、U280 已取消。**
 下方 Alpha 2/3 结果与旧计划作为历史记录保留，不代表新路径成果或当前执行授权。
@@ -54,7 +55,7 @@ regression 0006 是历史证据审计加新的 shell smoke，不是重跑 840 �
 | 时序 | **100 MHz 通过，setup slack 为 +0.6966 ns** |
 | BF16 后继模型 | **S6 在 probe gate 处 NO-GO 封存，未访问 official dev** |
 | 执行准入 | **V8 恢复包已获 Fresh-L2 接受；仍需要外部 root** |
-| 已记录的生成诊断 | **固定 `Hi` 输入完成并输出 `[529, 529]`（`ertert`）；仅代表生成能力证据** |
+| 已记录的生成诊断 | **固定输入的双 token 执行完成；仅代表生成能力证据** |
 | 任意文本 W4A8 对话 | **尚未验收** |
 | Alveo U280 部署 | **尚未开始，需要外部工具链和板卡** |
 
@@ -81,8 +82,8 @@ Argus 完成了主要的迭代工程闭环：架构拆解、RTL 与 oracle 实�
 
 独立审查过的固定输入生成记录见
 [公开双 token 诊断证据包](evidence/public/fixed-hi-two-token-diagnostic-v1/)。
-该记录完成了 175,855 条 Verilated 命令并输出 token IDs `[529, 529]`，静态解码为
-`ertert`。它只证明记录中的生成执行发生过，不代表输出质量或任意文本对话能力。
+该记录完成了 175,855 条 Verilated 命令和两次 token 选择。它只证明记录中的生成执行
+发生过，不代表输出质量或任意文本对话能力。
 
 ## ACE-2 包含什么
 
