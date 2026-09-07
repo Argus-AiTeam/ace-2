@@ -1,0 +1,91 @@
+{
+  "schema": "ace2-four-token-independent-oracle-public-summary-v1",
+  "publication_date": "2026-09-07",
+  "status": "accepted_bounded_numerical_agreement",
+  "presentation_scope": "Selected engineering milestone, not a comprehensive evaluation or model-quality assessment.",
+  "execution_scope": "Retained computer-local RTL simulation plus completed host-only independent reconstruction.",
+  "prompt": {
+    "text": "Grüße,世界",
+    "utf8_bytes": 14,
+    "sha256": "017ff7058fb8400edad6f6f2026627c0ffd176edcc476434084b97b9535e74c2",
+    "official_chat_template_applied": true,
+    "formatted_tokens": 34,
+    "token_ids_sha256": "dedea5ac8bc4c58f33b66e26caf82ed8d1172d21af12ce7502bfec62c3c44d7d"
+  },
+  "agreement": {
+    "generated_tokens": 4,
+    "generated_token_ids": [15663, 25055, 57465, 76398],
+    "prefill_positions": 34,
+    "generated_token_feedback_positions": 3,
+    "positions_checked": 37,
+    "layers_per_position": 24,
+    "rtl_layer_records_checked": 888,
+    "retained_kv_append_files": 1776,
+    "kv_append_bytes_compared": 227328,
+    "full_cache_prefix_bytes_compared": 4319232,
+    "quantized_layer_output_bytes_hash_compared": 795648,
+    "full_domain_head_steps": 4,
+    "model_output_rows_per_step": 151936,
+    "full_domain_logit_bytes_hash_compared": 607744,
+    "integer_byte_mismatches": 0,
+    "selected_token_mismatches": 0
+  },
+  "comparison_method": {
+    "reference_completed_before_rtl_value_comparison": true,
+    "host_kv_consumed_rtl_values": false,
+    "token_feedback_source": "Independent host full-domain greedy selections.",
+    "rank1_correction_source": "Frozen host integer reference, not RTL-observed correction values.",
+    "kv_appends": "Direct byte comparison against retained hash-verified RTL append artifacts.",
+    "full_cache_prefixes": "Reconstructed from retained RTL append artifacts, matched to independent host prefixes and sealed full-cache hashes.",
+    "pruned_layer_outputs_rmsnorm_logits": "Independent payload byte counts and SHA-256 compared with retained sealed execution records.",
+    "shared_inputs": "Accepted fixed-point primitive definitions, model and adapter inputs.",
+    "implementation_diverse_primitive_specification": false,
+    "independent_bf16_fidelity_validation": false
+  },
+  "numerical_profile": {
+    "parent_model": "Qwen/Qwen2.5-0.5B-Instruct",
+    "adapter": "ACE-2 LoRA v4 checkpoint-176",
+    "main_projections": "Per-row W4A8.",
+    "layer23_v_correction": "Frozen int8-factor rank-1 integer correction.",
+    "qkv_metadata": "Static-first-token.",
+    "rope": "Q9_ONE.",
+    "scale_selection": "Floating shadow.",
+    "parent_qkv_biases": "Zero/omitted.",
+    "official_awq_w4a16_execution": false,
+    "all_int4_execution": false,
+    "newer_dynamic_head_scale32_profile": false
+  },
+  "erratum_resolution": {
+    "status": "closed_for_exact_sealed_four_token_trace",
+    "scope": "Causal-state/reference-feedback independence for this exact prompt and four-token trace only.",
+    "retroactive_recertification_of_other_traces": false
+  },
+  "original_evidence_sha256": {
+    "oracle_report": "ec1084ac1ab8799e3a488bdc9d59219e52b6b16090bdfcf185694534636ccc36",
+    "oracle_result": "b9126e8541126e994776c14f1eb37c54418717f9ece833fbe3bb624860f20c2e",
+    "rtl_attempt_tree_root": "9c78a499f0f169fd23e594332781105f647b96b02efda9c6fe92faa9ae39c74f",
+    "rtl_attempt_manifest": "4e74f27e3281b4d8b8c7c24fafcaaea30bb4942a35e4cd8c9a710320226c6553",
+    "rtl_run_summary": "9c40a5528d00fab401d04fdfbe403a815b43e4e14bc2ebdd8c1c1cae252d4488",
+    "model_weights": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe",
+    "adapter_weights": "c9476d6ccc687a4d68de1951eb889b689daaf9c5d3822b4c5acfc26a1cd38a28",
+    "tokenizer_sources_aggregate": "819156a42f9c4b33bc434cf91012a688af61d7d3573c149f9ed2f472e5321b91",
+    "execution_source_and_rtl_aggregate": "94b565728be85dd8ce4cd45ce192a686241b1ab37e0620f7d3c7b7fd2162700d",
+    "oracle_implementation_aggregate": "04f7b516077cb6b5adcb675f111cea5e66340f78ce77692203fcea19c232e840"
+  },
+  "hash_scope": "Original retained artifact bytes or their recorded aggregate bindings, not this derived public summary or the current public source tree.",
+  "publication_boundaries": {
+    "original_seal_and_claim_counts_rechecked": true,
+    "reviewer_acceptance_verified": true,
+    "original_evidence_or_acceptance_modified": false,
+    "rtl_simulation_launched_by_completed_host_comparison": false,
+    "simulation_or_oracle_rerun_for_publication": false,
+    "new_runtime_source_release": false,
+    "complete_archives_helpers_or_weights_bundled": false,
+    "turnkey_public_reproduction_claim": false,
+    "semantic_dialogue_quality_claim": false,
+    "broad_arbitrary_prompt_support_claim": false,
+    "multi_prompt_suite_success_claim": false,
+    "hardware_synthesis_ppa_fpga_board_bitstream_deployment_claim": false,
+    "unreported_evaluations_assumed_passed": false
+  }
+}

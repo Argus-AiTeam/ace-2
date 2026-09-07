@@ -6,6 +6,10 @@ assessment. It is a documentation/evidence-summary update: existing public
 source is unchanged, and the newer local implementation is not shipped as
 a self-contained runnable release.
 
+**September 7 follow-up:** [Four-token full-chain independent numerical
+agreement](ACE2_FOUR_TOKEN_INDEPENDENT_ORACLE_20260907.md) covers a separately
+checked exact trace. The historical V74 claims below retain their original scope.
+
 ## Bounded RTL host, operator and persistent-KV coverage
 
 The original V74 `reports/ace2-stage1-chat-attempt-0002` recorded:
